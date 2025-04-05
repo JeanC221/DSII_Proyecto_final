@@ -5,6 +5,10 @@ const personasRouter = require("./routes/personas");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const cors = require("cors");
+
+app.use(cors()); 
+
 // Conectar a MongoDB
 mongoose.connect(process.env.MONGO_URI);
 
