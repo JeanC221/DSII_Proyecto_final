@@ -6,22 +6,47 @@ services:
       - "3000:80"  
     depends_on:  
       - backend  
+    networks:
+      - app-network
 
   backend:  
     build: ./backend  
     ports:  
       - "5000:5000"  
     environment:  
-      - MONGO_URI=mongodb://mongodb:27017/personas  
+      - MONGO_URI=mongodb://mongodb:27017/personas
+      - NODE_ENV=production
     depends_on:  
-      - mongodb  
+      - mongodb
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - app-network
 
   mongodb:  
     image: mongo:latest  
     ports:  
       - "27017:27017"  
     volumes:  
-      - mongo_data:/data/db  
+      - mongo_data:/data/db
+    networks:
+      - app-network
+
+  llm_service:
+    build: ./llm_service
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+    environment:
+      - HUGGINGFACEHUB_API_TOKEN=${HUGGINGFACEHUB_API_TOKEN:-hf_dummy_token}
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:  
-  mongo_data:  
+  mongo_data:
+  uploads_data:

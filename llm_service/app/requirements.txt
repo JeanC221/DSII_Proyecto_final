@@ -1,0 +1,9 @@
+fastapi==0.103.1
+uvicorn==0.23.2
+pymongo==4.5.0
+langchain==0.0.265
+langchain-community==0.0.10
+huggingface-hub==0.16.4
+sentence-transformers==2.2.2
+python-dotenv==1.0.0
+pydantic==2.3.0
