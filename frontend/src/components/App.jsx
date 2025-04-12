@@ -2,8 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import CreatePerson from './CreatePerson';
 import ConsultarPersonas from './ConsultarPersonas';
-import EditarPersona from './EditarPersona';
-import '../App.css';
+import EditarPersona from './EditarPersonas';
+import './App.css';
 
 function App() {
   return (

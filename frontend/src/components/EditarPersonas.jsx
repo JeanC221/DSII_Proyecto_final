@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
-import styles from './EditarPersona.module.css';
+import styles from './EditarPersonas.module.css';
 
 const schema = yup.object().shape({
   correo: yup.string().email('Correo inválido')
