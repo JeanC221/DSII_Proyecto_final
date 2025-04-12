@@ -1,74 +1,90 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import CreatePerson from './CreatePerson';
 import ConsultarPersonas from './ConsultarPersonas';
 import EditarPersona from './EditarPersonas';
+import ConsultaNatural from './ConsultaNatural';
+import '../styles/global.css';
 import './App.css';
 
 function App() {
   return (
     <Router>
       <div className="App">
-        <h1>APLICACIÓN GESTIÓN DE DATOS PERSONALES</h1>
-        <div className="menu">
-          <h2>MENÚ PRINCIPAL</h2>
-          <ul>
-            <li><a href="/">Crear Personas</a></li>
-            <li><a href="/consultar">Consultar Datos Personales</a></li>
-            <li><a href="/consulta-natural">Consultar Datos Personales - Lenguaje Natural</a></li>
-            <li><a href="/consultar">Borrar Personas</a></li>
-            <li><a href="/logs">Consultar log</a></li>
-          </ul>
-        </div>
-        <Routes>
-          <Route path="/" element={<CreatePerson />} />
-          <Route path="/consultar" element={<ConsultarPersonas />} />
-          <Route path="/editar/:id" element={<EditarPersona />} />
-          <Route path="/consulta-natural" element={<ConsultaNatural />} />
-          <Route path="/logs" element={<ConsultarLogs />} />
-        </Routes>
+        <header className="header">
+          <h1>APLICACIÓN GESTIÓN DE DATOS PERSONALES</h1>
+        </header>
+        
+        <nav className="navbar">
+          <div className="nav-container">
+            <h2>MENÚ PRINCIPAL</h2>
+            <ul className="nav-links">
+              <li>
+                <Link to="/" className="nav-link">
+                  <i className="icon icon-add"></i>
+                  Crear Personas
+                </Link>
+              </li>
+              <li>
+                <Link to="/consultar" className="nav-link">
+                  <i className="icon icon-search"></i>
+                  Consultar Datos Personales
+                </Link>
+              </li>
+              <li>
+                <Link to="/consulta-natural" className="nav-link">
+                  <i className="icon icon-chat"></i>
+                  Consultar - Lenguaje Natural
+                </Link>
+              </li>
+              <li>
+                <Link to="/logs" className="nav-link">
+                  <i className="icon icon-log"></i>
+                  Consultar log
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </nav>
+        
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<CreatePerson />} />
+            <Route path="/consultar" element={<ConsultarPersonas />} />
+            <Route path="/editar/:id" element={<EditarPersona />} />
+            <Route path="/consulta-natural" element={<ConsultaNatural />} />
+            <Route path="/logs" element={<ConsultarLogs />} />
+          </Routes>
+        </main>
+        
+        <footer className="footer">
+          <p>© 2025 - Sistema de Gestión de Datos Personales</p>
+        </footer>
       </div>
     </Router>
   );
 }
 
-// Componente temporal para consulta en lenguaje natural
-const ConsultaNatural = () => (
-  <div className="consulta-natural">
-    <h2>CONSULTA EN LENGUAJE NATURAL</h2>
-    <div className="rag-container">
-      <div className="pregunta-container">
-        <label>Pregunta:</label>
-        <input type="text" placeholder="Ej: ¿Cuál es el empleado más joven?" />
-        <button>Consultar</button>
-      </div>
-      <div className="respuesta-container">
-        <label>Respuesta:</label>
-        <div className="respuesta-box"></div>
-      </div>
-    </div>
-  </div>
-);
-
-// Componente temporal para logs
+// Componente para logs
 const ConsultarLogs = () => (
-  <div className="logs-container">
+  <div className="card">
     <h2>Registro de Actividades</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Acción</th>
-          <th>Usuario</th>
-          <th>Detalles</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colSpan="4">Cargando registros...</td>
-        </tr>
-      </tbody>
-    </table>
+    <div className="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Acción</th>
+            <th>Detalles</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colSpan="3">Cargando registros...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 );
 

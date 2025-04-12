@@ -1,7 +1,9 @@
-version: "3.8"  
+version: "3.9"  
 services:  
   frontend:  
-    build: ./frontend  
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.simple
     ports:  
       - "3000:80"  
     depends_on:  

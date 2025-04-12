@@ -1,140 +1,99 @@
-.container {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .description {
-    margin-bottom: 20px;
-    color: #555;
-    line-height: 1.5;
-  }
-  
-  .ejemplos {
-    margin-bottom: 25px;
-    padding: 15px;
-    background-color: #e9ecef;
-    border-radius: 6px;
-  }
-  
-  .ejemplos h3 {
-    margin-top: 0;
-    font-size: 1.1rem;
-    color: #333;
-  }
-  
-  .ejemplos ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .ejemplos li {
-    display: flex;
-    margin-bottom: 10px;
-    align-items: center;
-  }
-  
-  .ejemplos button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 4px 8px;
-    margin-right: 10px;
-    cursor: pointer;
-    font-size: 0.8rem;
-  }
-  
-  .ejemplos button:hover {
-    background-color: #0069d9;
-  }
-  
-  .form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  
-  .inputContainer {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .inputContainer label {
-    font-weight: bold;
-    min-width: 80px;
-  }
-  
-  .input {
-    flex-grow: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
-  }
-  
-  .button {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 10px 15px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-  
-  .button:hover {
-    background-color: #218838;
-  }
-  
-  .button:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-  }
-  
-  .error {
-    color: #dc3545;
-    font-size: 0.9rem;
-    margin-top: 5px;
-  }
-  
-  .resultContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .resultContainer label {
-    font-weight: bold;
-  }
-  
-  .result {
-    min-height: 150px;
-    padding: 15px;
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-  
-  .loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    color: #6c757d;
-    font-style: italic;
-  }
-  
-  .placeholder {
-    color: #6c757d;
-    font-style: italic;
-  }
-  
-  .respuesta {
-    line-height: 1.6;
-  }
+.description {
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-light);
+  line-height: 1.5;
+}
+
+.ejemplos {
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background-color: var(--background-light);
+  border-radius: var(--border-radius);
+  border: var(--border-width) solid var(--border-color);
+}
+
+.ejemplos h3 {
+  margin-top: 0;
+  font-size: var(--font-size-large);
+  margin-bottom: var(--spacing-md);
+}
+
+.ejemplos ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ejemplos li {
+  display: flex;
+  margin-bottom: var(--spacing-md);
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.ejemplos button {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-small);
+  white-space: nowrap;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.inputContainer label {
+  font-weight: bold;
+}
+
+.inputWrapper {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.inputWrapper input {
+  flex-grow: 1;
+}
+
+.resultContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.resultContainer label {
+  font-weight: bold;
+}
+
+.result {
+  min-height: 150px;
+  padding: var(--spacing-lg);
+  background-color: var(--background-light);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+.placeholder {
+  color: var(--text-light);
+  font-style: italic;
+}
+
+.respuesta {
+  line-height: 1.6;
+}

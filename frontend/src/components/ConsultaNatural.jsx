@@ -43,7 +43,7 @@ const ConsultaNatural = () => {
   };
 
   return (
-    <div className={styles.container}>
+    <div className="card">
       <h2>CONSULTA EN LENGUAJE NATURAL</h2>
       <p className={styles.description}>
         Utiliza lenguaje natural para consultar información sobre las personas registradas.
@@ -55,7 +55,7 @@ const ConsultaNatural = () => {
         <ul>
           {ejemplos.map((ejemplo, index) => (
             <li key={index}>
-              <button onClick={() => usarEjemplo(ejemplo)}>Usar</button>
+              <button onClick={() => usarEjemplo(ejemplo)} className="secondary">Usar</button>
               <span>{ejemplo}</span>
             </li>
           ))}
@@ -65,24 +65,24 @@ const ConsultaNatural = () => {
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.inputContainer}>
           <label htmlFor="consulta">Pregunta:</label>
-          <input
-            id="consulta"
-            type="text"
-            value={consulta}
-            onChange={(e) => setConsulta(e.target.value)}
-            placeholder="Escribe tu pregunta en lenguaje natural"
-            className={styles.input}
-          />
-          <button 
-            type="submit" 
-            className={styles.button}
-            disabled={loading}
-          >
-            {loading ? 'Consultando...' : 'Consultar'}
-          </button>
+          <div className={styles.inputWrapper}>
+            <input
+              id="consulta"
+              type="text"
+              value={consulta}
+              onChange={(e) => setConsulta(e.target.value)}
+              placeholder="Escribe tu pregunta en lenguaje natural"
+            />
+            <button 
+              type="submit" 
+              disabled={loading}
+            >
+              {loading ? 'Consultando...' : 'Consultar'}
+            </button>
+          </div>
         </div>
         
-        {error && <div className={styles.error}>{error}</div>}
+        {error && <div className="error">{error}</div>}
         
         <div className={styles.resultContainer}>
           <label>Respuesta:</label>

@@ -1,11 +1,13 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom';
+import './styles/global.css';
 import './index.css';
 import App from './components/App';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+// Usando el método tradicional de renderizado para React 17
+ReactDOM.render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>
+  </React.StrictMode>,
+  document.getElementById('root')
 );
