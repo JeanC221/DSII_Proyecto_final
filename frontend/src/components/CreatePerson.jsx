@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
+import api from '../config/axiosConfig';
 import styles from './CreatePerson.module.css';
 
 // Esquema de validación con Yup
@@ -55,35 +55,14 @@ const CreatePerson = () => {
     fechaNacimiento: '',
     genero: '',
     correo: '',
-    celular: '',
-    foto: null
+    celular: ''
   });
   const [errors, setErrors] = useState({});
-  const [photoPreview, setPhotoPreview] = useState(null);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        setErrors({...errors, foto: 'El archivo no debe superar 2MB'});
-        return;
-      }
-      
-      setFormData({ ...formData, foto: file });
-      
-      // Crear vista previa
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -93,15 +72,8 @@ const CreatePerson = () => {
     try {
       await schema.validate(formData, { abortEarly: false });
       
-      // Crear objeto FormData para subir archivos
-      const formDataToSend = new FormData();
-      Object.keys(formData).forEach(key => {
-        formDataToSend.append(key, formData[key]);
-      });
-      
-      const response = await axios.post('/api/personas', formDataToSend, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      // Usamos la instancia api con la URL base correcta
+      const response = await api.post('/api/personas', formData);
       
       alert('Persona creada exitosamente!');
       navigate('/consultar');
@@ -113,13 +85,14 @@ const CreatePerson = () => {
         });
         setErrors(newErrors);
       } else {
-        alert('Error al guardar los datos: ' + error.message);
+        console.error('Error al guardar:', error);
+        alert('Error al guardar los datos: ' + (error.response?.data?.error || error.message));
       }
     }
   };
 
   return (
-    <div className={styles.container}>
+    <div className="card">
       <h2>GESTIÓN DE DATOS PERSONALES</h2>
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.formRow}>
@@ -133,7 +106,7 @@ const CreatePerson = () => {
             <option value="Tarjeta de identidad">Tarjeta de identidad</option>
             <option value="Cédula">Cédula</option>
           </select>
-          {errors.tipoDocumento && <span className={styles.error}>{errors.tipoDocumento}</span>}
+          {errors.tipoDocumento && <span className="error">{errors.tipoDocumento}</span>}
         </div>
 
         <div className={styles.formRow}>
@@ -144,7 +117,7 @@ const CreatePerson = () => {
             value={formData.nroDocumento}
             onChange={handleChange}
           />
-          {errors.nroDocumento && <span className={styles.error}>{errors.nroDocumento}</span>}
+          {errors.nroDocumento && <span className="error">{errors.nroDocumento}</span>}
         </div>
 
         <div className={styles.formRow}>
@@ -155,7 +128,7 @@ const CreatePerson = () => {
             value={formData.primerNombre}
             onChange={handleChange}
           />
-          {errors.primerNombre && <span className={styles.error}>{errors.primerNombre}</span>}
+          {errors.primerNombre && <span className="error">{errors.primerNombre}</span>}
         </div>
 
         <div className={styles.formRow}>
@@ -166,7 +139,7 @@ const CreatePerson = () => {
             value={formData.segundoNombre}
             onChange={handleChange}
           />
-          {errors.segundoNombre && <span className={styles.error}>{errors.segundoNombre}</span>}
+          {errors.segundoNombre && <span className="error">{errors.segundoNombre}</span>}
         </div>
 
         <div className={styles.formRow}>
@@ -177,7 +150,7 @@ const CreatePerson = () => {
             value={formData.apellidos}
             onChange={handleChange}
           />
-          {errors.apellidos && <span className={styles.error}>{errors.apellidos}</span>}
+          {errors.apellidos && <span className="error">{errors.apellidos}</span>}
         </div>
 
         <div className={styles.formRow}>
@@ -188,7 +161,7 @@ const CreatePerson = () => {
             value={formData.fechaNacimiento}
             onChange={handleChange}
           />
-          {errors.fechaNacimiento && <span className={styles.error}>{errors.fechaNacimiento}</span>}
+          {errors.fechaNacimiento && <span className="error">{errors.fechaNacimiento}</span>}
         </div>
 
         <div className={styles.formRow}>
@@ -204,7 +177,7 @@ const CreatePerson = () => {
             <option value="No binario">No binario</option>
             <option value="Prefiero no reportar">Prefiero no reportar</option>
           </select>
-          {errors.genero && <span className={styles.error}>{errors.genero}</span>}
+          {errors.genero && <span className="error">{errors.genero}</span>}
         </div>
 
         <div className={styles.formRow}>
@@ -215,7 +188,7 @@ const CreatePerson = () => {
             value={formData.correo}
             onChange={handleChange}
           />
-          {errors.correo && <span className={styles.error}>{errors.correo}</span>}
+          {errors.correo && <span className="error">{errors.correo}</span>}
         </div>
 
         <div className={styles.formRow}>
@@ -226,28 +199,12 @@ const CreatePerson = () => {
             value={formData.celular}
             onChange={handleChange}
           />
-          {errors.celular && <span className={styles.error}>{errors.celular}</span>}
-        </div>
-
-        <div className={styles.formRow}>
-          <label>Foto:</label>
-          <input
-            type="file"
-            name="foto"
-            accept="image/*"
-            onChange={handleFileChange}
-          />
-          {errors.foto && <span className={styles.error}>{errors.foto}</span>}
-          {photoPreview && (
-            <div className={styles.photoPreview}>
-              <img src={photoPreview} alt="Vista previa" />
-            </div>
-          )}
+          {errors.celular && <span className="error">{errors.celular}</span>}
         </div>
 
         <div className={styles.buttons}>
           <button type="submit">Guardar</button>
-          <button type="button" onClick={() => navigate('/consultar')}>Cancelar</button>
+          <button type="button" onClick={() => navigate('/consultar')} className="secondary">Cancelar</button>
         </div>
       </form>
     </div>

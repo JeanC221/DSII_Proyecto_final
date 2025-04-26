@@ -1,32 +1,18 @@
-const mongoose = require('mongoose');
+const { db } = require('../config/firebaseConfig');
+const { Timestamp } = require('firebase-admin/firestore');
 
-// Definir el schema para los logs
-const logSchema = new mongoose.Schema({
-  accion: {
-    type: String,
-    enum: ['Crear', 'Consultar', 'Actualizar', 'Eliminar', 'Consulta Natural'],
-    required: true
-  },
-  detalles: {
-    type: String,
-    required: true
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-const Log = mongoose.model('Log', logSchema);
+const logsCollection = db.collection('logs');
 
 // Función para registrar una acción
 const registrarLog = async (accion, detalles) => {
   try {
-    const nuevoLog = new Log({
+    const nuevoLog = {
       accion,
-      detalles
-    });
-    await nuevoLog.save();
+      detalles,
+      timestamp: Timestamp.now()
+    };
+    
+    await logsCollection.add(nuevoLog);
     console.log(`Log registrado: ${accion} - ${detalles}`);
   } catch (error) {
     console.error('Error al registrar log:', error);
@@ -36,7 +22,21 @@ const registrarLog = async (accion, detalles) => {
 // Función para obtener todos los logs
 const obtenerLogs = async () => {
   try {
-    return await Log.find().sort({ timestamp: -1 });
+    const snapshot = await logsCollection.orderBy('timestamp', 'desc').get();
+    const logs = [];
+    
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const timestamp = data.timestamp ? data.timestamp.toDate() : new Date();
+      
+      logs.push({
+        id: doc.id,
+        ...data,
+        fecha: timestamp.toLocaleString()
+      });
+    });
+    
+    return logs;
   } catch (error) {
     console.error('Error al obtener logs:', error);
     return [];
@@ -45,6 +45,5 @@ const obtenerLogs = async () => {
 
 module.exports = {
   registrarLog,
-  obtenerLogs,
-  Log
+  obtenerLogs
 };

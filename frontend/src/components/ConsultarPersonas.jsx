@@ -1,104 +1,88 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import styles from './ConsultaNatural.module.css';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import api from '../config/axiosConfig';
+import styles from './ConsultarPersonas.module.css';
 
-const ConsultaNatural = () => {
-  const [consulta, setConsulta] = useState('');
-  const [respuesta, setRespuesta] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+const ConsultarPersonas = () => {
+  const [personas, setPersonas] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!consulta.trim()) {
-      setError('Por favor, escribe una pregunta');
-      return;
-    }
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const res = await axios.post('/api/consulta-natural', { consulta });
-      setRespuesta(res.data.answer);
-    } catch (err) {
-      console.error('Error al hacer consulta:', err);
-      setError('Ocurrió un error al procesar tu consulta. Intenta de nuevo más tarde.');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await api.get('/api/personas');
+        setPersonas(res.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
+        alert('Error al cargar datos');
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleDelete = async (id) => {
+    if (window.confirm('¿Borrar esta persona?')) {
+      try {
+        await api.delete(`/api/personas/${id}`);
+        setPersonas(personas.filter(p => p.id !== id));
+      } catch (error) {
+        console.error('Error al eliminar:', error);
+        alert('Error al eliminar');
+      }
     }
   };
 
-  // Ejemplos predefinidos de consultas
-  const ejemplos = [
-    "¿Cuál es el empleado más joven que se ha registrado?",
-    "¿Cuántas personas de género femenino están registradas?",
-    "¿Cuál es el promedio de edad de las personas registradas?",
-    "¿Quién fue la última persona registrada?"
-  ];
-
-  const usarEjemplo = (ejemplo) => {
-    setConsulta(ejemplo);
+  const formatDate = (timestamp) => {
+    if (!timestamp) return '';
+    // Verificar si es un objeto de Firestore
+    if (timestamp.seconds) {
+      const date = new Date(timestamp.seconds * 1000);
+      return date.toLocaleDateString();
+    }
+    // Si es una fecha normal
+    return new Date(timestamp).toLocaleDateString();
   };
 
   return (
-    <div className="card">
-      <h2>CONSULTA EN LENGUAJE NATURAL</h2>
-      <p className={styles.description}>
-        Utiliza lenguaje natural para consultar información sobre las personas registradas.
-        El sistema utilizará RAG (Retrieval Augmented Generation) para procesar tu consulta.
-      </p>
-      
-      <div className={styles.ejemplos}>
-        <h3>Ejemplos de consultas:</h3>
-        <ul>
-          {ejemplos.map((ejemplo, index) => (
-            <li key={index}>
-              <button onClick={() => usarEjemplo(ejemplo)} className="secondary">Usar</button>
-              <span>{ejemplo}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-      
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <div className={styles.inputContainer}>
-          <label htmlFor="consulta">Pregunta:</label>
-          <div className={styles.inputWrapper}>
-            <input
-              id="consulta"
-              type="text"
-              value={consulta}
-              onChange={(e) => setConsulta(e.target.value)}
-              placeholder="Escribe tu pregunta en lenguaje natural"
-            />
-            <button 
-              type="submit" 
-              disabled={loading}
-            >
-              {loading ? 'Consultando...' : 'Consultar'}
-            </button>
-          </div>
-        </div>
-        
-        {error && <div className="error">{error}</div>}
-        
-        <div className={styles.resultContainer}>
-          <label>Respuesta:</label>
-          <div className={styles.result}>
-            {loading ? (
-              <div className={styles.loading}>Procesando consulta...</div>
-            ) : respuesta ? (
-              <div className={styles.respuesta}>{respuesta}</div>
-            ) : (
-              <div className={styles.placeholder}>La respuesta aparecerá aquí</div>
-            )}
-          </div>
-        </div>
-      </form>
+    <div className={styles.container}>
+      <h2>Personas Registradas</h2>
+      <Link to="/" className={styles.link}>Crear Nueva Persona</Link>
+      {loading ? (
+        <p>Cargando...</p>
+      ) : personas.length === 0 ? (
+        <p>No hay personas registradas todavía</p>
+      ) : (
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Apellidos</th>
+              <th>Fecha Nac.</th>
+              <th>Correo</th>
+              <th>Celular</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {personas.map((persona) => (
+              <tr key={persona.id}>
+                <td>{persona.primerNombre} {persona.segundoNombre || ''}</td>
+                <td>{persona.apellidos}</td>
+                <td>{formatDate(persona.fechaNacimiento)}</td>
+                <td>{persona.correo}</td>
+                <td>{persona.celular}</td>
+                <td>
+                  <Link to={`/editar/${persona.id}`} className={styles.button}>Editar</Link>
+                  <button onClick={() => handleDelete(persona.id)} className={styles.deleteButton}>Borrar</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };
 
-export default ConsultaNatural;
+export default ConsultarPersonas;

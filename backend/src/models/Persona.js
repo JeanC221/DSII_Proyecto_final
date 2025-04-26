@@ -1,56 +1,171 @@
-const mongoose = require("mongoose");
+const { db } = require('../config/firebaseConfig');
+const { Timestamp } = require('firebase-admin/firestore');
 
-const personaSchema = new mongoose.Schema({
-  primerNombre: {
-    type: String,
-    required: true,
-    maxlength: 30,
-    match: /^[A-Za-z ]+$/
+const personasCollection = db.collection('personas');
+
+// Funciones de validación
+const validaciones = {
+  validarNombre: (nombre) => {
+    if (!nombre || typeof nombre !== 'string' || nombre.length > 30 || !/^[A-Za-z ]+$/.test(nombre)) {
+      throw new Error('El nombre debe ser texto, no mayor a 30 caracteres y sin números');
+    }
+    return true;
   },
-  apellidos: {
-    type: String,
-    required: true,
-    maxlength: 60
+  
+  validarApellidos: (apellidos) => {
+    if (!apellidos || typeof apellidos !== 'string' || apellidos.length > 60) {
+      throw new Error('Los apellidos no deben superar 60 caracteres');
+    }
+    return true;
   },
-  fechaNacimiento: {
-    type: Date,
-    required: true
+  
+  validarDocumento: (nro) => {
+    if (!/^\d{1,10}$/.test(nro)) {
+      throw new Error('El número de documento debe tener máximo 10 dígitos');
+    }
+    return true;
   },
-  genero: {
-    type: String,
-    enum: ["Masculino", "Femenino", "No binario", "Prefiero no reportar"],
-    required: true
+  
+  validarGenero: (genero) => {
+    const opciones = ["Masculino", "Femenino", "No binario", "Prefiero no reportar"];
+    if (!opciones.includes(genero)) {
+      throw new Error('El género debe ser una opción válida');
+    }
+    return true;
   },
-  correo: {
-    type: String,
-    match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-    required: true
+  
+  validarCorreo: (correo) => {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+      throw new Error('Formato de correo electrónico inválido');
+    }
+    return true;
   },
-  celular: {
-    type: String,
-    validate: {
-      validator: v => /^\d{10}$/.test(v),
-      message: "Celular debe tener 10 dígitos"
+  
+  validarCelular: (celular) => {
+    if (!/^\d{10}$/.test(celular)) {
+      throw new Error('El celular debe tener 10 dígitos');
+    }
+    return true;
+  }
+};
+
+const Persona = {
+  crear: async (datosPersona) => {
+    try {
+      // Validaciones
+      validaciones.validarNombre(datosPersona.primerNombre);
+      if (datosPersona.segundoNombre) validaciones.validarNombre(datosPersona.segundoNombre);
+      validaciones.validarApellidos(datosPersona.apellidos);
+      validaciones.validarDocumento(datosPersona.nroDocumento);
+      validaciones.validarGenero(datosPersona.genero);
+      validaciones.validarCorreo(datosPersona.correo);
+      validaciones.validarCelular(datosPersona.celular);
+      
+      const fechaNacimiento = new Date(datosPersona.fechaNacimiento);
+      
+      const personaObj = {
+        ...datosPersona,
+        fechaNacimiento: Timestamp.fromDate(fechaNacimiento),
+        createdAt: Timestamp.now()
+      };
+      
+      const docRef = await personasCollection.add(personaObj);
+      
+      return {
+        id: docRef.id,
+        ...personaObj
+      };
+    } catch (error) {
+      throw error;
     }
   },
-  nroDocumento: {
-    type: String,
-    validate: {
-      validator: v => /^\d{1,10}$/.test(v),
-      message: "Máximo 10 dígitos"
+  
+  // Obtener todas las personas
+  obtenerTodos: async () => {
+    try {
+      const snapshot = await personasCollection.orderBy('createdAt', 'desc').get();
+      const personas = [];
+      
+      snapshot.forEach(doc => {
+        personas.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      return personas;
+    } catch (error) {
+      throw error;
     }
   },
-  tipoDocumento: {
-    type: String,
-    enum: ["Tarjeta de identidad", "Cédula"]
+  
+  // Obtener persona por ID
+  obtenerPorId: async (id) => {
+    try {
+      const doc = await personasCollection.doc(id).get();
+      
+      if (!doc.exists) {
+        throw new Error('Persona no encontrada');
+      }
+      
+      return {
+        id: doc.id,
+        ...doc.data()
+      };
+    } catch (error) {
+      throw error;
+    }
   },
-  foto: {
-    type: String, // Ruta del archivo o URL
-    validate: {
-      validator: v => v ? v.length <= 2 * 1024 * 1024 : true, // 2MB (validación de tamaño en frontend)
-      message: "La foto no debe superar 2MB"
+  
+  // Actualizar persona
+  actualizar: async (id, datosActualizados) => {
+    try {
+      const doc = await personasCollection.doc(id).get();
+      if (!doc.exists) {
+        throw new Error('Persona no encontrada');
+      }
+      
+      // Validar los campos que se van a actualizar
+      if (datosActualizados.primerNombre) validaciones.validarNombre(datosActualizados.primerNombre);
+      if (datosActualizados.segundoNombre) validaciones.validarNombre(datosActualizados.segundoNombre);
+      if (datosActualizados.apellidos) validaciones.validarApellidos(datosActualizados.apellidos);
+      if (datosActualizados.nroDocumento) validaciones.validarDocumento(datosActualizados.nroDocumento);
+      if (datosActualizados.genero) validaciones.validarGenero(datosActualizados.genero);
+      if (datosActualizados.correo) validaciones.validarCorreo(datosActualizados.correo);
+      if (datosActualizados.celular) validaciones.validarCelular(datosActualizados.celular);
+      
+      if (datosActualizados.fechaNacimiento) {
+        const fechaNacimiento = new Date(datosActualizados.fechaNacimiento);
+        datosActualizados.fechaNacimiento = Timestamp.fromDate(fechaNacimiento);
+      }
+      
+      // Actualizar datos
+      await personasCollection.doc(id).update({
+        ...datosActualizados,
+        updatedAt: Timestamp.now()
+      });
+      
+      return await Persona.obtenerPorId(id);
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  // Eliminar persona
+  eliminar: async (id) => {
+    try {
+      const doc = await personasCollection.doc(id).get();
+      if (!doc.exists) {
+        throw new Error('Persona no encontrada');
+      }
+      
+      await personasCollection.doc(id).delete();
+      
+      return { id, mensaje: 'Persona eliminada correctamente' };
+    } catch (error) {
+      throw error;
     }
   }
-});
+};
 
-module.exports = mongoose.model("Persona", personaSchema);
+module.exports = Persona;

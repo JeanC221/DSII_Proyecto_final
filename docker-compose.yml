@@ -3,7 +3,7 @@ services:
   frontend:  
     build:
       context: ./frontend
-      dockerfile: Dockerfile.simple
+      dockerfile: Dockerfile
     ports:  
       - "3000:80"  
     depends_on:  
@@ -16,39 +16,14 @@ services:
     ports:  
       - "5000:5000"  
     environment:  
-      - MONGO_URI=mongodb://mongodb:27017/personas
       - NODE_ENV=production
-    depends_on:  
-      - mongodb
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
     volumes:
-      - uploads_data:/app/uploads
-    networks:
-      - app-network
-
-  mongodb:  
-    image: mongo:latest  
-    ports:  
-      - "27017:27017"  
-    volumes:  
-      - mongo_data:/data/db
-    networks:
-      - app-network
-
-  llm_service:
-    build: ./llm_service
-    ports:
-      - "8000:8000"
-    depends_on:
-      - mongodb
-    environment:
-      - HUGGINGFACEHUB_API_TOKEN=${HUGGINGFACEHUB_API_TOKEN:-hf_dummy_token}
+      - ./backend/src:/app/src
+      - ./backend/firebase-credentials.json:/app/src/firebase-credentials.json:ro
     networks:
       - app-network
 
 networks:
   app-network:
     driver: bridge
-
-volumes:  
-  mongo_data:
-  uploads_data:

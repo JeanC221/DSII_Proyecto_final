@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../config/axiosConfig';
 import styles from './ConsultaNatural.module.css';
 
 const ConsultaNatural = () => {
@@ -20,7 +20,7 @@ const ConsultaNatural = () => {
     setError(null);
     
     try {
-      const res = await axios.post('/api/consulta-natural', { consulta });
+      const res = await api.post('/api/consulta-natural', { consulta });
       setRespuesta(res.data.answer);
     } catch (err) {
       console.error('Error al hacer consulta:', err);
