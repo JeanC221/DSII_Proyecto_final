@@ -116,7 +116,10 @@ Este proyecto consiste en una aplicación web para la gestión de datos personal
 
 ## Autores
 
-- Jean C. Montaña
+-
+-
+-
+-
 
 ## Licencia
 
