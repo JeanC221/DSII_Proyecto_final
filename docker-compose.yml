@@ -1,28 +1,34 @@
-version: "3.9"  
-services:  
-  frontend:  
+version: "3.9"
+services:
+  frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:  
-      - "3000:80"  
-    depends_on:  
-      - backend  
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_started
     networks:
       - app-network
+    restart: unless-stopped
 
-  backend:  
-    build: ./backend  
-    ports:  
-      - "5000:5000"  
-    environment:  
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
       - NODE_ENV=production
-      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-default-project}
+    networks:
+      - app-network
+    restart: unless-stopped
+    # Volúmenes re-habilitados, funcionan con Docker más reciente
     volumes:
       - ./backend/src:/app/src
       - ./backend/firebase-credentials.json:/app/src/firebase-credentials.json:ro
-    networks:
-      - app-network
 
 networks:
   app-network:
