@@ -1,30 +1,18 @@
-# Usar node 18 para compatibilidad con el frontend
-FROM node:18-slim
-
-# Crear un usuario no-root para mayor seguridad
-RUN groupadd -r nodeuser && useradd -r -g nodeuser -m nodeuser
-
-# Establecer directorio de trabajo
+# Fase de construcción
+FROM node:18 AS build
 WORKDIR /app
-
-# Copiar archivos de dependencia
 COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
 
-# Instalar dependencias
-RUN npm install --omit=dev
-
-# Copiar archivos de código fuente
-COPY --chown=nodeuser:nodeuser . .
-
-# Crear directorio para credenciales si no existe
-RUN mkdir -p src/credentials && \
-    chown -R nodeuser:nodeuser src/credentials
-
-# Cambiar a usuario no-root
-USER nodeuser
-
-# Exponer puerto
-EXPOSE 5000
-
-# Comando para iniciar la aplicación
-CMD ["node", "src/index.js"]
+# Fase de producción
+FROM nginx:alpine
+# Copiar la configuración personalizada de nginx
+COPY nginx.config /etc/nginx/conf.d/default.conf
+# Copiar los archivos de construcción de React
+COPY --from=build /app/build /usr/share/nginx/html
+# Copiar la página de error personalizada
+COPY public/50x.html /usr/share/nginx/html/50x.html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

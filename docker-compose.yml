@@ -3,9 +3,9 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile  # Ahora usará el Dockerfile correcto
     ports:
-      - "3000:80"
+      - "3000:80"  # Mapeo correcto para nginx (puerto 80)
     depends_on:
       backend:
         condition: service_started
@@ -13,7 +13,7 @@ services:
       app-network:
     restart: unless-stopped
     environment:
-      - BACKEND_URL=http://backend:5000
+      - REACT_APP_API_URL=http://backend:5000/api  # Configuración correcta para React
 
   backend:
     build:
@@ -33,13 +33,12 @@ services:
     restart: unless-stopped
     volumes:
       - ./backend/src:/app/src
-      # Corregir la ruta del archivo de credenciales
       - ./backend/src/credentials/firebase-credentials.json:/app/src/credentials/firebase-credentials.json:ro
 
   llm_service:
     build:
       context: ./llm_service
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile  
     ports:
       - "8000:8000"
     depends_on:

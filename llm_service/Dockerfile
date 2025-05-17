@@ -22,12 +22,11 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir pydantic==1.10.12 && \
     pip install --no-cache-dir fastapi==0.103.1 uvicorn==0.23.2 && \
     pip install --no-cache-dir pymongo==4.5.0 && \
-    # Instalar langchain en el orden correcto
-    pip install --no-cache-dir langchain-core==0.1.18 && \
-    pip install --no-cache-dir langchain-community==0.0.25 && \
+    # Instalar langchain primero, permitiendo que se instale la versión correcta de langchain-core
     pip install --no-cache-dir langchain==0.1.9 && \
-    # Continuar con el resto de dependencias
-    pip install --no-cache-dir -r requirements.txt
+    # Filtrar langchain-core del requirements.txt para evitar conflictos
+    grep -v "langchain-core==0.1.18" requirements.txt > requirements_filtered.txt && \
+    pip install --no-cache-dir -r requirements_filtered.txt
 
 # Copiar el resto del código de la aplicación
 COPY ./app .
