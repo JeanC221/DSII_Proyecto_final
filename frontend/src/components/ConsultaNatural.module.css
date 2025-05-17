@@ -4,6 +4,31 @@
   line-height: 1.5;
 }
 
+.serviceStatus {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-small);
+}
+
+.serviceOk {
+  background-color: rgba(46, 204, 113, 0.1);
+  color: var(--secondary-color);
+  border: 1px solid var(--secondary-color);
+}
+
+.serviceError {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+}
+
+.serviceWarning {
+  margin-top: var(--spacing-xs);
+  margin-bottom: 0;
+  font-style: italic;
+}
+
 .ejemplos {
   margin-bottom: var(--spacing-xl);
   padding: var(--spacing-lg);

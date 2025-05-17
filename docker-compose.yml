@@ -24,13 +24,46 @@ services:
     environment:
       - NODE_ENV=production
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-default-project}
+      - LLM_SERVICE_URL=http://llm_service:8000
+    depends_on:
+      - mongodb
+      - llm_service
     networks:
       - app-network
     restart: unless-stopped
     volumes:
       - ./backend/src:/app/src
-      - ./backend/src/credentials/firebase-credentials.json:/app/src/firebase-credentials.json:ro
+      # Corregir la ruta del archivo de credenciales
+      - ./backend/src/credentials/firebase-credentials.json:/app/src/credentials/firebase-credentials.json:ro
+
+  llm_service:
+    build:
+      context: ./llm_service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - HUGGINGFACEHUB_API_TOKEN=${HUGGINGFACEHUB_API_TOKEN}
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - app-network
+    restart: unless-stopped
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  mongodb_data:

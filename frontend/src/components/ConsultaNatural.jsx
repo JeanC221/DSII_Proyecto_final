@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../config/axiosConfig';
 import styles from './ConsultaNatural.module.css';
 
@@ -7,6 +7,22 @@ const ConsultaNatural = () => {
   const [respuesta, setRespuesta] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [serviceStatus, setServiceStatus] = useState(null);
+
+  // Verificar el estado del servicio RAG al cargar el componente
+  useEffect(() => {
+    const checkServiceStatus = async () => {
+      try {
+        const res = await api.get('/health/rag');
+        setServiceStatus(res.data);
+      } catch (err) {
+        console.error('Error al verificar estado del servicio RAG:', err);
+        setServiceStatus({ status: 'error', message: 'No se pudo conectar con el servicio RAG' });
+      }
+    };
+
+    checkServiceStatus();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,8 +36,15 @@ const ConsultaNatural = () => {
     setError(null);
     
     try {
-      const res = await api.post('/api/consulta-natural', { consulta });
-      setRespuesta(res.data.answer);
+      const res = await api.post('/consulta-natural', { 
+        consulta: consulta.trim() 
+      });
+      
+      if (res.data && res.data.answer) {
+        setRespuesta(res.data.answer);
+      } else {
+        setRespuesta('No se pudo obtener una respuesta. Por favor intenta con otra pregunta.');
+      }
     } catch (err) {
       console.error('Error al hacer consulta:', err);
       setError('Ocurrió un error al procesar tu consulta. Intenta de nuevo más tarde.');
@@ -32,10 +55,11 @@ const ConsultaNatural = () => {
 
   // Ejemplos predefinidos de consultas
   const ejemplos = [
-    "¿Cuál es el empleado más joven que se ha registrado?",
+    "¿Cuál es la persona más joven que se ha registrado?",
     "¿Cuántas personas de género femenino están registradas?",
     "¿Cuál es el promedio de edad de las personas registradas?",
-    "¿Quién fue la última persona registrada?"
+    "¿Quién fue la última persona registrada?",
+    "¿Cuántas personas están registradas en total?"
   ];
 
   const usarEjemplo = (ejemplo) => {
@@ -45,6 +69,18 @@ const ConsultaNatural = () => {
   return (
     <div className="card">
       <h2>CONSULTA EN LENGUAJE NATURAL</h2>
+      
+      {serviceStatus && (
+        <div className={`${styles.serviceStatus} ${serviceStatus.status === 'ok' ? styles.serviceOk : styles.serviceError}`}>
+          <strong>Estado del servicio RAG:</strong> {serviceStatus.status === 'ok' ? 'Disponible' : 'No disponible'}
+          {serviceStatus.status !== 'ok' && (
+            <p className={styles.serviceWarning}>
+              Las respuestas serán generadas usando el modo de respaldo y pueden no ser tan precisas.
+            </p>
+          )}
+        </div>
+      )}
+      
       <p className={styles.description}>
         Utiliza lenguaje natural para consultar información sobre las personas registradas.
         El sistema utilizará RAG (Retrieval Augmented Generation) para procesar tu consulta.

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://backend:5000/api',
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -21,10 +21,12 @@ api.interceptors.response.use(response => {
   console.log('Response Status:', response.status);
   return response;
 }, error => {
-  console.error('Response Error:', error.message);
   if (error.response) {
-    console.error('Status:', error.response.status);
-    console.error('Data:', error.response.data);
+    console.error('Response Error:', error.response.status, error.response.data);
+  } else if (error.request) {
+    console.error('No response received:', error.request);
+  } else {
+    console.error('Request Error:', error.message);
   }
   return Promise.reject(error);
 });

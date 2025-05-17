@@ -1,78 +1,114 @@
 .container {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  font-style: italic;
+  color: var(--text-light);
+}
+
+.form {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: var(--border-radius);
+}
+
+.formRow {
+  margin-bottom: 20px;
+}
+
+.formRow label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.optional {
+  font-weight: normal;
+  font-style: italic;
+  color: var(--text-light);
+  font-size: 0.9em;
+}
+
+.error {
+  color: var(--danger-color);
+  font-size: 0.9em;
+  margin-top: 5px;
+  display: block;
+}
+
+.serverError {
+  background-color: rgba(231, 76, 60, 0.1);
+  border: 1px solid var(--danger-color);
+  color: var(--danger-color);
+  padding: 15px;
+  border-radius: var(--border-radius);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.inputError {
+  border-color: var(--danger-color) !important;
+  background-color: rgba(231, 76, 60, 0.05);
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+
+.link {
+  display: inline-block;
+  margin-bottom: 20px;
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.link:hover {
+  background-color: #0056b3;
+  text-decoration: none;
+}
+
+/* Estilo para campos con sugerencias/ejemplos */
+::placeholder {
+  color: var(--text-light);
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+/* Mejoras de accesibilidad para focus */
+input:focus, select:focus {
+  outline: 2px solid var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Estilos para dispositivos móviles */
+@media (max-width: 768px) {
+  .form {
+    padding: 15px;
+    margin: 10px;
   }
   
-  .link {
-    display: inline-block;
-    margin-bottom: 20px;
-    padding: 10px 15px;
-    background-color: #007bff;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    font-weight: bold;
+  .buttons {
+    flex-direction: column;
+    gap: 10px;
   }
   
-  .link:hover {
-    background-color: #0056b3;
-    text-decoration: none;
-  }
-  
-  .table {
+  button {
     width: 100%;
-    border-collapse: collapse;
   }
-  
-  .table th,
-  .table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .table th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-  }
-  
-  .table tr:hover {
-    background-color: #f5f5f5;
-  }
-  
-  .button {
-    display: inline-block;
-    padding: 6px 12px;
-    margin-right: 8px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    text-decoration: none;
-    font-size: 0.9rem;
-  }
-  
-  .button:hover {
-    background-color: #218838;
-    text-decoration: none;
-  }
-  
-  .deleteButton {
-    display: inline-block;
-    padding: 6px 12px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-  }
-  
-  .deleteButton:hover {
-    background-color: #c82333;
-  }
+}

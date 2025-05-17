@@ -3,17 +3,109 @@
     margin: 20px auto;
     padding: 20px;
     border: 1px solid #ccc;
+    border-radius: var(--border-radius);
   }
   
-  .error {
-    color: red;
+  .formRow {
+    margin-bottom: 20px;
+  }
+  
+  .formRow label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  
+  .optional {
+    font-weight: normal;
+    font-style: italic;
+    color: var(--text-light);
     font-size: 0.9em;
   }
   
+  .error {
+    color: var(--danger-color);
+    font-size: 0.9em;
+    margin-top: 5px;
+    display: block;
+  }
+  
+  .serverError {
+    background-color: rgba(231, 76, 60, 0.1);
+    border: 1px solid var(--danger-color);
+    color: var(--danger-color);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .inputError {
+    border-color: var(--danger-color) !important;
+    background-color: rgba(231, 76, 60, 0.05);
+  }
+  
+  .buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+  }
+  
   button {
-    background: #4CAF50;
+    background: var(--primary-color);
     color: white;
     padding: 10px 20px;
     border: none;
+    border-radius: var(--border-radius);
     cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background: var(--primary-dark);
+  }
+  
+  button:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+  }
+  
+  button.secondary {
+    background: var(--background-dark);
+    color: var(--text-color);
+  }
+  
+  button.secondary:hover {
+    background: #ddd;
+  }
+  
+  /* Estilo para campos con sugerencias/ejemplos */
+  ::placeholder {
+    color: var(--text-light);
+    font-style: italic;
+    font-size: 0.9em;
+  }
+  
+  /* Mejoras de accesibilidad para focus */
+  input:focus, select:focus {
+    outline: 2px solid var(--primary-color);
+    border-color: var(--primary-color);
+  }
+  
+  /* Estilos para dispositivos móviles */
+  @media (max-width: 768px) {
+    .form {
+      padding: 15px;
+      margin: 10px;
+    }
+    
+    .buttons {
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    button {
+      width: 100%;
+    }
   }

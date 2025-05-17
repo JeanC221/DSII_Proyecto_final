@@ -4,6 +4,7 @@ import CreatePerson from './CreatePerson';
 import ConsultarPersonas from './ConsultarPersonas';
 import EditarPersona from './EditarPersonas';
 import ConsultaNatural from './ConsultaNatural';
+import ConsultarLogs from './ConsultarLogs'; // Importar el componente correctamente
 import '../styles/global.css';
 import './App.css';
 
@@ -64,28 +65,5 @@ function App() {
     </Router>
   );
 }
-
-// Componente para logs
-const ConsultarLogs = () => (
-  <div className="card">
-    <h2>Registro de Actividades</h2>
-    <div className="table-responsive">
-      <table>
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Acción</th>
-            <th>Detalles</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td colSpan="3">Cargando registros...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-);
 
 export default App;

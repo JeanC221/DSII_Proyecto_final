@@ -1,0 +1,92 @@
+.description {
+  color: var(--text-light);
+  margin-bottom: var(--spacing-lg);
+}
+
+.tableContainer {
+  overflow-x: auto;
+  margin-top: var(--spacing-lg);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: var(--spacing-md);
+  text-align: left;
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.table th {
+  background-color: var(--background-dark);
+  font-weight: 600;
+}
+
+.loading {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--text-light);
+  font-style: italic;
+}
+
+.noData {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--text-light);
+}
+
+.actionBadge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  color: white;
+  background-color: var(--primary-color);
+}
+
+/* Estilos para diferentes tipos de acciones */
+.createAction .actionBadge {
+  background-color: var(--secondary-color);
+}
+
+.updateAction .actionBadge {
+  background-color: var(--primary-color);
+}
+
+.deleteAction .actionBadge {
+  background-color: var(--danger-color);
+}
+
+.readAction .actionBadge {
+  background-color: var(--text-light);
+}
+
+.queryAction .actionBadge {
+  background-color: #9b59b6; /* Púrpura para consultas en lenguaje natural */
+}
+
+/* Sutiles efectos de color de fondo para las filas */
+.createAction {
+  background-color: rgba(46, 204, 113, 0.05);
+}
+
+.updateAction {
+  background-color: rgba(52, 152, 219, 0.05);
+}
+
+.deleteAction {
+  background-color: rgba(231, 76, 60, 0.05);
+}
+
+.queryAction {
+  background-color: rgba(155, 89, 182, 0.05);
+}
+
+/* Estilos para hover en las filas */
+.table tr:hover {
+  background-color: var(--background-light);
+}

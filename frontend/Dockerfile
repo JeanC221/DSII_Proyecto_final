@@ -1,12 +1,30 @@
-FROM node:18-slim AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
+# Usar node 18 para compatibilidad con el frontend
+FROM node:18-slim
 
-FROM nginx:alpine
-COPY --from=build /app/build /usr/share/nginx/html
-COPY nginx.config /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Crear un usuario no-root para mayor seguridad
+RUN groupadd -r nodeuser && useradd -r -g nodeuser -m nodeuser
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar archivos de dependencia
+COPY package*.json ./
+
+# Instalar dependencias
+RUN npm install --omit=dev
+
+# Copiar archivos de código fuente
+COPY --chown=nodeuser:nodeuser . .
+
+# Crear directorio para credenciales si no existe
+RUN mkdir -p src/credentials && \
+    chown -R nodeuser:nodeuser src/credentials
+
+# Cambiar a usuario no-root
+USER nodeuser
+
+# Exponer puerto
+EXPOSE 5000
+
+# Comando para iniciar la aplicación
+CMD ["node", "src/index.js"]

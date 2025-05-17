@@ -1,9 +1,30 @@
+# Solución mejorada para problemas de compatibilidad
+# Esta solución utiliza versiones específicas de paquetes que son compatibles entre sí
+
+# Paquetes básicos para la API
 fastapi==0.103.1
 uvicorn==0.23.2
-pymongo==4.5.0
-langchain==0.0.265
-langchain-community==0.0.10
-huggingface-hub==0.16.4
-sentence-transformers==2.2.2
+pydantic==1.10.12
 python-dotenv==1.0.0
-pydantic==1.10.12 
+
+# Conexión a la base de datos
+pymongo==4.5.0
+
+# Procesamiento de lenguaje natural
+# Usando versiones compatibles de langchain
+langchain==0.1.9  # Versión 0.1.x compatible con langchain-core 0.1.x
+langchain-core==0.1.18
+langchain-community==0.0.25  # Compatible con langchain-core 0.1.x
+
+# Hugging Face y modelo
+huggingface-hub==0.20.3
+sentence-transformers==2.2.2
+transformers==4.35.2  # Versión compatible con las dependencias
+torch==2.0.1
+accelerate==0.21.0
+
+# Utilidades
+numpy==1.24.3
+pandas==2.0.3
+tqdm==4.65.0
+requests==2.31.0
