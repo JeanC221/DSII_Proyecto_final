@@ -1,5 +1,5 @@
 .qodo
-backend/src/firebase-credentials.json
+backend/src/credentials/firebase-credentials.json
 **/firebase-credentials.json
 **/*.env
 .env

@@ -33,7 +33,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./backend/src:/app/src
-      - ./backend/src/credentials/firebase-credentials.json:/app/src/credentials/firebase-credentials.json:ro
+      - ./backend/src/credentials:/app/src/credentials:ro
 
   llm_service:
     build:
