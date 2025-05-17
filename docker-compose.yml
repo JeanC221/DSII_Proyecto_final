@@ -10,8 +10,10 @@ services:
       backend:
         condition: service_started
     networks:
-      - app-network
+      app-network:
     restart: unless-stopped
+    environment:
+      - BACKEND_URL=http://backend:5000
 
   backend:
     build:
@@ -25,10 +27,9 @@ services:
     networks:
       - app-network
     restart: unless-stopped
-    # Volúmenes re-habilitados, funcionan con Docker más reciente
     volumes:
       - ./backend/src:/app/src
-      - ./backend/firebase-credentials.json:/app/src/firebase-credentials.json:ro
+      - ./backend/src/credentials/firebase-credentials.json:/app/src/firebase-credentials.json:ro
 
 networks:
   app-network:

@@ -72,8 +72,7 @@ const CreatePerson = () => {
     try {
       await schema.validate(formData, { abortEarly: false });
       
-      // Usamos la instancia api con la URL base correcta
-      const response = await api.post('/api/personas', formData);
+      const response = await api.post('/personas', formData);
       
       alert('Persona creada exitosamente!');
       navigate('/consultar');
