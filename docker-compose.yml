@@ -33,7 +33,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./backend/src:/app/src
-      - ./backend/src/credentials:/app/src/credentials:ro
+      - ./backend/src/credentials:/app/src/credentials
 
   llm_service:
     build:

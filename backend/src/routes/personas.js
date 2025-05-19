@@ -4,16 +4,14 @@ const { registrarLog } = require("../utils/logger");
 const router = express.Router();  
 
 // Crear persona  
-router.post("/", async (req, res) => {  
-  try {  
-    const datosPersona = req.body;
-    const nuevaPersona = await Persona.crear(datosPersona);
-    
-    await registrarLog("Crear", `Persona creada: ${nuevaPersona.primerNombre} ${nuevaPersona.apellidos}`);
-    res.status(201).json(nuevaPersona);  
-  } catch (error) {  
-    res.status(400).json({ error: error.message });  
-  }  
+router.post("/", async (req, res) => {
+  try {
+    const persona = await Persona.crear(req.body);
+    res.status(201).json(persona);
+  } catch (error) {
+    console.error('Error al guardar persona:', error); // <-- Log detallado
+    res.status(500).json({ error: error.message, details: error });
+  }
 });  
 
 // Obtener todas las personas  
