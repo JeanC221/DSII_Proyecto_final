@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../config/axiosConfig';
 import styles from './ConsultaNatural.module.css';
 
@@ -9,19 +9,23 @@ const ConsultaNatural = () => {
   const [error, setError] = useState(null);
   const [serviceStatus, setServiceStatus] = useState(null);
 
-  // Verificar el estado del servicio RAG al cargar el componente
   useEffect(() => {
-    const checkServiceStatus = async () => {
-      try {
-        const res = await api.get('/health/rag');
-        setServiceStatus(res.data);
-      } catch (err) {
-        console.error('Error al verificar estado del servicio RAG:', err);
-        setServiceStatus({ status: 'error', message: 'No se pudo conectar con el servicio RAG' });
-      }
-    };
-
     checkServiceStatus();
+  }, []);
+
+  const checkServiceStatus = useCallback(async () => {
+    try {
+      const res = await api.get('/health/rag');
+      setServiceStatus(res.data);
+    } catch (err) {
+      console.error('Error al verificar estado del servicio RAG:', err);
+      setServiceStatus({ 
+        status: 'error', 
+        message: 'No se pudo conectar con el servicio RAG',
+        mongodb: 'disconnected',
+        llm_model: 'not loaded'
+      });
+    }
   }, []);
 
   const handleSubmit = async (e) => {
@@ -45,6 +49,8 @@ const ConsultaNatural = () => {
       } else {
         setRespuesta('No se pudo obtener una respuesta. Por favor intenta con otra pregunta.');
       }
+      
+      checkServiceStatus();
     } catch (err) {
       console.error('Error al hacer consulta:', err);
       setError('Ocurrió un error al procesar tu consulta. Intenta de nuevo más tarde.');
@@ -53,7 +59,6 @@ const ConsultaNatural = () => {
     }
   };
 
-  // Ejemplos predefinidos de consultas
   const ejemplos = [
     "¿Cuál es la persona más joven que se ha registrado?",
     "¿Cuántas personas de género femenino están registradas?",
@@ -64,18 +69,22 @@ const ConsultaNatural = () => {
 
   const usarEjemplo = (ejemplo) => {
     setConsulta(ejemplo);
+
   };
 
   return (
     <div className="card">
-      <h2>CONSULTA EN LENGUAJE NATURAL</h2>
+      <h2>Consulta en Lenguaje Natural</h2>
       
+      {/* Indicador de estado del servicio RAG */}
       {serviceStatus && (
         <div className={`${styles.serviceStatus} ${serviceStatus.status === 'ok' ? styles.serviceOk : styles.serviceError}`}>
           <strong>Estado del servicio RAG:</strong> {serviceStatus.status === 'ok' ? 'Disponible' : 'No disponible'}
           {serviceStatus.status !== 'ok' && (
             <p className={styles.serviceWarning}>
               Las respuestas serán generadas usando el modo de respaldo y pueden no ser tan precisas.
+              {serviceStatus.mongodb === 'disconnected' && ' La conexión a la base de datos no está disponible.'}
+              {serviceStatus.llm_model !== 'loaded' && ' El modelo de lenguaje no está cargado correctamente.'}
             </p>
           )}
         </div>
@@ -83,9 +92,11 @@ const ConsultaNatural = () => {
       
       <p className={styles.description}>
         Utiliza lenguaje natural para consultar información sobre las personas registradas.
-        El sistema utilizará RAG (Retrieval Augmented Generation) para procesar tu consulta.
+        El sistema utilizará RAG (Retrieval Augmented Generation) para procesar tu consulta
+        y generar respuestas basadas en los datos almacenados.
       </p>
       
+      {/* Ejemplos de consultas */}
       <div className={styles.ejemplos}>
         <h3>Ejemplos de consultas:</h3>
         <ul>
@@ -98,6 +109,7 @@ const ConsultaNatural = () => {
         </ul>
       </div>
       
+      {/* Formulario de consulta */}
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.inputContainer}>
           <label htmlFor="consulta">Pregunta:</label>
@@ -111,7 +123,7 @@ const ConsultaNatural = () => {
             />
             <button 
               type="submit" 
-              disabled={loading}
+              disabled={loading || !consulta.trim()}
             >
               {loading ? 'Consultando...' : 'Consultar'}
             </button>
@@ -120,6 +132,7 @@ const ConsultaNatural = () => {
         
         {error && <div className="error">{error}</div>}
         
+        {/* Área de respuesta */}
         <div className={styles.resultContainer}>
           <label>Respuesta:</label>
           <div className={styles.result}>

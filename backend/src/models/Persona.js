@@ -3,11 +3,8 @@ const { Timestamp } = require('firebase-admin/firestore');
 
 const personasCollection = db.collection('personas');
 
-// Funciones de validación mejoradas
 const validaciones = {
   validarNombre: (nombre) => {
-    // Expresión regular mejorada para incluir caracteres españoles
-    // Acepta letras (incluyendo acentuadas y ñ), espacios y apóstrofes
     if (!nombre || typeof nombre !== 'string' || nombre.length > 30 || 
         !/^[A-Za-zÁáÉéÍíÓóÚúÜüÑñ\s']+$/.test(nombre)) {
       throw new Error('El nombre debe contener solo letras, no mayor a 30 caracteres');
@@ -16,8 +13,6 @@ const validaciones = {
   },
   
   validarApellidos: (apellidos) => {
-    // Expresión regular mejorada para apellidos
-    // Incluye guiones para apellidos compuestos
     if (!apellidos || typeof apellidos !== 'string' || apellidos.length > 60 || 
         !/^[A-Za-zÁáÉéÍíÓóÚúÜüÑñ\s'-]+$/.test(apellidos)) {
       throw new Error('Los apellidos deben contener solo letras, no mayor a 60 caracteres');
@@ -41,8 +36,6 @@ const validaciones = {
   },
   
   validarCorreo: (correo) => {
-    // Expresión regular más robusta para correos electrónicos
-    // Soporta dominios internacionales y subdominios
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
       throw new Error('Formato de correo electrónico inválido');
     }
@@ -50,8 +43,6 @@ const validaciones = {
   },
   
   validarCelular: (celular) => {
-    // Permite formatos internacionales opcionales
-    // Acepta: 1234567890, +571234567890, etc.
     if (!/^(\+\d{1,3})?(\d{10})$/.test(celular.replace(/[\s-]/g, ''))) {
       throw new Error('El celular debe tener 10 dígitos. Formato: XXXXXXXXXX');
     }
@@ -59,7 +50,6 @@ const validaciones = {
   },
   
   validarFecha: (fecha) => {
-    // Verificar que sea una fecha válida y no en el futuro
     const fechaObj = new Date(fecha);
     const hoy = new Date();
     
@@ -71,7 +61,6 @@ const validaciones = {
       throw new Error('La fecha de nacimiento no puede ser en el futuro');
     }
     
-    // Verificar que la persona tenga al menos 1 año
     const edadMinima = new Date();
     edadMinima.setFullYear(hoy.getFullYear() - 1);
     
@@ -86,7 +75,6 @@ const validaciones = {
 const Persona = {
   crear: async (datosPersona) => {
     try {
-      // Validaciones
       validaciones.validarNombre(datosPersona.primerNombre);
       if (datosPersona.segundoNombre && datosPersona.segundoNombre.trim() !== '') {
         validaciones.validarNombre(datosPersona.segundoNombre);
@@ -100,19 +88,17 @@ const Persona = {
       
       const fechaNacimiento = new Date(datosPersona.fechaNacimiento);
       
-      // Limpieza de datos
       const personaObj = {
         ...datosPersona,
         primerNombre: datosPersona.primerNombre.trim(),
         segundoNombre: datosPersona.segundoNombre ? datosPersona.segundoNombre.trim() : '',
         apellidos: datosPersona.apellidos.trim(),
         correo: datosPersona.correo.trim().toLowerCase(),
-        celular: datosPersona.celular.replace(/[\s-]/g, ''), // Eliminar espacios o guiones
+        celular: datosPersona.celular.replace(/[\s-]/g, ''), 
         fechaNacimiento: Timestamp.fromDate(fechaNacimiento),
         createdAt: Timestamp.now()
       };
       
-      // Verificar si ya existe un documento con el mismo número
       const existingDocs = await personasCollection
         .where('nroDocumento', '==', datosPersona.nroDocumento)
         .get();
@@ -121,7 +107,6 @@ const Persona = {
         throw new Error(`Ya existe una persona registrada con el número de documento ${datosPersona.nroDocumento}`);
       }
       
-      // Crear el documento
       const docRef = await personasCollection.add(personaObj);
       
       return {
@@ -133,7 +118,6 @@ const Persona = {
     }
   },
   
-  // Obtener todas las personas
   obtenerTodos: async () => {
     try {
       const snapshot = await personasCollection.orderBy('createdAt', 'desc').get();
@@ -142,7 +126,6 @@ const Persona = {
       snapshot.forEach(doc => {
         const datos = doc.data();
         
-        // Convertir Timestamp a objetos Date para serialización
         const fechaNacimiento = datos.fechaNacimiento ? datos.fechaNacimiento.toDate() : null;
         const createdAt = datos.createdAt ? datos.createdAt.toDate() : null;
         const updatedAt = datos.updatedAt ? datos.updatedAt.toDate() : null;
@@ -162,7 +145,6 @@ const Persona = {
     }
   },
   
-  // Obtener persona por ID
   obtenerPorId: async (id) => {
     try {
       const doc = await personasCollection.doc(id).get();
@@ -173,7 +155,6 @@ const Persona = {
       
       const datos = doc.data();
       
-      // Convertir Timestamp a objetos Date para serialización
       const fechaNacimiento = datos.fechaNacimiento ? datos.fechaNacimiento.toDate() : null;
       const createdAt = datos.createdAt ? datos.createdAt.toDate() : null;
       const updatedAt = datos.updatedAt ? datos.updatedAt.toDate() : null;
@@ -190,7 +171,6 @@ const Persona = {
     }
   },
   
-  // Actualizar persona
   actualizar: async (id, datosActualizados) => {
     try {
       const doc = await personasCollection.doc(id).get();
@@ -200,7 +180,6 @@ const Persona = {
       
       const datosActuales = doc.data();
       
-      // Validar solo los campos que se van a actualizar
       if (datosActualizados.primerNombre) {
         validaciones.validarNombre(datosActualizados.primerNombre);
         datosActualizados.primerNombre = datosActualizados.primerNombre.trim();
@@ -221,7 +200,6 @@ const Persona = {
       if (datosActualizados.nroDocumento) {
         validaciones.validarDocumento(datosActualizados.nroDocumento);
         
-        // Verificar si el nuevo número ya existe para otra persona
         if (datosActualizados.nroDocumento !== datosActuales.nroDocumento) {
           const existingDocs = await personasCollection
             .where('nroDocumento', '==', datosActualizados.nroDocumento)
@@ -253,7 +231,6 @@ const Persona = {
         datosActualizados.fechaNacimiento = Timestamp.fromDate(fechaNacimiento);
       }
       
-      // Actualizar datos
       await personasCollection.doc(id).update({
         ...datosActualizados,
         updatedAt: Timestamp.now()
@@ -265,7 +242,6 @@ const Persona = {
     }
   },
   
-  // Eliminar persona
   eliminar: async (id) => {
     try {
       const doc = await personasCollection.doc(id).get();
@@ -281,12 +257,10 @@ const Persona = {
     }
   },
   
-  // Buscar personas por filtros
   buscar: async (filtros) => {
     try {
       let query = personasCollection;
       
-      // Aplicar filtros
       if (filtros.nroDocumento) {
         query = query.where('nroDocumento', '==', filtros.nroDocumento);
       }
@@ -296,8 +270,6 @@ const Persona = {
       }
       
       if (filtros.apellidos) {
-        // Firestore no soporta búsquedas parciales directamente
-        // Aquí haremos un filtrado del lado del cliente
         const snapshot = await query.get();
         const personas = [];
         
@@ -305,7 +277,6 @@ const Persona = {
           const data = doc.data();
           
           if (data.apellidos.toLowerCase().includes(filtros.apellidos.toLowerCase())) {
-            // Convertir Timestamp a objetos Date para serialización
             const fechaNacimiento = data.fechaNacimiento ? data.fechaNacimiento.toDate() : null;
             const createdAt = data.createdAt ? data.createdAt.toDate() : null;
             const updatedAt = data.updatedAt ? data.updatedAt.toDate() : null;
@@ -323,14 +294,12 @@ const Persona = {
         return personas;
       }
       
-      // Si no hay filtros por apellidos, ejecutar la consulta normalmente
       const snapshot = await query.get();
       const personas = [];
       
       snapshot.forEach(doc => {
         const data = doc.data();
         
-        // Convertir Timestamp a objetos Date para serialización
         const fechaNacimiento = data.fechaNacimiento ? data.fechaNacimiento.toDate() : null;
         const createdAt = data.createdAt ? data.createdAt.toDate() : null;
         const updatedAt = data.updatedAt ? data.updatedAt.toDate() : null;

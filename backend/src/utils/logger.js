@@ -3,7 +3,11 @@ const { Timestamp } = require('firebase-admin/firestore');
 
 const logsCollection = db.collection('logs');
 
-// Función para registrar una acción
+/**
+ * @param {string} accion 
+ * @param {string} detalles 
+ * @returns {Promise<void>}
+ */
 const registrarLog = async (accion, detalles) => {
   try {
     const nuevoLog = {
@@ -19,21 +23,47 @@ const registrarLog = async (accion, detalles) => {
   }
 };
 
-// Función para obtener todos los logs
-const obtenerLogs = async () => {
+/**
+ * @param {string} [accion] 
+ * @param {string} [documento] 
+ * @returns {Promise<Array>} 
+ */
+const obtenerLogs = async (accion, documento) => {
   try {
-    const snapshot = await logsCollection.orderBy('timestamp', 'desc').get();
+    let query = logsCollection.orderBy('timestamp', 'desc');
+    
+
+    const snapshot = await query.get();
     const logs = [];
     
     snapshot.forEach(doc => {
       const data = doc.data();
       const timestamp = data.timestamp ? data.timestamp.toDate() : new Date();
       
-      logs.push({
-        id: doc.id,
-        ...data,
-        fecha: timestamp.toLocaleString()
-      });
+      let cumpleFiltros = true;
+      
+      if (accion && !data.accion.toLowerCase().includes(accion.toLowerCase())) {
+        cumpleFiltros = false;
+      }
+      
+      if (documento && !data.detalles.toLowerCase().includes(documento.toLowerCase())) {
+        cumpleFiltros = false;
+      }
+      
+      if (cumpleFiltros) {
+        logs.push({
+          id: doc.id,
+          ...data,
+          fecha: timestamp.toLocaleString('es-CO', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          })
+        });
+      }
     });
     
     return logs;

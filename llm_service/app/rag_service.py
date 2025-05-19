@@ -2,24 +2,21 @@ from fastapi import FastAPI, HTTPException, Body
 from pymongo import MongoClient
 import os
 from datetime import datetime
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+from langchain_core.prompts import PromptTemplate  
+from langchain.chains.llm import LLMChain  
 from langchain_community.llms import HuggingFaceHub
 from typing import Dict, Any, List
 import json
 import logging
 
-# Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-# Conexión a MongoDB con manejo de errores
 mongodb_uri = os.getenv("MONGODB_URI", "mongodb://mongodb:27017/")
 try:
     client = MongoClient(mongodb_uri, serverSelectionTimeoutMS=5000)
-    # Verificar conexión
     client.server_info()
     logger.info("Conexión a MongoDB establecida correctamente")
     db = client["personas"]
@@ -28,17 +25,14 @@ try:
     mongodb_status = "connected"
 except Exception as e:
     logger.error(f"Error al conectar con MongoDB: {e}")
-    # Crear colecciones simuladas para pruebas
     db = None
     collection = None
     logs_collection = None
     mongodb_status = "disconnected"
 
-# Configurar Hugging Face Hub
 huggingface_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN", "hf_dummy_token")
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = huggingface_api_token
 
-# Modelo por defecto
 repo_id = "google/flan-t5-base"
 model_status = "not loaded"
 try:
@@ -52,17 +46,17 @@ except Exception as e:
     logger.error(f"Error al cargar modelo: {e}")
     llm = None
 
-# Plantilla para procesamiento de consultas
 template = """
 Eres un asistente especializado en consultas sobre datos de personas.
-Responde la siguiente pregunta usando la información proporcionada:
+Responde la siguiente pregunta usando solo la información proporcionada, de forma clara y concisa.
+Tus respuestas deben ser completas pero directas al punto.
 
 Pregunta: {question}
 
 Información disponible:
 {context}
 
-Respuesta (en español, clara y concisa):
+Respuesta (en español, clara y precisa, usando solo la información disponible):
 """
 
 prompt = PromptTemplate(
@@ -108,7 +102,7 @@ def get_age_average():
                         "edad": {
                             "$divide": [
                                 {"$subtract": [today, "$fechaNacimiento"]},
-                                365 * 24 * 60 * 60 * 1000  # Convertir ms a años
+                                365 * 24 * 60 * 60 * 1000  
                             ]
                         }
                     }
@@ -169,68 +163,109 @@ def get_total_count():
         logger.error(f"Error al contar personas: {e}")
         return f"Error al contar personas: {str(e)}"
 
-# Endpoint para procesar consultas
+def get_document_info(document_number: str):
+    try:
+        if collection:
+            person = collection.find_one({"nroDocumento": document_number})
+            if person:
+                return f"Se encontró a {person['primerNombre']} {person['apellidos']} " \
+                    f"con número de documento {document_number}."
+            else:
+                return f"No se encontró ninguna persona con número de documento {document_number}."
+        return "No se pudo conectar a la base de datos."
+    except Exception as e:
+        logger.error(f"Error al buscar por documento: {e}")
+        return f"Error al buscar por documento: {str(e)}"
+
+def get_gender_distribution():
+    try:
+        if collection:
+            total = collection.count_documents({})
+            if total == 0:
+                return "No hay personas registradas en el sistema."
+                
+            genders = ["Masculino", "Femenino", "No binario", "Prefiero no reportar"]
+            result = "Distribución por género:\n"
+            
+            for gender in genders:
+                count = collection.count_documents({"genero": gender})
+                percentage = (count / total * 100) if total > 0 else 0
+                result += f"- {gender}: {count} personas ({percentage:.1f}%)\n"
+                
+            return result
+        return "No se pudo conectar a la base de datos."
+    except Exception as e:
+        logger.error(f"Error al obtener distribución por género: {e}")
+        return f"Error al obtener distribución por género: {str(e)}"
+
 @app.post("/query")
 async def process_query(query: str = Body(..., embed=True)):
+
     logger.info(f"Consulta recibida: {query}")
     try:
-        # Clasificar la consulta y obtener datos relevantes
         context = ""
         
         query_lower = query.lower()
         
-        if "joven" in query_lower:
+        keywords = {
+            "joven": ["joven", "menor", "más joven", "edad mínima", "menor edad"],
+            "genero": ["género", "genero", "hombres", "mujeres", "masculino", "femenino", "no binario"],
+            "edad": ["edad", "promedio", "media", "años", "mayores", "cuantos años"],
+            "ultima": ["última", "ultima", "reciente", "nuevo", "nueva", "último registro"],
+            "listar": ["todas", "todos", "listar", "lista", "mostrar", "personas", "registros", "personas registradas"],
+            "total": ["total", "cuántas", "cuantas", "cantidad", "número", "numero"],
+            "documento": ["documento", "identificación", "cedula", "cédula", "tarjeta de identidad", "id"]
+        }
+        
+        if any(kw in query_lower for kw in keywords["joven"]):
             context += get_youngest_person() + "\n"
         
-        if "género" in query_lower or "genero" in query_lower:
-            if "femenino" in query_lower:
+        if any(kw in query_lower for kw in keywords["genero"]):
+            if "femenino" in query_lower or "mujer" in query_lower or "mujeres" in query_lower:
                 context += get_gender_count("Femenino") + "\n"
-            elif "masculino" in query_lower:
+            elif "masculino" in query_lower or "hombre" in query_lower or "hombres" in query_lower:
                 context += get_gender_count("Masculino") + "\n"
-            else:
-                context += get_gender_count("Femenino") + "\n"
-                context += get_gender_count("Masculino") + "\n"
+            elif "no binario" in query_lower:
                 context += get_gender_count("No binario") + "\n"
+            elif "prefiero no reportar" in query_lower:
+                context += get_gender_count("Prefiero no reportar") + "\n"
+            else:
+                context += get_gender_distribution() + "\n"
         
-        if "edad" in query_lower or "promedio" in query_lower:
+        if any(kw in query_lower for kw in keywords["edad"]):
             context += get_age_average() + "\n"
         
-        if "última" in query_lower or "ultima" in query_lower or "reciente" in query_lower:
+        if any(kw in query_lower for kw in keywords["ultima"]):
             context += get_last_registered() + "\n"
         
-        if "todas" in query_lower or "listar" in query_lower:
+        if any(kw in query_lower for kw in keywords["listar"]):
             context += get_all_people() + "\n"
             
-        if "total" in query_lower or "cuántas" in query_lower or "cuantas" in query_lower:
+        if any(kw in query_lower for kw in keywords["total"]):
             context += get_total_count() + "\n"
+            
+        import re
+        doc_numbers = re.findall(r'\b\d{5,10}\b', query_lower)
+        if doc_numbers and any(kw in query_lower for kw in keywords["documento"]):
+            for doc in doc_numbers[:1]:  
+                context += get_document_info(doc) + "\n"
         
         if not context:
-            context = get_all_people()
+            context = get_total_count() + "\n"
+            context += "Puedo darte información sobre cantidad de personas, distribución por género, edades, etc.\n"
+            context += "Intenta preguntar por ejemplo: '¿Cuántas personas hay registradas?', '¿Cuál es el promedio de edad?'\n"
         
         if chain:
             response = chain.run(question=query, context=context)
         else:
-            # Respuesta alternativa si el modelo no está disponible
             logger.warning("Usando respuesta alternativa porque el modelo no está disponible")
-            if "joven" in query_lower:
-                response = "La persona más joven del registro tiene 18 años."
-            elif "género" in query_lower or "genero" in query_lower:
-                response = "Hay aproximadamente un 40% de personas de género femenino y un 55% de género masculino."
-            elif "edad" in query_lower:
-                response = "La edad promedio de las personas registradas es de 35 años aproximadamente."
-            elif "última" in query_lower:
-                response = "La última persona fue registrada recientemente."
-            elif "total" in query_lower or "cuántas" in query_lower or "cuantas" in query_lower:
-                response = "Hay varias personas registradas en el sistema."
-            else:
-                response = "Hay varias personas registradas en el sistema."
+            response = generate_fallback_response(query_lower, context)
         
-        # Registrar en logs
         try:
             if logs_collection:
                 logs_collection.insert_one({
                     "accion": "Consulta Natural",
-                    "detalles": f"Consulta: {query} | Respuesta: {response}",
+                    "detalles": f"Consulta: {query} | Respuesta: {response[:150]}{'...' if len(response) > 150 else ''}",
                     "timestamp": datetime.now()
                 })
                 logger.info(f"Log registrado: Consulta: {query}")
@@ -246,12 +281,21 @@ async def process_query(query: str = Body(..., embed=True)):
         logger.error(error_msg)
         return {"answer": "Lo siento, no pude procesar tu consulta en este momento."}
 
+def generate_fallback_response(query_lower, context):
+
+    lines = [line for line in context.split('\n') if line.strip()]
+    
+    if lines:
+        response = "Según la información disponible: " + " ".join(lines[:2])
+        return response
+    else:
+        return "No se encontró información relevante para tu consulta. Por favor, intenta reformular tu pregunta."
+
 @app.get("/health")
 async def health_check():
     """Endpoint para verificar el estado del servicio"""
     status = "ok" if db and llm else "degraded"
     
-    # Si no hay conexión a la base de datos ni modelo cargado, el servicio está caído
     if not db and not llm:
         status = "down"
     

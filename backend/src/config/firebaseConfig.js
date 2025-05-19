@@ -1,4 +1,3 @@
-// backend/src/config/firebaseConfig.js
 const admin = require('firebase-admin');
 const serviceAccount = require('/app/src/credentials/firebase-credentials.json');
 

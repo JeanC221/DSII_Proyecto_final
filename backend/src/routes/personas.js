@@ -3,18 +3,16 @@ const Persona = require("../models/Persona");
 const { registrarLog } = require("../utils/logger");
 const router = express.Router();  
 
-// Crear persona  
 router.post("/", async (req, res) => {
   try {
     const persona = await Persona.crear(req.body);
     res.status(201).json(persona);
   } catch (error) {
-    console.error('Error al guardar persona:', error); // <-- Log detallado
+    console.error('Error al guardar persona:', error);
     res.status(500).json({ error: error.message, details: error });
   }
 });  
 
-// Obtener todas las personas  
 router.get("/", async (req, res) => {  
   try {  
     const personas = await Persona.obtenerTodos();
@@ -25,7 +23,6 @@ router.get("/", async (req, res) => {
   }  
 });
 
-// Obtener una persona por ID
 router.get("/:id", async (req, res) => {
   try {
     const persona = await Persona.obtenerPorId(req.params.id);
@@ -36,7 +33,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Actualizar persona
 router.put("/:id", async (req, res) => {
   try {
     const datosActualizados = req.body;
@@ -53,7 +49,6 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// Eliminar persona
 router.delete("/:id", async (req, res) => {
   try {
     const persona = await Persona.obtenerPorId(req.params.id);

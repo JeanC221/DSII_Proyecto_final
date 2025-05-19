@@ -1,30 +1,20 @@
 /**
- * Utilidades para el manejo de fechas en la aplicación
- * Estandariza la conversión entre fechas de Firestore y JavaScript Date
- */
-
-/**
- * Convierte un timestamp de Firestore a un objeto Date de JavaScript
- * @param {Object|Date|string|number} timestamp - Timestamp de Firestore, fecha, string o número
- * @returns {Date|null} - Objeto Date o null si no es válido
+ * @param {Object|Date|string|number} timestamp 
+ * @returns {Date|null} 
  */
 export const firestoreTimestampToDate = (timestamp) => {
   if (!timestamp) return null;
   
-  // Si es un objeto Firestore Timestamp (tiene seconds)
   if (timestamp && typeof timestamp === 'object' && timestamp.seconds) {
     return new Date(timestamp.seconds * 1000);
   }
   
-  // Si ya es un objeto Date
   if (timestamp instanceof Date) {
     return timestamp;
   }
   
-  // Si es string o número, intentar convertir
   try {
     const date = new Date(timestamp);
-    // Verificar que sea una fecha válida
     if (!isNaN(date.getTime())) {
       return date;
     }
@@ -36,10 +26,9 @@ export const firestoreTimestampToDate = (timestamp) => {
 };
 
 /**
- * Formatea una fecha para mostrar en la interfaz de usuario
- * @param {Object|Date|string|number} fecha - Fecha a formatear (puede ser timestamp de Firestore)
- * @param {boolean} includeTime - Si se debe incluir la hora
- * @returns {string} - Fecha formateada o cadena vacía si no es válida
+ * @param {Object|Date|string|number} fecha 
+ * @param {boolean} includeTime 
+ * @returns {string} 
  */
 export const formatDate = (fecha, includeTime = false) => {
   const date = firestoreTimestampToDate(fecha);
@@ -61,16 +50,14 @@ export const formatDate = (fecha, includeTime = false) => {
 };
 
 /**
- * Convierte una fecha a formato YYYY-MM-DD para inputs tipo date
- * @param {Object|Date|string|number} fecha - Fecha a convertir (puede ser timestamp de Firestore)
- * @returns {string} - Fecha en formato YYYY-MM-DD o cadena vacía si no es válida
+ * @param {Object|Date|string|number} fecha 
+ * @returns {string} 
  */
 export const dateToInputValue = (fecha) => {
   const date = firestoreTimestampToDate(fecha);
   if (!date) return '';
   
   try {
-    // Formatear como YYYY-MM-DD
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -83,9 +70,9 @@ export const dateToInputValue = (fecha) => {
 };
 
 /**
- * Calcula la edad a partir de una fecha de nacimiento
- * @param {Object|Date|string|number} fechaNacimiento - Fecha de nacimiento
- * @returns {number|null} - Edad en años o null si no es válida
+ * Calcula la edad 
+ * @param {Object|Date|string|number} fechaNacimiento 
+ * @returns {number|null} 
  */
 export const calcularEdad = (fechaNacimiento) => {
   const birthDate = firestoreTimestampToDate(fechaNacimiento);

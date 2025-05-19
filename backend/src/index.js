@@ -1,4 +1,3 @@
-// backend/src/index.js
 const express = require("express");
 const personasRouter = require("./routes/personas");
 const logsRouter = require("./routes/logs");
@@ -20,19 +19,16 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Registrar rutas
 app.use("/api/personas", personasRouter);
 app.use("/api/logs", logsRouter);
 app.use("/api/consulta-natural", consultaNaturalRouter);
 app.use("/api/health", healthRouter);
 
-// Middleware para manejo de errores
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Error en el servidor" });
 });
 
-// Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
   console.log(`LLM Service URL: ${process.env.LLM_SERVICE_URL || "http://llm_service:8000"}`);
