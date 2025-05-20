@@ -1,29 +1,19 @@
-# Solución mejorada para problemas de compatibilidad
-# Esta solución utiliza versiones específicas de paquetes que son compatibles entre sí
-
-# Paquetes básicos para la API
 fastapi==0.103.1
 uvicorn==0.23.2
 pydantic==1.10.12
 python-dotenv==1.0.0
 
-# Conexión a la base de datos
-pymongo==4.5.0
+firebase-admin==6.2.0
 
-# Procesamiento de lenguaje natural
-# Usando versiones compatibles de langchain
-langchain==0.1.9  # Versión 0.1.x compatible con langchain-core 0.1.x
-# langchain-core se instalará como dependencia de langchain
-langchain-community==0.0.25  # Compatible con langchain-core 0.1.x
+langchain==0.1.9 
+langchain-community==0.0.25  
 
-# Hugging Face y modelo
 huggingface-hub==0.20.3
 sentence-transformers==2.2.2
-transformers==4.35.2  # Versión compatible con las dependencias
-torch==2.0.1
+transformers==4.35.2  
+torch==2.1.2
 accelerate==0.21.0
 
-# Utilidades
 numpy==1.24.3
 pandas==2.0.3
 tqdm==4.65.0

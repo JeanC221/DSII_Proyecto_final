@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -11,14 +11,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY ./app/requirements.txt .
 
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -U setuptools wheel && \
-    pip install --no-cache-dir pydantic==1.10.12 && \
-    pip install --no-cache-dir fastapi==0.103.1 uvicorn==0.23.2 && \
-    pip install --no-cache-dir pymongo==4.5.0 && \
-    pip install --no-cache-dir langchain==0.1.9 && \
-    grep -v "langchain-core==0.1.18" requirements.txt > requirements_filtered.txt && \
-    pip install --no-cache-dir -r requirements_filtered.txt
+RUN pip install --no-cache-dir torch==2.1.2 numpy==1.24.3
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./app .
 

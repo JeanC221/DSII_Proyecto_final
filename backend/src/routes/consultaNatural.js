@@ -13,7 +13,6 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "La consulta es requerida y debe ser un texto" });
     }
 
-    await registrarLog("Consulta Natural", `Consulta: ${consulta}`);
     
     try {
       const response = await axios.post(
@@ -23,7 +22,6 @@ router.post("/", async (req, res) => {
       );
       
       const answer = response.data.answer;
-      await registrarLog("Consulta Natural", `Respuesta: ${answer.substring(0, 150)}${answer.length > 150 ? '...' : ''}`);
       return res.json({ answer });
     } catch (error) {
       console.error('Error al comunicarse con el servicio LLM:', error.message);

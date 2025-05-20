@@ -22,7 +22,7 @@ const ConsultaNatural = () => {
       setServiceStatus({ 
         status: 'error', 
         message: 'No se pudo conectar con el servicio RAG',
-        mongodb: 'disconnected',
+        firebase: 'disconnected',
         llm_model: 'not loaded'
       });
     }
@@ -69,7 +69,6 @@ const ConsultaNatural = () => {
 
   const usarEjemplo = (ejemplo) => {
     setConsulta(ejemplo);
-
   };
 
   return (
@@ -83,7 +82,7 @@ const ConsultaNatural = () => {
           {serviceStatus.status !== 'ok' && (
             <p className={styles.serviceWarning}>
               Las respuestas serán generadas usando el modo de respaldo y pueden no ser tan precisas.
-              {serviceStatus.mongodb === 'disconnected' && ' La conexión a la base de datos no está disponible.'}
+              {serviceStatus.firebase === 'disconnected' && ' La conexión a Firebase no está disponible.'}
               {serviceStatus.llm_model !== 'loaded' && ' El modelo de lenguaje no está cargado correctamente.'}
             </p>
           )}

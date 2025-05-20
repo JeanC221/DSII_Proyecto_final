@@ -1,40 +1,52 @@
 from fastapi import FastAPI, HTTPException, Body
-from pymongo import MongoClient
 import os
 from datetime import datetime
-from langchain_core.prompts import PromptTemplate  
-from langchain.chains.llm import LLMChain  
-from langchain_community.llms import HuggingFaceHub
+import logging
 from typing import Dict, Any, List
 import json
-import logging
+
+import firebase_admin
+from firebase_admin import credentials, firestore, initialize_app
+
+from langchain_core.prompts import PromptTemplate
+from langchain.chains.llm import LLMChain
+from langchain_community.llms import HuggingFaceHub
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-mongodb_uri = os.getenv("MONGODB_URI", "mongodb://mongodb:27017/")
+firebase_status = "disconnected"
+db = None
+collection = None
+logs_collection = None
+
 try:
-    client = MongoClient(mongodb_uri, serverSelectionTimeoutMS=5000)
-    client.server_info()
-    logger.info("Conexión a MongoDB establecida correctamente")
-    db = client["personas"]
-    collection = db["personas"]
-    logs_collection = db["logs"]
-    mongodb_status = "connected"
+    cred_path = os.environ.get('FIREBASE_CREDENTIALS_PATH', '/app/firebase-credentials.json')
+    project_id = os.environ.get('FIREBASE_PROJECT_ID', 'proyecto-final-gestordatos')
+    
+    cred = credentials.Certificate(cred_path)
+    firebase_app = initialize_app(cred, {
+        'projectId': project_id,
+    })
+    
+    db = firestore.client()
+    collection = db.collection('personas')
+    logs_collection = db.collection('logs')
+    
+    firebase_status = "connected"
+    logger.info("Conexión a Firebase establecida correctamente")
 except Exception as e:
-    logger.error(f"Error al conectar con MongoDB: {e}")
-    db = None
-    collection = None
-    logs_collection = None
-    mongodb_status = "disconnected"
+    logger.error(f"Error al conectar con Firebase: {e}")
 
 huggingface_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN", "hf_dummy_token")
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = huggingface_api_token
 
 repo_id = "google/flan-t5-base"
 model_status = "not loaded"
+llm = None
+
 try:
     llm = HuggingFaceHub(
         repo_id=repo_id,
@@ -44,7 +56,6 @@ try:
     model_status = "loaded"
 except Exception as e:
     logger.error(f"Error al cargar modelo: {e}")
-    llm = None
 
 template = """
 Eres un asistente especializado en consultas sobre datos de personas.
@@ -64,148 +75,205 @@ prompt = PromptTemplate(
     template=template
 )
 
-if llm:
-    chain = LLMChain(llm=llm, prompt=prompt)
-else:
-    chain = None
-    logger.warning("LLMChain no inicializado debido a problemas con el modelo")
+chain = LLMChain(llm=llm, prompt=prompt) if llm else None
+
+def format_date(timestamp):
+    if hasattr(timestamp, 'todate'):
+        return timestamp.todate().strftime('%d/%m/%Y')
+    elif isinstance(timestamp, datetime):
+        return timestamp.strftime('%d/%m/%Y')
+    elif isinstance(timestamp, str):
+        try:
+            return datetime.fromisoformat(timestamp.replace('Z', '+00:00')).strftime('%d/%m/%Y')
+        except:
+            return timestamp
+    return str(timestamp)
 
 def get_youngest_person():
     try:
-        if collection:
-            youngest = list(collection.find().sort("fechaNacimiento", -1).limit(1))
-            if youngest:
-                return f"La persona más joven es {youngest[0]['primerNombre']} {youngest[0]['apellidos']} " \
-                    f"nacida el {youngest[0]['fechaNacimiento'].strftime('%d/%m/%Y')}"
-        return "No hay personas registradas o no se pudo conectar a la base de datos."
+        if not collection:
+            return "No se pudo conectar a la base de datos."
+            
+        youngest_query = collection.order_by('fechaNacimiento', direction=firestore.Query.DESCENDING).limit(1)
+        youngest_docs = list(youngest_query.stream())
+        
+        if not youngest_docs:
+            return "No hay personas registradas en el sistema."
+            
+        youngest = youngest_docs[0].to_dict()
+        fecha = format_date(youngest.get('fechaNacimiento'))
+        
+        return f"La persona más joven es {youngest['primerNombre']} {youngest['apellidos']} nacida el {fecha}"
     except Exception as e:
         logger.error(f"Error al buscar persona más joven: {e}")
         return f"Error al buscar persona más joven: {str(e)}"
 
 def get_gender_count(gender: str):
     try:
-        if collection:
-            count = collection.count_documents({"genero": gender})
-            return f"Hay {count} personas de género {gender} registradas."
-        return "No se pudo conectar a la base de datos."
+        if not collection:
+            return "No se pudo conectar a la base de datos."
+            
+        count_query = collection.where('genero', '==', gender)
+        count_docs = list(count_query.stream())
+        count = len(count_docs)
+        
+        return f"Hay {count} personas de género {gender} registradas."
     except Exception as e:
-        logger.error(f"Error al contar por género: {e}")
+        logger.error(f"Error al contar personas por género: {e}")
         return f"Error al contar por género: {str(e)}"
 
 def get_age_average():
     try:
-        if collection:
-            today = datetime.now()
-            pipeline = [
-                {
-                    "$project": {
-                        "edad": {
-                            "$divide": [
-                                {"$subtract": [today, "$fechaNacimiento"]},
-                                365 * 24 * 60 * 60 * 1000  
-                            ]
-                        }
-                    }
-                },
-                {
-                    "$group": {
-                        "_id": None,
-                        "promedio": {"$avg": "$edad"}
-                    }
-                }
-            ]
-            result = list(collection.aggregate(pipeline))
-            if result:
-                return f"El promedio de edad es {result[0]['promedio']:.1f} años."
-        return "No hay datos suficientes para calcular el promedio de edad o no se pudo conectar a la base de datos."
+        if not collection:
+            return "No se pudo conectar a la base de datos."
+            
+        all_persons = list(collection.stream())
+        
+        if not all_persons:
+            return "No hay personas registradas en el sistema."
+            
+        today = datetime.now()
+        total_age = 0
+        valid_persons = 0
+        
+        for doc in all_persons:
+            person = doc.to_dict()
+            birth_date = person.get('fechaNacimiento')
+            
+            if not birth_date:
+                continue
+                
+            if hasattr(birth_date, 'todate'):
+                birth_date = birth_date.todate()
+            elif isinstance(birth_date, str):
+                try:
+                    birth_date = datetime.fromisoformat(birth_date.replace('Z', '+00:00'))
+                except:
+                    continue
+                    
+            age_days = (today - birth_date).days
+            age_years = age_days / 365.25
+            
+            total_age += age_years
+            valid_persons += 1
+            
+        if valid_persons == 0:
+            return "No hay fechas de nacimiento válidas para calcular la edad promedio."
+            
+        avg_age = total_age / valid_persons
+        return f"El promedio de edad es {avg_age:.1f} años."
     except Exception as e:
         logger.error(f"Error al calcular promedio de edad: {e}")
         return f"Error al calcular promedio de edad: {str(e)}"
 
 def get_last_registered():
     try:
-        if collection:
-            last = list(collection.find().sort("_id", -1).limit(1))
-            if last:
-                return f"La última persona registrada es {last[0]['primerNombre']} {last[0]['apellidos']}."
-        return "No hay personas registradas o no se pudo conectar a la base de datos."
+        if not collection:
+            return "No se pudo conectar a la base de datos."
+            
+        last_query = collection.order_by('createdAt', direction=firestore.Query.DESCENDING).limit(1)
+        last_docs = list(last_query.stream())
+        
+        if not last_docs:
+            return "No hay personas registradas en el sistema."
+            
+        last = last_docs[0].to_dict()
+        return f"La última persona registrada es {last['primerNombre']} {last['apellidos']}."
     except Exception as e:
         logger.error(f"Error al buscar última persona registrada: {e}")
         return f"Error al buscar última persona registrada: {str(e)}"
 
 def get_all_people():
     try:
-        if collection:
-            people = list(collection.find({}, {"primerNombre": 1, "apellidos": 1, "correo": 1}))
-            if not people:
-                return "No hay personas registradas."
+        if not collection:
+            return "No se pudo conectar a la base de datos."
             
-            result = "Personas registradas:\n"
-            for person in people[:5]:  
-                result += f"- {person['primerNombre']} {person['apellidos']}\n"
+        people_docs = list(collection.stream())
+        
+        if not people_docs:
+            return "No hay personas registradas en el sistema."
             
-            if len(people) > 5:
-                result += f"... y {len(people) - 5} personas más."
-                
-            return result
-        return "No se pudo conectar a la base de datos."
+        result = "Personas registradas:\n"
+        
+        for i, doc in enumerate(people_docs[:5]):
+            person = doc.to_dict()
+            result += f"- {person['primerNombre']} {person.get('segundoNombre', '')} {person['apellidos']}\n"
+            
+        if len(people_docs) > 5:
+            result += f"... y {len(people_docs) - 5} personas más."
+            
+        return result
     except Exception as e:
         logger.error(f"Error al listar personas: {e}")
         return f"Error al listar personas: {str(e)}"
 
 def get_total_count():
     try:
-        if collection:
-            count = collection.count_documents({})
-            return f"Hay un total de {count} personas registradas en el sistema."
-        return "No se pudo conectar a la base de datos."
+        if not collection:
+            return "No se pudo conectar a la base de datos."
+            
+        all_docs = list(collection.stream())
+        count = len(all_docs)
+        
+        return f"Hay un total de {count} personas registradas en el sistema."
     except Exception as e:
         logger.error(f"Error al contar personas: {e}")
         return f"Error al contar personas: {str(e)}"
 
 def get_document_info(document_number: str):
     try:
-        if collection:
-            person = collection.find_one({"nroDocumento": document_number})
-            if person:
-                return f"Se encontró a {person['primerNombre']} {person['apellidos']} " \
-                    f"con número de documento {document_number}."
-            else:
-                return f"No se encontró ninguna persona con número de documento {document_number}."
-        return "No se pudo conectar a la base de datos."
+        if not collection:
+            return "No se pudo conectar a la base de datos."
+            
+        person_query = collection.where('nroDocumento', '==', document_number)
+        person_docs = list(person_query.stream())
+        
+        if not person_docs:
+            return f"No se encontró ninguna persona con número de documento {document_number}."
+            
+        person = person_docs[0].to_dict()
+        return f"Se encontró a {person['primerNombre']} {person['apellidos']} con número de documento {document_number}."
     except Exception as e:
         logger.error(f"Error al buscar por documento: {e}")
         return f"Error al buscar por documento: {str(e)}"
 
 def get_gender_distribution():
     try:
-        if collection:
-            total = collection.count_documents({})
-            if total == 0:
-                return "No hay personas registradas en el sistema."
-                
-            genders = ["Masculino", "Femenino", "No binario", "Prefiero no reportar"]
-            result = "Distribución por género:\n"
+        if not collection:
+            return "No se pudo conectar a la base de datos."
             
-            for gender in genders:
-                count = collection.count_documents({"genero": gender})
-                percentage = (count / total * 100) if total > 0 else 0
-                result += f"- {gender}: {count} personas ({percentage:.1f}%)\n"
+        all_docs = list(collection.stream())
+        
+        if not all_docs:
+            return "No hay personas registradas en el sistema."
+            
+        total = len(all_docs)
+        genders = {"Masculino": 0, "Femenino": 0, "No binario": 0, "Prefiero no reportar": 0}
+        
+        for doc in all_docs:
+            person = doc.to_dict()
+            gender = person.get('genero')
+            if gender in genders:
+                genders[gender] += 1
                 
-            return result
-        return "No se pudo conectar a la base de datos."
+        result = "Distribución por género:\n"
+        for gender, count in genders.items():
+            percentage = (count / total * 100) if total > 0 else 0
+            result += f"- {gender}: {count} personas ({percentage:.1f}%)\n"
+            
+        return result
     except Exception as e:
         logger.error(f"Error al obtener distribución por género: {e}")
         return f"Error al obtener distribución por género: {str(e)}"
 
 @app.post("/query")
-async def process_query(query: str = Body(..., embed=True)):
-
-    logger.info(f"Consulta recibida: {query}")
+async def process_query(query: Dict = Body(...)):
+    query_text = query.get("query", "")
+    logger.info(f"Consulta recibida: {query_text}")
+    
     try:
         context = ""
-        
-        query_lower = query.lower()
+        query_lower = query_text.lower()
         
         keywords = {
             "joven": ["joven", "menor", "más joven", "edad mínima", "menor edad"],
@@ -247,7 +315,7 @@ async def process_query(query: str = Body(..., embed=True)):
         import re
         doc_numbers = re.findall(r'\b\d{5,10}\b', query_lower)
         if doc_numbers and any(kw in query_lower for kw in keywords["documento"]):
-            for doc in doc_numbers[:1]:  
+            for doc in doc_numbers[:1]: 
                 context += get_document_info(doc) + "\n"
         
         if not context:
@@ -256,24 +324,23 @@ async def process_query(query: str = Body(..., embed=True)):
             context += "Intenta preguntar por ejemplo: '¿Cuántas personas hay registradas?', '¿Cuál es el promedio de edad?'\n"
         
         if chain:
-            response = chain.run(question=query, context=context)
+            response = chain.run(question=query_text, context=context)
         else:
             logger.warning("Usando respuesta alternativa porque el modelo no está disponible")
             response = generate_fallback_response(query_lower, context)
         
         try:
             if logs_collection:
-                logs_collection.insert_one({
+                logs_collection.add({
                     "accion": "Consulta Natural",
-                    "detalles": f"Consulta: {query} | Respuesta: {response[:150]}{'...' if len(response) > 150 else ''}",
-                    "timestamp": datetime.now()
+                    "detalles": f"Consulta: {query_text} | Respuesta: {response[:150]}{'...' if len(response) > 150 else ''}",
+                    "timestamp": firestore.SERVER_TIMESTAMP
                 })
-                logger.info(f"Log registrado: Consulta: {query}")
+                logger.info(f"Log registrado en Firebase: Consulta: {query_text}")
         except Exception as e:
-            logger.error(f"Error al registrar log: {e}")
+            logger.error(f"Error al registrar log en Firebase: {e}")
         
         logger.info(f"Respuesta generada: {response[:100]}...")
-        
         return {"answer": response}
     
     except Exception as e:
@@ -282,7 +349,6 @@ async def process_query(query: str = Body(..., embed=True)):
         return {"answer": "Lo siento, no pude procesar tu consulta en este momento."}
 
 def generate_fallback_response(query_lower, context):
-
     lines = [line for line in context.split('\n') if line.strip()]
     
     if lines:
@@ -293,7 +359,6 @@ def generate_fallback_response(query_lower, context):
 
 @app.get("/health")
 async def health_check():
-    """Endpoint para verificar el estado del servicio"""
     status = "ok" if db and llm else "degraded"
     
     if not db and not llm:
@@ -301,7 +366,7 @@ async def health_check():
     
     return {
         "status": status,
-        "mongodb": mongodb_status,
+        "firebase": firebase_status,
         "llm_model": model_status,
         "timestamp": datetime.now().isoformat(),
         "version": "1.0.0"
