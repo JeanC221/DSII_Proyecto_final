@@ -23,7 +23,12 @@ services:
       - "5000:5000"
     environment:
       - NODE_ENV=production
-      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-proyecto-final-gestordatos}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_PRIVATE_KEY_ID=${FIREBASE_PRIVATE_KEY_ID}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_CLIENT_ID=${FIREBASE_CLIENT_ID}
+      - FIREBASE_CLIENT_CERT_URL=${FIREBASE_CLIENT_CERT_URL}
       - LLM_SERVICE_URL=http://llm_service:8000
     depends_on:
       - llm_service
@@ -32,7 +37,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./backend/src:/app/src
-      - ./backend/src/credentials:/app/src/credentials
 
   llm_service:
     build:

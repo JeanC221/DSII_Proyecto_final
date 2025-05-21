@@ -88,3 +88,18 @@ fi
 echo -e "${GREEN}¡Configuración completada!${NC}"
 echo -e "Para iniciar la aplicación, ejecute: ${YELLOW}docker-compose up${NC}"
 echo -e "Para acceder a la aplicación, visite: ${YELLOW}http://localhost:3000${NC}"
+
+# Check if credentials directory exists
+if [ ! -d "backend/src/credentials" ]; then
+    mkdir -p backend/src/credentials
+fi
+
+# Check if credentials file exists
+if [ ! -f "backend/src/credentials/firebase-credentials.json" ]; then
+    echo "Firebase credentials file not found!"
+    echo "Please place your firebase-credentials.json file in backend/src/credentials/"
+    exit 1
+fi
+
+# Start the containers
+docker-compose up
