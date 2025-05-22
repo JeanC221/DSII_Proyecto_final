@@ -116,10 +116,10 @@ Este proyecto consiste en una aplicación web para la gestión de datos personal
 
 ## Autores
 
--
--
--
--
+- Jean Carlos
+- Esteban Ramírez
+- Fabian Pallares
+- Jonathan Castellanos
 
 ## Licencia
 
