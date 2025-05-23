@@ -8,23 +8,46 @@ const ConsultaNatural = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [serviceStatus, setServiceStatus] = useState(null);
+  const [debugInfo, setDebugInfo] = useState(null);
 
   useEffect(() => {
     checkServiceStatus();
+    const interval = setInterval(checkServiceStatus, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const checkServiceStatus = useCallback(async () => {
     try {
-      const res = await api.get('/health/rag');
+      console.log('🔍 Verificando estado del servicio RAG...');
+      
+      const res = await api.get('/health/rag', {
+        timeout: 15000
+      });
+      
+      console.log('✅ Estado RAG recibido:', res.data);
       setServiceStatus(res.data);
+      setError(null);
+      
     } catch (err) {
-      console.error('Error al verificar estado del servicio RAG:', err);
+      console.error('❌ Error al verificar estado del servicio RAG:', err);
+      
+      try {
+        const debugRes = await api.get('/health/debug');
+        setDebugInfo(debugRes.data);
+      } catch (debugErr) {
+        console.error('Error obteniendo debug info:', debugErr);
+      }
+      
       setServiceStatus({ 
         status: 'error', 
         message: 'No se pudo conectar con el servicio RAG',
-        firebase: 'disconnected',
-        llm_model: 'not loaded',
-        data_retriever: 'unavailable'
+        firebase: 'unknown',
+        llm_model: 'not available',
+        data_retriever: 'unavailable',
+        error_details: {
+          message: err.message,
+          code: err.code
+        }
       });
     }
   }, []);
@@ -37,13 +60,24 @@ const ConsultaNatural = () => {
       return;
     }
     
+    if (serviceStatus?.status === 'error') {
+      setError('El servicio RAG no está disponible. Intenta más tarde.');
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     
     try {
+      console.log('📤 Enviando consulta:', consulta.trim());
+      
       const res = await api.post('/consulta-natural', { 
         consulta: consulta.trim() 
+      }, {
+        timeout: 30000 
       });
+      
+      console.log('📥 Respuesta recibida:', res.data);
       
       if (res.data && res.data.answer) {
         setRespuesta(res.data.answer);
@@ -52,9 +86,19 @@ const ConsultaNatural = () => {
       }
       
       checkServiceStatus();
+      
     } catch (err) {
-      console.error('Error al hacer consulta:', err);
-      setError('Ocurrió un error al procesar tu consulta. Intenta de nuevo más tarde.');
+      console.error('❌ Error al hacer consulta:', err);
+      
+      if (err.code === 'ECONNABORTED') {
+        setError('La consulta tardó demasiado tiempo. El servicio puede estar sobrecargado.');
+      } else if (err.response?.status === 400) {
+        setError('Consulta inválida. Por favor, reformula tu pregunta.');
+      } else if (err.response?.status >= 500) {
+        setError('Error del servidor. El servicio RAG puede estar temporalmente no disponible.');
+      } else {
+        setError('Ocurrió un error al procesar tu consulta. Intenta de nuevo más tarde.');
+      }
     } finally {
       setLoading(false);
     }
@@ -68,7 +112,9 @@ const ConsultaNatural = () => {
     "¿Quién fue la última persona en registrarse?",
     "¿Quién es la persona mayor registrada?",
     "¿Cuántas mujeres hay registradas?",
-    "¿Cuántos hombres hay registrados?"
+    "¿Cuántos hombres hay registrados?",
+    "¿Cuántas personas nacieron en abril?",
+    "¿Cuántos adultos jóvenes están registrados?"
   ];
 
   const usarEjemplo = (ejemplo) => {
@@ -97,6 +143,11 @@ const ConsultaNatural = () => {
     }
   };
 
+  const retryConnection = () => {
+    setServiceStatus(null);
+    checkServiceStatus();
+  };
+
   return (
     <div className="card">
       <h2>Consulta en Lenguaje Natural</h2>
@@ -107,16 +158,34 @@ const ConsultaNatural = () => {
           <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
             <span>{getStatusIcon(serviceStatus)}</span>
             <strong>{getStatusText(serviceStatus)}</strong>
+            {serviceStatus.status !== 'ok' && (
+              <button onClick={retryConnection} className="secondary" style={{marginLeft: '10px', padding: '4px 8px', fontSize: '12px'}}>
+                Reintentar
+              </button>
+            )}
           </div>
           
-          {serviceStatus.status !== 'ok' && (
-            <div className={styles.serviceDetails}>
-              <small>
-                • Firebase: {serviceStatus.firebase === 'connected' ? '✅ Conectado' : '❌ Desconectado'}<br/>
-                • Modelo LLM: {serviceStatus.llm_model === 'loaded' ? '✅ Cargado' : '❌ No disponible'}<br/>
-                • Recuperador de datos: {serviceStatus.data_retriever === 'available' ? '✅ Disponible' : '❌ No disponible'}
-              </small>
-            </div>
+          <div className={styles.serviceDetails}>
+            <small>
+              • Firebase: {serviceStatus.firebase === 'connected' ? '✅ Conectado' : '❌ Desconectado'}<br/>
+              • Modelo LLM: {serviceStatus.llm_model === 'loaded' ? '✅ Cargado' : '❌ No disponible'}<br/>
+              • Recuperador de datos: {serviceStatus.data_retriever === 'available' ? '✅ Disponible' : '❌ No disponible'}
+              {serviceStatus.model_info?.llm_provider && (
+                <>
+                  <br/>• Proveedor: {serviceStatus.model_info.llm_provider} ({serviceStatus.model_info.model})
+                </>
+              )}
+            </small>
+          </div>
+          
+          {/* Información de debug cuando hay errores */}
+          {serviceStatus.status === 'error' && debugInfo && (
+            <details style={{marginTop: '10px'}}>
+              <summary style={{cursor: 'pointer', fontSize: '12px'}}>📋 Información de diagnóstico</summary>
+              <pre style={{fontSize: '10px', marginTop: '5px', padding: '5px', backgroundColor: '#f0f0f0', borderRadius: '3px'}}>
+                {JSON.stringify(debugInfo, null, 2)}
+              </pre>
+            </details>
           )}
         </div>
       )}
@@ -157,7 +226,7 @@ const ConsultaNatural = () => {
         </div>
         
         <div className={styles.ejemplosCategoria}>
-          <h4>🚻 Por género:</h4>
+          <h4>🚻 Por género y edad:</h4>
           <ul>
             {ejemplos.slice(6).map((ejemplo, index) => (
               <li key={index + 6}>
@@ -185,10 +254,11 @@ const ConsultaNatural = () => {
               value={consulta}
               onChange={(e) => setConsulta(e.target.value)}
               placeholder="Escribe tu pregunta sobre las personas registradas..."
+              disabled={loading}
             />
             <button 
               type="submit" 
-              disabled={loading || !consulta.trim()}
+              disabled={loading || !consulta.trim() || serviceStatus?.status === 'error'}
             >
               {loading ? 'Analizando...' : 'Consultar'}
             </button>
@@ -205,6 +275,7 @@ const ConsultaNatural = () => {
               <div className={styles.loading}>
                 <div className={styles.loadingSpinner}></div>
                 Analizando tu consulta y buscando en los datos...
+                <small>Esto puede tomar hasta 30 segundos para consultas complejas</small>
               </div>
             ) : respuesta ? (
               <div className={styles.respuesta}>

@@ -14,7 +14,13 @@ services:
       - academic-network
     restart: unless-stopped
     environment:
-      - REACT_APP_API_URL=http://localhost:5000/api  
+      - REACT_APP_API_URL=http://localhost:5000/api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   backend:
     build:
       context: ./backend
@@ -32,12 +38,17 @@ services:
       - LLM_SERVICE_URL=http://rag_service:8000
     depends_on:
       rag_service:
-        condition: service_started  
+        condition: service_healthy
     networks:
       - academic-network
     restart: unless-stopped
     volumes:
       - ./backend/src:/app/src
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   rag_service:
     build:
@@ -56,6 +67,12 @@ services:
     networks:
       - academic-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 networks:
   academic-network:
