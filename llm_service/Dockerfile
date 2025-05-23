@@ -1,29 +1,39 @@
 FROM python:3.11-slim
 
-WORKDIR /app
+# Configurar zona horaria
+ENV TZ=America/Bogota
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
-    git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+WORKDIR /app
+
+RUN mkdir -p /app/logs
+
 COPY ./app/requirements.txt .
 
-RUN pip install --no-cache-dir torch==2.1.2 numpy==1.24.3
+# Instalar dependencias
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./app .
 
-RUN if [ -f rag_service.py.bak ]; then rm rag_service.py.bak; fi && \
-    cp rag_service.py rag_service.py.bak && \
-    sed -i 's/from langchain.prompts import PromptTemplate/from langchain_core.prompts import PromptTemplate/g' rag_service.py && \
-    sed -i 's/from langchain.chains import LLMChain/from langchain.chains.llm import LLMChain/g' rag_service.py
+RUN groupadd -r acaduser && useradd -r -g acaduser -m acaduser
+RUN chown -R acaduser:acaduser /app
+USER acaduser
 
 EXPOSE 8000
 
-RUN useradd -m appuser
-USER appuser
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
 
-CMD ["uvicorn", "rag_service:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+# Health check para monitoreo
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+CMD ["uvicorn", "rag_service:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--log-level", "info"]

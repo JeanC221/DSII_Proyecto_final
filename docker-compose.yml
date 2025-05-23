@@ -1,4 +1,5 @@
 version: "3.9"
+
 services:
   frontend:
     build:
@@ -8,13 +9,12 @@ services:
       - "3000:80"  
     depends_on:
       backend:
-        condition: service_started
+        condition: service_started  
     networks:
-      app-network:
+      - academic-network
     restart: unless-stopped
     environment:
-      - REACT_APP_API_URL=http://backend:5000/api  
-
+      - REACT_APP_API_URL=http://localhost:5000/api  
   backend:
     build:
       context: ./backend
@@ -23,33 +23,41 @@ services:
       - "5000:5000"
     environment:
       - NODE_ENV=production
-      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-proyecto-final-gestordatos}
-      - LLM_SERVICE_URL=http://llm_service:8000
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_PRIVATE_KEY_ID=${FIREBASE_PRIVATE_KEY_ID}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_CLIENT_ID=${FIREBASE_CLIENT_ID}
+      - FIREBASE_CLIENT_CERT_URL=${FIREBASE_CLIENT_CERT_URL}
+      - LLM_SERVICE_URL=http://rag_service:8000
     depends_on:
-      - llm_service
+      rag_service:
+        condition: service_started  
     networks:
-      - app-network
+      - academic-network
     restart: unless-stopped
     volumes:
       - ./backend/src:/app/src
-      - ./backend/src/credentials:/app/src/credentials
 
-  llm_service:
+  rag_service:
     build:
       context: ./llm_service
       dockerfile: Dockerfile  
     ports:
       - "8000:8000"
     environment:
-      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-proyecto-final-gestordatos}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
       - FIREBASE_CREDENTIALS_PATH=/app/firebase-credentials.json
-      - HUGGINGFACEHUB_API_TOKEN=${HUGGINGFACEHUB_API_TOKEN}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - TZ=America/Bogota
     volumes:
       - ./backend/src/credentials/firebase-credentials.json:/app/firebase-credentials.json:ro
+      - ./logs/rag:/app/logs
     networks:
-      - app-network
+      - academic-network
     restart: unless-stopped
 
 networks:
-  app-network:
+  academic-network:
     driver: bridge
+    name: sistema-academico-red

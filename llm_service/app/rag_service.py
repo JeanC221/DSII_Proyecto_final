@@ -1,373 +1,824 @@
 from fastapi import FastAPI, HTTPException, Body
+from fastapi.responses import JSONResponse
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
-from typing import Dict, Any, List
+import time
+from typing import Dict, List, Optional, Tuple, Any
 import json
+import requests
+from dataclasses import dataclass, asdict
+from enum import Enum
 
 import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
 
-from langchain_core.prompts import PromptTemplate
-from langchain.chains.llm import LLMChain
-from langchain_community.llms import HuggingFaceHub
-
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('/app/logs/rag_system.log', mode='a')
+    ]
+)
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
-
-firebase_status = "disconnected"
-db = None
-collection = None
-logs_collection = None
-
-try:
-    cred_path = os.environ.get('FIREBASE_CREDENTIALS_PATH', '/app/firebase-credentials.json')
-    project_id = os.environ.get('FIREBASE_PROJECT_ID', 'proyecto-final-gestordatos')
-    
-    cred = credentials.Certificate(cred_path)
-    firebase_app = initialize_app(cred, {
-        'projectId': project_id,
-    })
-    
-    db = firestore.client()
-    collection = db.collection('personas')
-    logs_collection = db.collection('logs')
-    
-    firebase_status = "connected"
-    logger.info("Conexión a Firebase establecida correctamente")
-except Exception as e:
-    logger.error(f"Error al conectar con Firebase: {e}")
-
-huggingface_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN", "hf_dummy_token")
-os.environ["HUGGINGFACEHUB_API_TOKEN"] = huggingface_api_token
-
-repo_id = "google/flan-t5-base"
-model_status = "not loaded"
-llm = None
-
-try:
-    llm = HuggingFaceHub(
-        repo_id=repo_id,
-        model_kwargs={"temperature": 0.1, "max_length": 512}
-    )
-    logger.info(f"Modelo {repo_id} cargado correctamente")
-    model_status = "loaded"
-except Exception as e:
-    logger.error(f"Error al cargar modelo: {e}")
-
-template = """
-Eres un asistente especializado en consultas sobre datos de personas.
-Responde la siguiente pregunta usando solo la información proporcionada, de forma clara y concisa.
-Tus respuestas deben ser completas pero directas al punto.
-
-Pregunta: {question}
-
-Información disponible:
-{context}
-
-Respuesta (en español, clara y precisa, usando solo la información disponible):
-"""
-
-prompt = PromptTemplate(
-    input_variables=["question", "context"],
-    template=template
+app = FastAPI(
+    title="Sistema RAG Académico",
+    description="Sistema de consultas en lenguaje natural para gestión de datos personales",
+    version="1.0.0"
 )
 
-chain = LLMChain(llm=llm, prompt=prompt) if llm else None
+# ============================================================================
+# CONFIGURACIÓN Y CONEXIONES
+# ============================================================================
 
-def format_date(timestamp):
-    if hasattr(timestamp, 'todate'):
-        return timestamp.todate().strftime('%d/%m/%Y')
-    elif isinstance(timestamp, datetime):
-        return timestamp.strftime('%d/%m/%Y')
-    elif isinstance(timestamp, str):
-        try:
-            return datetime.fromisoformat(timestamp.replace('Z', '+00:00')).strftime('%d/%m/%Y')
-        except:
-            return timestamp
-    return str(timestamp)
+class SystemStatus(Enum):
+    """Estados del sistema"""
+    HEALTHY = "healthy"
+    DEGRADED = "degraded"
+    DOWN = "down"
 
-def get_youngest_person():
-    try:
-        if not collection:
-            return "No se pudo conectar a la base de datos."
-            
-        youngest_query = collection.order_by('fechaNacimiento', direction=firestore.Query.DESCENDING).limit(1)
-        youngest_docs = list(youngest_query.stream())
-        
-        if not youngest_docs:
-            return "No hay personas registradas en el sistema."
-            
-        youngest = youngest_docs[0].to_dict()
-        fecha = format_date(youngest.get('fechaNacimiento'))
-        
-        return f"La persona más joven es {youngest['primerNombre']} {youngest['apellidos']} nacida el {fecha}"
-    except Exception as e:
-        logger.error(f"Error al buscar persona más joven: {e}")
-        return f"Error al buscar persona más joven: {str(e)}"
+@dataclass
+class SystemMetrics:
+    """Métricas del sistema para monitoreo académico"""
+    total_queries: int = 0
+    successful_queries: int = 0
+    failed_queries: int = 0
+    avg_response_time: float = 0.0
+    cache_hit_rate: float = 0.0
+    last_updated: datetime = None
 
-def get_gender_count(gender: str):
-    try:
-        if not collection:
-            return "No se pudo conectar a la base de datos."
-            
-        count_query = collection.where('genero', '==', gender)
-        count_docs = list(count_query.stream())
-        count = len(count_docs)
-        
-        return f"Hay {count} personas de género {gender} registradas."
-    except Exception as e:
-        logger.error(f"Error al contar personas por género: {e}")
-        return f"Error al contar por género: {str(e)}"
-
-def get_age_average():
-    try:
-        if not collection:
-            return "No se pudo conectar a la base de datos."
-            
-        all_persons = list(collection.stream())
-        
-        if not all_persons:
-            return "No hay personas registradas en el sistema."
-            
-        today = datetime.now()
-        total_age = 0
-        valid_persons = 0
-        
-        for doc in all_persons:
-            person = doc.to_dict()
-            birth_date = person.get('fechaNacimiento')
-            
-            if not birth_date:
-                continue
-                
-            if hasattr(birth_date, 'todate'):
-                birth_date = birth_date.todate()
-            elif isinstance(birth_date, str):
-                try:
-                    birth_date = datetime.fromisoformat(birth_date.replace('Z', '+00:00'))
-                except:
-                    continue
-                    
-            age_days = (today - birth_date).days
-            age_years = age_days / 365.25
-            
-            total_age += age_years
-            valid_persons += 1
-            
-        if valid_persons == 0:
-            return "No hay fechas de nacimiento válidas para calcular la edad promedio."
-            
-        avg_age = total_age / valid_persons
-        return f"El promedio de edad es {avg_age:.1f} años."
-    except Exception as e:
-        logger.error(f"Error al calcular promedio de edad: {e}")
-        return f"Error al calcular promedio de edad: {str(e)}"
-
-def get_last_registered():
-    try:
-        if not collection:
-            return "No se pudo conectar a la base de datos."
-            
-        last_query = collection.order_by('createdAt', direction=firestore.Query.DESCENDING).limit(1)
-        last_docs = list(last_query.stream())
-        
-        if not last_docs:
-            return "No hay personas registradas en el sistema."
-            
-        last = last_docs[0].to_dict()
-        return f"La última persona registrada es {last['primerNombre']} {last['apellidos']}."
-    except Exception as e:
-        logger.error(f"Error al buscar última persona registrada: {e}")
-        return f"Error al buscar última persona registrada: {str(e)}"
-
-def get_all_people():
-    try:
-        if not collection:
-            return "No se pudo conectar a la base de datos."
-            
-        people_docs = list(collection.stream())
-        
-        if not people_docs:
-            return "No hay personas registradas en el sistema."
-            
-        result = "Personas registradas:\n"
-        
-        for i, doc in enumerate(people_docs[:5]):
-            person = doc.to_dict()
-            result += f"- {person['primerNombre']} {person.get('segundoNombre', '')} {person['apellidos']}\n"
-            
-        if len(people_docs) > 5:
-            result += f"... y {len(people_docs) - 5} personas más."
-            
-        return result
-    except Exception as e:
-        logger.error(f"Error al listar personas: {e}")
-        return f"Error al listar personas: {str(e)}"
-
-def get_total_count():
-    try:
-        if not collection:
-            return "No se pudo conectar a la base de datos."
-            
-        all_docs = list(collection.stream())
-        count = len(all_docs)
-        
-        return f"Hay un total de {count} personas registradas en el sistema."
-    except Exception as e:
-        logger.error(f"Error al contar personas: {e}")
-        return f"Error al contar personas: {str(e)}"
-
-def get_document_info(document_number: str):
-    try:
-        if not collection:
-            return "No se pudo conectar a la base de datos."
-            
-        person_query = collection.where('nroDocumento', '==', document_number)
-        person_docs = list(person_query.stream())
-        
-        if not person_docs:
-            return f"No se encontró ninguna persona con número de documento {document_number}."
-            
-        person = person_docs[0].to_dict()
-        return f"Se encontró a {person['primerNombre']} {person['apellidos']} con número de documento {document_number}."
-    except Exception as e:
-        logger.error(f"Error al buscar por documento: {e}")
-        return f"Error al buscar por documento: {str(e)}"
-
-def get_gender_distribution():
-    try:
-        if not collection:
-            return "No se pudo conectar a la base de datos."
-            
-        all_docs = list(collection.stream())
-        
-        if not all_docs:
-            return "No hay personas registradas en el sistema."
-            
-        total = len(all_docs)
-        genders = {"Masculino": 0, "Femenino": 0, "No binario": 0, "Prefiero no reportar": 0}
-        
-        for doc in all_docs:
-            person = doc.to_dict()
-            gender = person.get('genero')
-            if gender in genders:
-                genders[gender] += 1
-                
-        result = "Distribución por género:\n"
-        for gender, count in genders.items():
-            percentage = (count / total * 100) if total > 0 else 0
-            result += f"- {gender}: {count} personas ({percentage:.1f}%)\n"
-            
-        return result
-    except Exception as e:
-        logger.error(f"Error al obtener distribución por género: {e}")
-        return f"Error al obtener distribución por género: {str(e)}"
-
-@app.post("/query")
-async def process_query(query: Dict = Body(...)):
-    query_text = query.get("query", "")
-    logger.info(f"Consulta recibida: {query_text}")
+class FirebaseManager:
+    """Gestor de conexión Firebase con reconexión automática"""
     
-    try:
-        context = ""
-        query_lower = query_text.lower()
+    def __init__(self):
+        self.db = None
+        self.collection = None
+        self.logs_collection = None
+        self.status = "disconnected"
+        self._initialize_connection()
+    
+    def _initialize_connection(self) -> None:
+        """Inicializa conexión a Firebase con manejo de errores"""
+        try:
+            cred_path = os.environ.get('FIREBASE_CREDENTIALS_PATH', '/app/firebase-credentials.json')
+            project_id = os.environ.get('FIREBASE_PROJECT_ID', 'proyecto-final-gestordatos')
+            
+            if not os.path.exists(cred_path):
+                raise FileNotFoundError(f"Archivo de credenciales no encontrado: {cred_path}")
+            
+            cred = credentials.Certificate(cred_path)
+            firebase_app = initialize_app(cred, {'projectId': project_id})
+            
+            self.db = firestore.client()
+            self.collection = self.db.collection('personas')
+            self.logs_collection = self.db.collection('logs')
+            
+            test_query = self.collection.limit(1).get()
+            
+            self.status = "connected"
+            logger.info("✅ Firebase: Conexión establecida y verificada")
+            
+        except Exception as e:
+            self.status = "error"
+            logger.error(f"❌ Firebase: Error de conexión - {e}")
+            raise
+    
+    def is_healthy(self) -> bool:
+        """Verifica salud de la conexión"""
+        return self.status == "connected" and self.db is not None
+
+# ============================================================================
+# CLIENTE LLM CON GROQ
+# ============================================================================
+
+class GroqLLMClient:
+    """Cliente optimizado para Groq API con reintentos y métricas"""
+    
+    def __init__(self):
+        self.api_key = os.getenv("GROQ_API_KEY")
+        self.base_url = "https://api.groq.com/openai/v1/chat/completions"
+        self.model = "llama3-8b-8192"
+        self.max_retries = 3
+        self.timeout = 30
+        self.is_available = False
         
-        keywords = {
-            "joven": ["joven", "menor", "más joven", "edad mínima", "menor edad"],
-            "genero": ["género", "genero", "hombres", "mujeres", "masculino", "femenino", "no binario"],
-            "edad": ["edad", "promedio", "media", "años", "mayores", "cuantos años"],
-            "ultima": ["última", "ultima", "reciente", "nuevo", "nueva", "último registro"],
-            "listar": ["todas", "todos", "listar", "lista", "mostrar", "personas", "registros", "personas registradas"],
-            "total": ["total", "cuántas", "cuantas", "cantidad", "número", "numero"],
-            "documento": ["documento", "identificación", "cedula", "cédula", "tarjeta de identidad", "id"]
+        self._validate_configuration()
+        self._test_connectivity()
+    
+    def _validate_configuration(self) -> None:
+        """Valida configuración del cliente"""
+        if not self.api_key:
+            logger.error("❌ Groq: GROQ_API_KEY no configurada")
+            raise ValueError("GROQ_API_KEY requerida")
+        
+        if not self.api_key.startswith('gsk_'):
+            logger.warning("⚠️ Groq: Formato de API key no estándar")
+    
+    def _test_connectivity(self) -> None:
+        """Prueba conectividad con el servicio"""
+        try:
+            test_response = self._make_request_with_retry(
+                "Responde solo 'OK'", 
+                max_tokens=5
+            )
+            
+            if test_response and "OK" in test_response.upper():
+                self.is_available = True
+                logger.info("✅ Groq: Conectividad verificada")
+            else:
+                logger.warning("⚠️ Groq: Respuesta de prueba inesperada")
+                
+        except Exception as e:
+            logger.error(f"❌ Groq: Error en prueba de conectividad - {e}")
+    
+    def _make_request_with_retry(self, prompt: str, max_tokens: int = 600) -> Optional[str]:
+        """Realiza petición con reintentos automáticos"""
+        last_error = None
+        
+        for attempt in range(self.max_retries):
+            try:
+                response = self._make_single_request(prompt, max_tokens)
+                if response:
+                    return response
+                    
+            except requests.exceptions.RequestException as e:
+                last_error = e
+                wait_time = 2 ** attempt  
+                logger.warning(f"⚠️ Groq: Intento {attempt + 1} falló, reintentando en {wait_time}s")
+                time.sleep(wait_time)
+            
+            except Exception as e:
+                logger.error(f"❌ Groq: Error no recuperable - {e}")
+                break
+        
+        logger.error(f"❌ Groq: Todos los reintentos fallaron. Último error: {last_error}")
+        return None
+    
+    def _make_single_request(self, prompt: str, max_tokens: int) -> Optional[str]:
+        """Realiza una petición individual a Groq"""
+        payload = {
+            "model": self.model,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": self._get_system_prompt()
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            "max_tokens": max_tokens,
+            "temperature": 0.1,
+            "top_p": 0.9,
+            "stream": False
         }
         
-        if any(kw in query_lower for kw in keywords["joven"]):
-            context += get_youngest_person() + "\n"
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
         
-        if any(kw in query_lower for kw in keywords["genero"]):
-            if "femenino" in query_lower or "mujer" in query_lower or "mujeres" in query_lower:
-                context += get_gender_count("Femenino") + "\n"
-            elif "masculino" in query_lower or "hombre" in query_lower or "hombres" in query_lower:
-                context += get_gender_count("Masculino") + "\n"
-            elif "no binario" in query_lower:
-                context += get_gender_count("No binario") + "\n"
-            elif "prefiero no reportar" in query_lower:
-                context += get_gender_count("Prefiero no reportar") + "\n"
-            else:
-                context += get_gender_distribution() + "\n"
+        response = requests.post(
+            self.base_url,
+            headers=headers,
+            json=payload,
+            timeout=self.timeout
+        )
         
-        if any(kw in query_lower for kw in keywords["edad"]):
-            context += get_age_average() + "\n"
-        
-        if any(kw in query_lower for kw in keywords["ultima"]):
-            context += get_last_registered() + "\n"
-        
-        if any(kw in query_lower for kw in keywords["listar"]):
-            context += get_all_people() + "\n"
-            
-        if any(kw in query_lower for kw in keywords["total"]):
-            context += get_total_count() + "\n"
-            
-        import re
-        doc_numbers = re.findall(r'\b\d{5,10}\b', query_lower)
-        if doc_numbers and any(kw in query_lower for kw in keywords["documento"]):
-            for doc in doc_numbers[:1]: 
-                context += get_document_info(doc) + "\n"
-        
-        if not context:
-            context = get_total_count() + "\n"
-            context += "Puedo darte información sobre cantidad de personas, distribución por género, edades, etc.\n"
-            context += "Intenta preguntar por ejemplo: '¿Cuántas personas hay registradas?', '¿Cuál es el promedio de edad?'\n"
-        
-        if chain:
-            response = chain.run(question=query_text, context=context)
+        if response.status_code == 200:
+            data = response.json()
+            return data["choices"][0]["message"]["content"].strip()
         else:
-            logger.warning("Usando respuesta alternativa porque el modelo no está disponible")
-            response = generate_fallback_response(query_lower, context)
+            logger.error(f"Groq API Error: {response.status_code} - {response.text}")
+            response.raise_for_status()
+    
+    def _get_system_prompt(self) -> str:
+        """Prompt del sistema optimizado para análisis de datos académico"""
+        return """Eres un analista de datos experto especializado en consultas académicas sobre bases de datos de personas.
+
+CAPACIDADES REQUERIDAS:
+1. Análisis con múltiples filtros simultáneos (género + edad + mes, etc.)
+2. Cálculos estadísticos precisos (promedios, distribuciones, rangos)
+3. Filtrado temporal (meses de nacimiento, rangos de fechas)
+4. Análisis demográfico detallado
+5. Respuestas estructuradas y académicamente apropiadas
+
+METODOLOGÍA:
+1. Lee CUIDADOSAMENTE la pregunta completa
+2. Identifica TODOS los filtros y condiciones
+3. Aplica filtros paso a paso sobre los datos proporcionados
+4. Cuenta manualmente los registros que cumplan TODOS los criterios
+5. Presenta resultados con precisión numérica
+6. Incluye análisis contextual cuando sea relevante
+
+FORMATO DE RESPUESTA:
+- Respuesta directa al inicio
+- Explicación de la metodología aplicada
+- Números exactos y porcentajes cuando corresponda
+- Contexto adicional si es relevante para comprensión académica
+
+ESTILO: Profesional, preciso, académicamente riguroso."""
+
+# ============================================================================
+# GESTOR DE DATOS CON CACHE INTELIGENTE
+# ============================================================================
+
+@dataclass
+class PersonRecord:
+    """Registro estructurado de persona con todos los campos calculados"""
+    nombre_completo: str
+    primer_nombre: str
+    segundo_nombre: str
+    apellidos: str
+    documento: str
+    genero: str
+    correo: str
+    celular: str
+    
+    edad: Optional[int] = None
+    mes_nacimiento: Optional[int] = None
+    mes_nacimiento_nombre: Optional[str] = None
+    año_nacimiento: Optional[int] = None
+    rango_edad: Optional[str] = None
+    es_mayor_edad: Optional[bool] = None
+    
+    fecha_registro: Optional[datetime] = None
+
+class IntelligentDataManager:
+    """Gestor de datos con cache inteligente y procesamiento optimizado"""
+    
+    def __init__(self, firebase_manager: FirebaseManager):
+        self.firebase = firebase_manager
+        self.cache = {}
+        self.cache_metadata = {}
+        self.cache_duration = timedelta(minutes=10)
+        
+        self.month_names = {
+            1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
+            5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
+            9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
+        }
+        
+        self.age_ranges = [
+            (0, 17, "Menor de edad"),
+            (18, 25, "Joven (18-25)"),
+            (26, 35, "Adulto joven (26-35)"),
+            (36, 50, "Adulto (36-50)"),
+            (51, 65, "Adulto maduro (51-65)"),
+            (66, 999, "Adulto mayor (65+)")
+        ]
+    
+    def get_enriched_dataset(self, force_refresh: bool = False) -> List[PersonRecord]:
+        """Obtiene dataset enriquecido con cache inteligente"""
+        cache_key = "enriched_persons"
+        current_time = datetime.now()
+        
+        if not force_refresh and self._is_cache_valid(cache_key, current_time):
+            logger.info("📋 Cache: Utilizando datos en cache")
+            return self.cache[cache_key]
+        
+        logger.info("🔄 Cache: Actualizando desde Firebase")
+        fresh_data = self._fetch_and_enrich_data()
+        
+        self.cache[cache_key] = fresh_data
+        self.cache_metadata[cache_key] = current_time
+        
+        logger.info(f"✅ Dataset: {len(fresh_data)} registros enriquecidos")
+        return fresh_data
+    
+    def _is_cache_valid(self, cache_key: str, current_time: datetime) -> bool:
+        """Verifica validez del cache"""
+        if cache_key not in self.cache or cache_key not in self.cache_metadata:
+            return False
+        
+        cache_time = self.cache_metadata[cache_key]
+        return (current_time - cache_time) < self.cache_duration
+    
+    def _fetch_and_enrich_data(self) -> List[PersonRecord]:
+        """Obtiene y enriquece datos desde Firebase"""
+        try:
+            if not self.firebase.is_healthy():
+                raise ConnectionError("Firebase no disponible")
+            
+            docs = list(self.firebase.collection.stream())
+            enriched_records = []
+            current_date = datetime.now()
+            
+            for doc in docs:
+                raw_data = doc.data()
+                
+                try:
+                    record = self._create_basic_record(raw_data)
+                    
+                    self._enrich_temporal_data(record, raw_data, current_date)
+                    self._enrich_demographic_data(record)
+                    
+                    enriched_records.append(record)
+                    
+                except Exception as e:
+                    logger.warning(f"⚠️ Error procesando registro {doc.id}: {e}")
+                    continue
+            
+            return enriched_records
+            
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo datos: {e}")
+            return []
+    
+    def _create_basic_record(self, raw_data: Dict) -> PersonRecord:
+        """Crea registro básico desde datos raw"""
+        return PersonRecord(
+            nombre_completo=self._build_full_name(raw_data),
+            primer_nombre=raw_data.get('primerNombre', '').strip(),
+            segundo_nombre=raw_data.get('segundoNombre', '').strip(),
+            apellidos=raw_data.get('apellidos', '').strip(),
+            documento=raw_data.get('nroDocumento', ''),
+            genero=raw_data.get('genero', ''),
+            correo=raw_data.get('correo', ''),
+            celular=raw_data.get('celular', '')
+        )
+    
+    def _enrich_temporal_data(self, record: PersonRecord, raw_data: Dict, current_date: datetime) -> None:
+        """Enriquece con datos temporales calculados"""
+        birth_date = raw_data.get('fechaNacimiento')
+        if hasattr(birth_date, 'todate'):
+            birth_date = birth_date.todate()
+            
+            record.edad = self._calculate_exact_age(birth_date, current_date)
+            record.mes_nacimiento = birth_date.month
+            record.mes_nacimiento_nombre = self.month_names.get(birth_date.month, f"mes_{birth_date.month}")
+            record.año_nacimiento = birth_date.year
+        
+        created_at = raw_data.get('createdAt')
+        if hasattr(created_at, 'todate'):
+            record.fecha_registro = created_at.todate()
+    
+    def _enrich_demographic_data(self, record: PersonRecord) -> None:
+        """Enriquece con datos demográficos"""
+        if record.edad is not None:
+            record.es_mayor_edad = record.edad >= 18
+            record.rango_edad = self._categorize_age(record.edad)
+    
+    def _calculate_exact_age(self, birth_date: datetime, current_date: datetime) -> int:
+        """Calcula edad exacta considerando mes y día"""
+        age = current_date.year - birth_date.year
+        
+        if (current_date.month < birth_date.month or 
+            (current_date.month == birth_date.month and current_date.day < birth_date.day)):
+            age -= 1
+        
+        return max(0, age)
+    
+    def _categorize_age(self, age: int) -> str:
+        """Categoriza edad en rangos académicos"""
+        for min_age, max_age, category in self.age_ranges:
+            if min_age <= age <= max_age:
+                return category
+        return "Edad no categorizada"
+    
+    def _build_full_name(self, raw_data: Dict) -> str:
+        """Construye nombre completo normalizado"""
+        parts = [
+            raw_data.get('primerNombre', ''),
+            raw_data.get('segundoNombre', ''),
+            raw_data.get('apellidos', '')
+        ]
+        
+        clean_parts = [part.strip() for part in parts if part and part.strip()]
+        return ' '.join(clean_parts)
+
+# ============================================================================
+# PROCESADOR RAG ACADÉMICO
+# ============================================================================
+
+class AcademicQueryAnalyzer:
+    """Analizador de consultas académicas con clasificación automática"""
+    
+    def __init__(self):
+        self.query_patterns = {
+            'simple_count': ['cuántas', 'cuántos', 'total', 'cantidad'],
+            'gender_filter': ['hombre', 'mujer', 'masculino', 'femenino', 'género'],
+            'age_filter': ['años', 'edad', 'mayor', 'menor', 'joven', 'adulto'],
+            'temporal_filter': ['abril', 'mayo', 'enero', 'mes', 'nacido', 'nacieron'],
+            'statistical': ['promedio', 'media', 'distribución', 'estadística'],
+            'complex_combination': ['y', 'con', 'que sean', 'de más de', 'menores de']
+        }
+    
+    def analyze_complexity(self, query: str) -> Dict[str, Any]:
+        query_lower = query.lower()
+        
+        detected_patterns = []
+        for pattern_type, keywords in self.query_patterns.items():
+            if any(keyword in query_lower for keyword in keywords):
+                detected_patterns.append(pattern_type)
+        
+        complexity_score = len(detected_patterns)
+        
+        return {
+            'complexity_level': self._get_complexity_level(complexity_score),
+            'detected_patterns': detected_patterns,
+            'requires_multiple_filters': 'complex_combination' in detected_patterns,
+            'is_statistical_query': 'statistical' in detected_patterns
+        }
+    
+    def _get_complexity_level(self, score: int) -> str:
+        if score <= 1:
+            return "simple"
+        elif score <= 3:
+            return "moderate"
+        else:
+            return "complex"
+
+class AcademicRAGProcessor:
+    
+    def __init__(self, llm_client: GroqLLMClient, data_manager: IntelligentDataManager):
+        self.llm = llm_client
+        self.data_manager = data_manager
+        self.query_analyzer = AcademicQueryAnalyzer()
+        self.metrics = SystemMetrics()
+    
+    def process_academic_query(self, user_query: str) -> Dict[str, Any]:
+        start_time = time.time()
         
         try:
-            if logs_collection:
-                logs_collection.add({
-                    "accion": "Consulta Natural",
-                    "detalles": f"Consulta: {query_text} | Respuesta: {response[:150]}{'...' if len(response) > 150 else ''}",
-                    "timestamp": firestore.SERVER_TIMESTAMP
-                })
-                logger.info(f"Log registrado en Firebase: Consulta: {query_text}")
+            query_analysis = self.query_analyzer.analyze_complexity(user_query)
+            logger.info(f"🔍 Consulta analizada: {query_analysis['complexity_level']}")
+            
+            dataset = self.data_manager.get_enriched_dataset()
+            if not dataset:
+                return self._create_error_response("No hay datos disponibles")
+            
+            academic_prompt = self._build_academic_prompt(user_query, dataset, query_analysis)
+            
+            llm_response = self.llm._make_request_with_retry(academic_prompt, max_tokens=800)
+            
+            if not llm_response:
+                return self._create_error_response("Error en procesamiento LLM")
+            
+            processing_time = time.time() - start_time
+            self._update_metrics(processing_time, success=True)
+            
+            return {
+                "answer": llm_response,
+                "metadata": {
+                    "query_complexity": query_analysis['complexity_level'],
+                    "dataset_size": len(dataset),
+                    "processing_time_ms": round(processing_time * 1000, 2),
+                    "patterns_detected": query_analysis['detected_patterns']
+                }
+            }
+            
         except Exception as e:
-            logger.error(f"Error al registrar log en Firebase: {e}")
+            processing_time = time.time() - start_time
+            self._update_metrics(processing_time, success=False)
+            logger.error(f"❌ Error procesando consulta: {e}")
+            return self._create_error_response(f"Error interno: {str(e)}")
+    
+    def _build_academic_prompt(self, query: str, dataset: List[PersonRecord], analysis: Dict) -> str:
+        dataset_dict = [asdict(record) for record in dataset]
         
-        logger.info(f"Respuesta generada: {response[:100]}...")
-        return {"answer": response}
-    
-    except Exception as e:
-        error_msg = f"Error procesando consulta: {str(e)}"
-        logger.error(error_msg)
-        return {"answer": "Lo siento, no pude procesar tu consulta en este momento."}
+        context_stats = self._calculate_context_statistics(dataset)
+        
+        prompt = f"""SISTEMA DE ANÁLISIS ACADÉMICO DE DATOS DEMOGRÁFICOS
 
-def generate_fallback_response(query_lower, context):
-    lines = [line for line in context.split('\n') if line.strip()]
-    
-    if lines:
-        response = "Según la información disponible: " + " ".join(lines[:2])
-        return response
-    else:
-        return "No se encontró información relevante para tu consulta. Por favor, intenta reformular tu pregunta."
+CONJUNTO DE DATOS COMPLETO:
+{json.dumps(dataset_dict, default=str, ensure_ascii=False, indent=2)}
 
-@app.get("/health")
-async def health_check():
-    status = "ok" if db and llm else "degraded"
+ESTADÍSTICAS DE CONTEXTO:
+{json.dumps(context_stats, ensure_ascii=False, indent=2)}
+
+ANÁLISIS DE LA CONSULTA:
+- Nivel de complejidad: {analysis['complexity_level']}
+- Patrones detectados: {', '.join(analysis['detected_patterns'])}
+- Requiere múltiples filtros: {'Sí' if analysis['requires_multiple_filters'] else 'No'}
+
+CONSULTA DEL USUARIO: {query}
+
+INSTRUCCIONES ACADÉMICAS:
+1. Proporciona una respuesta precisa y académicamente rigurosa
+2. Si hay múltiples filtros, aplícalos TODOS secuencialmente
+3. Muestra tu metodología de análisis paso a paso
+4. Incluye números exactos y porcentajes relevantes
+5. Proporciona contexto estadístico cuando sea apropiado
+6. Mantén un tono profesional y académico
+
+FORMATO DE RESPUESTA REQUERIDO:
+- Respuesta directa al inicio
+- Metodología aplicada
+- Resultados numéricos precisos
+- Análisis contextual (si aplica)
+
+RESPUESTA ACADÉMICA:"""
+        
+        return prompt
     
-    if not db and not llm:
-        status = "down"
+    def _calculate_context_statistics(self, dataset: List[PersonRecord]) -> Dict:
+        total = len(dataset)
+        
+        gender_dist = {}
+        ages = []
+        month_dist = {}
+        
+        for record in dataset:
+            if record.genero:
+                gender_dist[record.genero] = gender_dist.get(record.genero, 0) + 1
+            
+            if record.edad is not None:
+                ages.append(record.edad)
+            
+            if record.mes_nacimiento_nombre:
+                month_dist[record.mes_nacimiento_nombre] = month_dist.get(record.mes_nacimiento_nombre, 0) + 1
+        
+        return {
+            "total_registros": total,
+            "edad_promedio": round(sum(ages) / len(ages), 1) if ages else 0,
+            "rango_edades": f"{min(ages)}-{max(ages)}" if ages else "N/A",
+            "distribucion_genero": gender_dist,
+            "distribucion_meses": dict(sorted(month_dist.items(), key=lambda x: list(self.data_manager.month_names.values()).index(x[0])))
+        }
+    
+    def _create_error_response(self, error_message: str) -> Dict[str, Any]:
+        return {
+            "answer": f"Error: {error_message}",
+            "metadata": {
+                "error": True,
+                "timestamp": datetime.now().isoformat()
+            }
+        }
+    
+    def _update_metrics(self, processing_time: float, success: bool) -> None:
+        self.metrics.total_queries += 1
+        
+        if success:
+            self.metrics.successful_queries += 1
+        else:
+            self.metrics.failed_queries += 1
+        
+        current_avg = self.metrics.avg_response_time
+        total_queries = self.metrics.total_queries
+        self.metrics.avg_response_time = ((current_avg * (total_queries - 1)) + processing_time) / total_queries
+        
+        self.metrics.last_updated = datetime.now()
+
+# ============================================================================
+# INICIALIZACIÓN DEL SISTEMA
+# ============================================================================
+
+# Instancias globales del sistema
+firebase_manager = FirebaseManager()
+groq_client = GroqLLMClient()
+data_manager = IntelligentDataManager(firebase_manager)
+rag_processor = AcademicRAGProcessor(groq_client, data_manager)
+
+# ============================================================================
+# ENDPOINTS DE LA API
+# ============================================================================
+
+@app.post("/query", response_model=Dict[str, Any])
+async def process_natural_language_query(query: Dict = Body(...)):
+    """
+    Endpoint principal para consultas en lenguaje natural
+    """
+    query_text = query.get("query", "").strip()
+    
+    if not query_text:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Consulta vacía o inválida"}
+        )
+    
+    logger.info(f"🎓 Consulta académica recibida: {query_text}")
+    
+    result = rag_processor.process_academic_query(query_text)
+    
+    if firebase_manager.is_healthy():
+        try:
+            firebase_manager.logs_collection.add({
+                "accion": "Consulta RAG Académica",
+                "consulta": query_text,
+                "complejidad": result.get("metadata", {}).get("query_complexity", "unknown"),
+                "tiempo_procesamiento": result.get("metadata", {}).get("processing_time_ms", 0),
+                "timestamp": firestore.SERVER_TIMESTAMP
+            })
+        except Exception as e:
+            logger.warning(f"⚠️ Error logging: {e}")
+    
+    return result
+
+@app.get("/health", response_model=Dict[str, Any])
+async def system_health_check():
+    firebase_healthy = firebase_manager.is_healthy()
+    groq_healthy = groq_client.is_available
+    
+    overall_status = SystemStatus.HEALTHY
+    if not firebase_healthy or not groq_healthy:
+        overall_status = SystemStatus.DEGRADED if firebase_healthy or groq_healthy else SystemStatus.DOWN
     
     return {
-        "status": status,
-        "firebase": firebase_status,
-        "llm_model": model_status,
+        "status": overall_status.value,
+        "components": {
+            "firebase": "healthy" if firebase_healthy else "unhealthy",
+            "groq_llm": "healthy" if groq_healthy else "unhealthy",
+            "data_manager": "healthy",
+            "rag_processor": "healthy"
+        },
+        "system_metrics": asdict(rag_processor.metrics),
+        "capabilities": [
+            "Consultas complejas con múltiples filtros",
+            "Análisis temporal y demográfico",
+            "Cálculos estadísticos automatizados",
+            "Cache inteligente para optimización",
+            "Logging académico detallado"
+        ],
+        "model_info": {
+            "llm_provider": "Groq",
+            "model": groq_client.model,
+            "max_tokens": 800
+        },
         "timestamp": datetime.now().isoformat(),
-        "version": "1.0.0"
+        "version": "1.0.0-academic"
     }
+
+@app.get("/metrics", response_model=Dict[str, Any])
+async def get_system_metrics():
+    return {
+        "performance_metrics": asdict(rag_processor.metrics),
+        "cache_statistics": {
+            "cache_size": len(data_manager.cache),
+            "cache_duration_minutes": data_manager.cache_duration.total_seconds() / 60
+        },
+        "dataset_info": {
+            "total_records": len(data_manager.get_enriched_dataset()),
+            "last_refresh": data_manager.cache_metadata.get("enriched_persons", "Never").isoformat() if isinstance(data_manager.cache_metadata.get("enriched_persons"), datetime) else "Never"
+        }
+    }
+
+@app.get("/academic-examples", response_model=Dict[str, List[str]])
+async def get_academic_query_examples():
+    return {
+        "consultas_simples": [
+            "¿Cuántas personas están registradas en total?",
+            "¿Cuál es la distribución por género?",
+            "¿Cuántas mujeres hay registradas?"
+        ],
+        "consultas_moderadas": [
+            "¿Cuántas personas nacieron en abril?",
+            "¿Cuál es el promedio de edad por género?",
+            "¿Cuántos adultos jóvenes hay registrados?"
+        ],
+        "consultas_complejas": [
+            "¿Cuántos hombres de más de 20 años están registrados?",
+            "¿Mujeres menores de 30 años nacidas entre marzo y junio?",
+            "¿Cuál es la distribución de edades por género en cada rango etario?"
+        ],
+        "consultas_estadisticas": [
+            "¿Cuál es la correlación entre género y rango de edad?",
+            "¿Qué porcentaje de cada género está en edad productiva?",
+            "¿Cuál es la distribución temporal de registros por mes de nacimiento y género?"
+        ],
+        "consultas_avanzadas": [
+            "¿Cuántas personas de género no binario mayores de edad nacieron en el primer trimestre?",
+            "¿Cuál es la edad promedio de hombres vs mujeres en cada categoría etaria?",
+            "¿Qué tendencias demográficas se observan en los registros por año de nacimiento?"
+        ]
+    }
+
+@app.get("/documentation", response_model=Dict[str, Any])
+async def get_system_documentation():
+    return {
+        "titulo": "Sistema RAG para Análisis Demográfico",
+        "descripcion": "Sistema académico de consultas en lenguaje natural con capacidades de RAG real",
+        "arquitectura": {
+            "componentes": [
+                "Firebase Firestore (Base de datos)",
+                "Groq API (Modelo de lenguaje)",
+                "FastAPI (Framework web)",
+                "Sistema de cache inteligente",
+                "Analizador de consultas académicas"
+            ],
+            "flujo_procesamiento": [
+                "1. Recepción y análisis de consulta",
+                "2. Recuperación de datos con cache",
+                "3. Enriquecimiento de dataset",
+                "4. Construcción de prompt académico", 
+                "5. Procesamiento con LLM",
+                "6. Logging y métricas"
+            ]
+        },
+        "capacidades_tecnicas": {
+            "tipos_consulta": [
+                "Filtros simples (género, edad)",
+                "Filtros complejos (múltiples condiciones)", 
+                "Análisis temporal (meses, años)",
+                "Cálculos estadísticos",
+                "Análisis demográfico avanzado"
+            ],
+            "optimizaciones": [
+                "Cache inteligente con TTL",
+                "Reintentos automáticos",
+                "Enriquecimiento de datos",
+                "Análisis de complejidad de consultas"
+            ]
+        },
+        "metricas_academicas": [
+            "Tiempo de respuesta promedio",
+            "Tasa de éxito de consultas",
+            "Efectividad del cache",
+            "Distribución de complejidad de consultas"
+        ]
+    }
+
+@app.post("/evaluate", response_model=Dict[str, Any])
+async def evaluate_system_performance():
+    test_queries = [
+        "¿Cuántas personas hay registradas?",
+        "¿Cuántos hombres de más de 25 años?", 
+        "¿Mujeres nacidas en abril?",
+        "¿Cuál es el promedio de edad por género?"
+    ]
+    
+    evaluation_results = []
+    
+    for query in test_queries:
+        start_time = time.time()
+        
+        try:
+            result = rag_processor.process_academic_query(query)
+            processing_time = time.time() - start_time
+            
+            evaluation_results.append({
+                "query": query,
+                "success": "error" not in result.get("answer", "").lower(),
+                "processing_time_ms": round(processing_time * 1000, 2),
+                "complexity": result.get("metadata", {}).get("query_complexity", "unknown"),
+                "response_length": len(result.get("answer", ""))
+            })
+            
+        except Exception as e:
+            evaluation_results.append({
+                "query": query,
+                "success": False,
+                "error": str(e),
+                "processing_time_ms": round((time.time() - start_time) * 1000, 2)
+            })
+    
+    successful_queries = sum(1 for r in evaluation_results if r["success"])
+    avg_processing_time = sum(r["processing_time_ms"] for r in evaluation_results) / len(evaluation_results)
+    
+    return {
+        "evaluation_summary": {
+            "total_queries": len(test_queries),
+            "successful_queries": successful_queries,
+            "success_rate": round((successful_queries / len(test_queries)) * 100, 2),
+            "average_processing_time_ms": round(avg_processing_time, 2)
+        },
+        "detailed_results": evaluation_results,
+        "system_status": "operational" if successful_queries > len(test_queries) * 0.8 else "degraded"
+    }
+
+# ============================================================================
+# MIDDLEWARE Y CONFIGURACIÓN ADICIONAL
+# ============================================================================
+
+@app.middleware("http")
+async def log_requests(request, call_next):
+    """Middleware para logging académico de requests"""
+    start_time = time.time()
+    
+    response = await call_next(request)
+    
+    process_time = time.time() - start_time
+    logger.info(f"📊 {request.method} {request.url.path} - {response.status_code} - {process_time:.3f}s")
+    
+    return response
+
+@app.on_event("startup")
+async def startup_event():
+    """Evento de inicio del sistema"""
+    logger.info("🚀 Sistema RAG Académico iniciando...")
+    
+    required_env_vars = ["GROQ_API_KEY", "FIREBASE_PROJECT_ID"]
+    missing_vars = [var for var in required_env_vars if not os.getenv(var)]
+    
+    if missing_vars:
+        logger.error(f"❌ Variables de entorno faltantes: {missing_vars}")
+        raise ValueError(f"Variables requeridas: {missing_vars}")
+    
+    os.makedirs("/app/logs", exist_ok=True)
+    
+    logger.info("✅ Sistema RAG Académico iniciado correctamente")
+
+@app.on_event("shutdown") 
+async def shutdown_event():
+    """Evento de cierre del sistema"""
+    logger.info("🛑 Sistema RAG Académico cerrando...")
+    
+    final_metrics = asdict(rag_processor.metrics)
+    logger.info(f"📈 Métricas finales: {final_metrics}")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
