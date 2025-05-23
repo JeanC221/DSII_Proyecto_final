@@ -104,21 +104,56 @@ const ConsultaNatural = () => {
     }
   };
 
-  const ejemplos = [
-    "¿Cuántas personas están registradas en total?",
-    "¿Cuál es la distribución por género?", 
-    "¿Cuál es el promedio de edad de las personas registradas?",
-    "¿Quién es la persona más joven registrada?",
-    "¿Quién fue la última persona en registrarse?",
-    "¿Quién es la persona mayor registrada?",
-    "¿Cuántas mujeres hay registradas?",
-    "¿Cuántos hombres hay registrados?",
-    "¿Cuántas personas nacieron en abril?",
-    "¿Cuántos adultos jóvenes están registrados?"
-  ];
+  const ejemplosPorCategoria = {
+    basicas: {
+      titulo: "Consultas Básicas",
+      icon: "📊",
+      color: "info",
+      ejemplos: [
+        "¿Cuántas personas están registradas en total?",
+        "¿Cuál es la distribución por género?",
+        "¿Cuántas mujeres hay registradas?",
+        "¿Cuántos hombres hay registrados?"
+      ]
+    },
+    demograficas: {
+      titulo: "Análisis Demográfico",
+      icon: "👥",
+      color: "success",
+      ejemplos: [
+        "¿Cuál es el promedio de edad de las personas registradas?",
+        "¿Quién es la persona más joven registrada?",
+        "¿Quién es la persona mayor registrada?",
+        "¿Cuántos adultos jóvenes están registrados?"
+      ]
+    },
+    temporales: {
+      titulo: "Consultas Temporales",
+      icon: "📅",
+      color: "warning",
+      ejemplos: [
+        "¿Cuántas personas nacieron en abril?",
+        "¿Quién fue la última persona en registrarse?",
+        "¿Cuántas personas nacieron en el primer trimestre?",
+        "¿Qué personas nacieron en los años 90?"
+      ]
+    },
+    avanzadas: {
+      titulo: "Consultas Avanzadas",
+      icon: "🤖",
+      color: "purple",
+      ejemplos: [
+        "¿Cuántos hombres de más de 25 años hay?",
+        "¿Mujeres menores de 30 años nacidas en abril?",
+        "¿Cuál es la distribución de edades por género?",
+        "¿Qué porcentaje de cada género está registrado?"
+      ]
+    }
+  };
 
   const usarEjemplo = (ejemplo) => {
     setConsulta(ejemplo);
+    setError(null);
   };
 
   const getStatusIcon = (status) => {
@@ -132,10 +167,10 @@ const ConsultaNatural = () => {
   };
 
   const getStatusText = (status) => {
-    if (!status) return 'Verificando...';
+    if (!status) return 'Verificando estado del sistema...';
     
     switch(status.status) {
-      case 'ok': return 'Sistema RAG operativo';
+      case 'ok': return 'Sistema RAG operativo y listo';
       case 'degraded': return 'Sistema parcialmente disponible';
       case 'error':
       case 'down':
@@ -148,154 +183,298 @@ const ConsultaNatural = () => {
     checkServiceStatus();
   };
 
+  const clearQuery = () => {
+    setConsulta('');
+    setRespuesta(null);
+    setError(null);
+  };
+
   return (
-    <div className="card">
-      <h2>Consulta en Lenguaje Natural</h2>
-      
-      {/* Indicador de estado mejorado */}
-      {serviceStatus && (
-        <div className={`${styles.serviceStatus} ${serviceStatus.status === 'ok' ? styles.serviceOk : styles.serviceError}`}>
-          <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-            <span>{getStatusIcon(serviceStatus)}</span>
-            <strong>{getStatusText(serviceStatus)}</strong>
-            {serviceStatus.status !== 'ok' && (
-              <button onClick={retryConnection} className="secondary" style={{marginLeft: '10px', padding: '4px 8px', fontSize: '12px'}}>
-                Reintentar
-              </button>
-            )}
+    <div className={styles.container}>
+      {/* Header Section */}
+      <div className={styles.headerSection}>
+        <div className={styles.titleContainer}>
+          <h2>
+            <span className={styles.titleIcon}>🤖</span>
+            Consulta en Lenguaje Natural
+          </h2>
+          <p className={styles.subtitle}>
+            Utiliza inteligencia artificial para consultar información con lenguaje cotidiano
+          </p>
+        </div>
+        
+        <button 
+          onClick={retryConnection} 
+          className={styles.refreshButton}
+          disabled={loading}
+        >
+          <span className={styles.buttonIcon}>🔄</span>
+          Verificar Estado
+        </button>
+      </div>
+
+      {/* Service Status Card */}
+      <div className={`${styles.statusCard} ${serviceStatus?.status === 'ok' ? styles.statusOk : styles.statusError}`}>
+        <div className={styles.statusHeader}>
+          <div className={styles.statusMain}>
+            <span className={styles.statusIcon}>{getStatusIcon(serviceStatus)}</span>
+            <div className={styles.statusText}>
+              <h3>{getStatusText(serviceStatus)}</h3>
+              <p>Estado del servicio de inteligencia artificial</p>
+            </div>
           </div>
           
-          <div className={styles.serviceDetails}>
-            <small>
-              • Firebase: {serviceStatus.firebase === 'connected' ? '✅ Conectado' : '❌ Desconectado'}<br/>
-              • Modelo LLM: {serviceStatus.llm_model === 'loaded' ? '✅ Cargado' : '❌ No disponible'}<br/>
-              • Recuperador de datos: {serviceStatus.data_retriever === 'available' ? '✅ Disponible' : '❌ No disponible'}
-              {serviceStatus.model_info?.llm_provider && (
-                <>
-                  <br/>• Proveedor: {serviceStatus.model_info.llm_provider} ({serviceStatus.model_info.model})
-                </>
-              )}
-            </small>
-          </div>
-          
-          {/* Información de debug cuando hay errores */}
-          {serviceStatus.status === 'error' && debugInfo && (
-            <details style={{marginTop: '10px'}}>
-              <summary style={{cursor: 'pointer', fontSize: '12px'}}>📋 Información de diagnóstico</summary>
-              <pre style={{fontSize: '10px', marginTop: '5px', padding: '5px', backgroundColor: '#f0f0f0', borderRadius: '3px'}}>
-                {JSON.stringify(debugInfo, null, 2)}
-              </pre>
-            </details>
+          {serviceStatus?.status !== 'ok' && (
+            <button onClick={retryConnection} className={styles.retryButton}>
+              <span className={styles.buttonIcon}>🔄</span>
+              Reintentar
+            </button>
           )}
         </div>
-      )}
-      
-      <p className={styles.description}>
-        Utiliza lenguaje natural para consultar información sobre las personas registradas.
-        El sistema analiza tu pregunta y busca en la base de datos real para darte respuestas precisas.
-        <br/><br/>
-        <strong>Nota:</strong> Las respuestas se basan únicamente en los datos reales almacenados en la base de datos.
-      </p>
-      
-      {/* Ejemplos organizados por categorías */}
-      <div className={styles.ejemplos}>
-        <h3>Ejemplos de consultas (basadas en datos reales):</h3>
         
-        <div className={styles.ejemplosCategoria}>
-          <h4>📊 Estadísticas generales:</h4>
-          <ul>
-            {ejemplos.slice(0, 3).map((ejemplo, index) => (
-              <li key={index}>
-                <button onClick={() => usarEjemplo(ejemplo)} className="secondary">Usar</button>
-                <span>{ejemplo}</span>
-              </li>
-            ))}
-          </ul>
+        {serviceStatus && (
+          <div className={styles.statusDetails}>
+            <div className={styles.statusGrid}>
+              <div className={styles.statusItem}>
+                <span className={styles.statusLabel}>Base de datos:</span>
+                <span className={`${styles.statusValue} ${serviceStatus.firebase === 'connected' ? styles.statusActive : styles.statusInactive}`}>
+                  {serviceStatus.firebase === 'connected' ? '✅ Conectada' : '❌ Desconectada'}
+                </span>
+              </div>
+              <div className={styles.statusItem}>
+                <span className={styles.statusLabel}>Modelo IA:</span>
+                <span className={`${styles.statusValue} ${serviceStatus.llm_model === 'loaded' ? styles.statusActive : styles.statusInactive}`}>
+                  {serviceStatus.llm_model === 'loaded' ? '✅ Cargado' : '❌ No disponible'}
+                </span>
+              </div>
+              <div className={styles.statusItem}>
+                <span className={styles.statusLabel}>Recuperador:</span>
+                <span className={`${styles.statusValue} ${serviceStatus.data_retriever === 'available' ? styles.statusActive : styles.statusInactive}`}>
+                  {serviceStatus.data_retriever === 'available' ? '✅ Disponible' : '❌ No disponible'}
+                </span>
+              </div>
+              {serviceStatus.model_info?.llm_provider && (
+                <div className={styles.statusItem}>
+                  <span className={styles.statusLabel}>Proveedor:</span>
+                  <span className={styles.statusValue}>
+                    {serviceStatus.model_info.llm_provider} ({serviceStatus.model_info.model})
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Description Card */}
+      <div className={styles.descriptionCard}>
+        <div className={styles.descriptionHeader}>
+          <h3>
+            <span className={styles.descriptionIcon}>💡</span>
+            ¿Cómo funciona?
+          </h3>
         </div>
-        
-        <div className={styles.ejemplosCategoria}>
-          <h4>👤 Consultas específicas:</h4>
-          <ul>
-            {ejemplos.slice(3, 6).map((ejemplo, index) => (
-              <li key={index + 3}>
-                <button onClick={() => usarEjemplo(ejemplo)} className="secondary">Usar</button>
-                <span>{ejemplo}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        
-        <div className={styles.ejemplosCategoria}>
-          <h4>🚻 Por género y edad:</h4>
-          <ul>
-            {ejemplos.slice(6).map((ejemplo, index) => (
-              <li key={index + 6}>
-                <button onClick={() => usarEjemplo(ejemplo)} className="secondary">Usar</button>
-                <span>{ejemplo}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        
-        <div className={styles.ejemplosInfo}>
-          <p><strong>💡 Tip:</strong> También puedes preguntar por números de documento específicos o nombres de personas.</p>
-          <p><em>Ejemplo:</em> "¿Quién tiene el documento 1234567890?" o "Buscar persona llamada María"</p>
+        <div className={styles.descriptionContent}>
+          <p>
+            <strong>Sistema RAG (Retrieval-Augmented Generation):</strong> Este sistema combina la búsqueda en datos reales 
+            con inteligencia artificial para generar respuestas precisas y contextuales.
+          </p>
+          <div className={styles.features}>
+            <div className={styles.feature}>
+              <span className={styles.featureIcon}>🔍</span>
+              <span>Búsqueda en datos reales del sistema</span>
+            </div>
+            <div className={styles.feature}>
+              <span className={styles.featureIcon}>🧠</span>
+              <span>Procesamiento con inteligencia artificial</span>
+            </div>
+            <div className={styles.feature}>
+              <span className={styles.featureIcon}>📊</span>
+              <span>Análisis estadístico automático</span>
+            </div>
+            <div className={styles.feature}>
+              <span className={styles.featureIcon}>💬</span>
+              <span>Respuestas en lenguaje natural</span>
+            </div>
+          </div>
         </div>
       </div>
-      
-      {/* Formulario de consulta */}
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <div className={styles.inputContainer}>
-          <label htmlFor="consulta">Tu pregunta:</label>
-          <div className={styles.inputWrapper}>
-            <input
-              id="consulta"
-              type="text"
-              value={consulta}
-              onChange={(e) => setConsulta(e.target.value)}
-              placeholder="Escribe tu pregunta sobre las personas registradas..."
-              disabled={loading}
-            />
+
+      {/* Examples Section */}
+      <div className={styles.examplesSection}>
+        <div className={styles.examplesHeader}>
+          <h3>
+            <span className={styles.examplesIcon}>💭</span>
+            Ejemplos de Consultas
+          </h3>
+          <p>Haz clic en cualquier ejemplo para usarlo directamente</p>
+        </div>
+        
+        <div className={styles.categoriesGrid}>
+          {Object.entries(ejemplosPorCategoria).map(([key, categoria]) => (
+            <div key={key} className={`${styles.categoryCard} ${styles[`category${categoria.color}`]}`}>
+              <div className={styles.categoryHeader}>
+                <span className={styles.categoryIcon}>{categoria.icon}</span>
+                <h4>{categoria.titulo}</h4>
+              </div>
+              
+              <div className={styles.examplesList}>
+                {categoria.ejemplos.map((ejemplo, index) => (
+                  <button
+                    key={index}
+                    onClick={() => usarEjemplo(ejemplo)}
+                    className={styles.exampleButton}
+                    disabled={loading}
+                  >
+                    <span className={styles.exampleText}>{ejemplo}</span>
+                    <span className={styles.useIcon}>→</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className={styles.examplesTip}>
+          <div className={styles.tipIcon}>💡</div>
+          <div className={styles.tipContent}>
+            <p><strong>Consejo:</strong> También puedes preguntar por información específica como números de documento o nombres.</p>
+            <p><em>Ejemplo:</em> "¿Quién tiene el documento 1234567890?" o "Buscar persona llamada María"</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Query Form */}
+      <div className={styles.querySection}>
+        <div className={styles.queryHeader}>
+          <h3>
+            <span className={styles.queryIcon}>❓</span>
+            Tu Consulta
+          </h3>
+        </div>
+        
+        <form onSubmit={handleSubmit} className={styles.queryForm}>
+          <div className={styles.inputContainer}>
+            <div className={styles.inputWrapper}>
+              <input
+                type="text"
+                value={consulta}
+                onChange={(e) => setConsulta(e.target.value)}
+                placeholder="Escribe tu pregunta sobre las personas registradas..."
+                disabled={loading}
+                className={styles.queryInput}
+              />
+              
+              {consulta && (
+                <button
+                  type="button"
+                  onClick={clearQuery}
+                  className={styles.clearInputButton}
+                  disabled={loading}
+                >
+                  <span className={styles.buttonIcon}>✕</span>
+                </button>
+              )}
+            </div>
+            
             <button 
               type="submit" 
               disabled={loading || !consulta.trim() || serviceStatus?.status === 'error'}
+              className={styles.submitButton}
             >
-              {loading ? 'Analizando...' : 'Consultar'}
+              {loading ? (
+                <>
+                  <span className={styles.loadingSpinner}></span>
+                  Analizando...
+                </>
+              ) : (
+                <>
+                  <span className={styles.buttonIcon}>🚀</span>
+                  Consultar
+                </>
+              )}
             </button>
           </div>
+          
+          {error && (
+            <div className={styles.errorAlert}>
+              <span className={styles.alertIcon}>⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
+        </form>
+      </div>
+
+      {/* Response Section */}
+      <div className={styles.responseSection}>
+        <div className={styles.responseHeader}>
+          <h3>
+            <span className={styles.responseIcon}>🤖</span>
+            Respuesta del Sistema
+          </h3>
         </div>
         
-        {error && <div className="error">{error}</div>}
-        
-        {/* Área de respuesta mejorada */}
-        <div className={styles.resultContainer}>
-          <label>Respuesta del sistema:</label>
-          <div className={styles.result}>
-            {loading ? (
-              <div className={styles.loading}>
-                <div className={styles.loadingSpinner}></div>
-                Analizando tu consulta y buscando en los datos...
-                <small>Esto puede tomar hasta 30 segundos para consultas complejas</small>
-              </div>
-            ) : respuesta ? (
-              <div className={styles.respuesta}>
-                <div className={styles.respuestaContent}>
-                  {respuesta}
+        <div className={styles.responseContainer}>
+          {loading ? (
+            <div className={styles.loadingState}>
+              <div className={styles.loadingSpinner}></div>
+              <h4>Analizando tu consulta...</h4>
+              <p>El sistema está procesando tu pregunta y buscando en los datos</p>
+              <div className={styles.loadingSteps}>
+                <div className={styles.loadingStep}>
+                  <span className={styles.stepIcon}>🔍</span>
+                  <span>Analizando consulta</span>
                 </div>
-                <div className={styles.respuestaFooter}>
-                  <small>Respuesta basada en datos reales del sistema • {new Date().toLocaleTimeString()}</small>
+                <div className={styles.loadingStep}>
+                  <span className={styles.stepIcon}>📊</span>
+                  <span>Buscando en datos</span>
+                </div>
+                <div className={styles.loadingStep}>
+                  <span className={styles.stepIcon}>🧠</span>
+                  <span>Generando respuesta</span>
                 </div>
               </div>
-            ) : (
-              <div className={styles.placeholder}>
-                <div className={styles.placeholderIcon}>💬</div>
-                <p>Tu respuesta aparecerá aquí</p>
-                <small>Utiliza los ejemplos de arriba o escribe tu propia pregunta</small>
+              <small>Esto puede tomar hasta 30 segundos para consultas complejas</small>
+            </div>
+          ) : respuesta ? (
+            <div className={styles.responseContent}>
+              <div className={styles.responseText}>
+                {respuesta}
               </div>
-            )}
-          </div>
+              <div className={styles.responseFooter}>
+                <div className={styles.responseMetadata}>
+                  <span className={styles.responseTime}>
+                    <span className={styles.timeIcon}>🕒</span>
+                    Respondido el {new Date().toLocaleString('es-ES')}
+                  </span>
+                  <span className={styles.responseSource}>
+                    <span className={styles.sourceIcon}>📊</span>
+                    Basado en datos reales del sistema
+                  </span>
+                </div>
+                <button 
+                  onClick={clearQuery}
+                  className={styles.newQueryButton}
+                >
+                  <span className={styles.buttonIcon}>➕</span>
+                  Nueva Consulta
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.emptyResponse}>
+              <div className={styles.emptyIcon}>💬</div>
+              <h4>Esperando tu consulta</h4>
+              <p>Tu respuesta aparecerá aquí una vez que hagas una pregunta</p>
+              <div className={styles.emptyHints}>
+                <p>📝 Utiliza los ejemplos de arriba para comenzar</p>
+                <p>🔍 Pregunta sobre estadísticas, nombres o documentos</p>
+                <p>📊 Solicita análisis demográficos</p>
+              </div>
+            </div>
+          )}
         </div>
-      </form>
+      </div>
     </div>
   );
 };

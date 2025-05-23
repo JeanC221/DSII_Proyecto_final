@@ -63,3 +63,89 @@
 2025-05-23 11:39:25,126 - rag_service - INFO - 🚀 Sistema RAG Académico iniciando...
 2025-05-23 11:39:25,128 - rag_service - INFO - ✅ Sistema RAG Académico iniciado correctamente
 2025-05-23 11:39:27,860 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:39:37,011 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 11:39:57,908 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:40:27,936 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 11:40:57,965 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:41:28,065 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:41:58,169 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 11:42:28,204 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:42:40,688 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 11:42:58,307 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:43:28,413 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:43:58,477 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:44:28,507 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:44:41,408 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:44:58,573 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:45:28,609 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:45:58,677 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:46:28,708 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:46:58,742 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:47:28,772 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:47:58,814 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 11:48:28,850 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:48:58,977 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 11:49:29,110 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 11:49:59,177 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:50:29,231 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:50:59,304 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:51:29,334 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:51:59,400 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:52:06,576 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 11:52:29,470 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:52:59,500 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:53:29,542 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:53:59,577 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 11:54:18,629 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
+2025-05-23 11:54:18,630 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 0, 'successful_queries': 0, 'failed_queries': 0, 'avg_response_time': 0.0, 'cache_hit_rate': 0.0, 'last_updated': None}
+2025-05-23 12:04:44,985 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-23 12:04:45,615 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-23 12:04:45,629 - rag_service - INFO - 🚀 Sistema RAG Académico iniciando...
+2025-05-23 12:04:45,630 - rag_service - INFO - ✅ Sistema RAG Académico iniciado correctamente
+2025-05-23 12:04:48,068 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:05:18,115 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:05:48,244 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:06:13,073 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 12:06:18,328 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:06:48,374 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:07:18,407 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:07:48,434 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:07:58,666 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
+2025-05-23 12:07:58,666 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 0, 'successful_queries': 0, 'failed_queries': 0, 'avg_response_time': 0.0, 'cache_hit_rate': 0.0, 'last_updated': None}
+2025-05-23 12:11:04,670 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-23 12:11:06,197 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-23 12:11:06,225 - rag_service - INFO - 🚀 Sistema RAG Académico iniciando...
+2025-05-23 12:11:06,228 - rag_service - INFO - ✅ Sistema RAG Académico iniciado correctamente
+2025-05-23 12:11:07,685 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:11:37,716 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:12:07,775 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 12:12:37,898 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 12:13:07,936 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:13:38,000 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:14:08,049 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:14:38,097 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 12:15:08,215 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:15:38,252 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:16:08,296 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:16:38,365 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:17:08,395 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:17:38,533 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 12:18:08,624 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 12:18:38,699 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:19:08,831 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:19:16,593 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
+2025-05-23 12:19:16,593 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 0, 'successful_queries': 0, 'failed_queries': 0, 'avg_response_time': 0.0, 'cache_hit_rate': 0.0, 'last_updated': None}
+2025-05-23 12:23:50,053 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-23 12:23:50,530 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-23 12:23:50,557 - rag_service - INFO - 🚀 Sistema RAG Académico iniciando...
+2025-05-23 12:23:50,559 - rag_service - INFO - ✅ Sistema RAG Académico iniciado correctamente
+2025-05-23 12:23:52,810 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 12:24:22,861 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:24:52,916 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:25:22,985 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 12:25:53,112 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-23 12:26:23,187 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:26:53,228 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:27:23,258 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-23 12:27:37,153 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
+2025-05-23 12:27:37,154 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 0, 'successful_queries': 0, 'failed_queries': 0, 'avg_response_time': 0.0, 'cache_hit_rate': 0.0, 'last_updated': None}

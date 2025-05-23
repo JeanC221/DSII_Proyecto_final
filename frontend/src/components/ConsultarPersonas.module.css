@@ -1,199 +1,546 @@
+/* Container principal */
 .container {
-  max-width: 800px;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: calc(100vh - 200px);
 }
 
-.actions {
+/* Header Section */
+.headerSection {
   display: flex;
   justify-content: space-between;
-  margin: 20px 0;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 2rem;
 }
 
-.createButton {
+.titleContainer {
+  flex: 1;
+}
+
+.titleContainer h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 0.5rem 0;
+}
+
+.titleIcon {
+  font-size: 1.75rem;
+}
+
+.subtitle {
+  color: var(--text-light);
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Botones principales */
+.primaryButton {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 15px;
-  background-color: var(--secondary-color);
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: white;
   text-decoration: none;
-  border-radius: 4px;
-  font-weight: bold;
-  transition: background-color 0.3s;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.25);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-.createButton:hover {
-  background-color: var(--secondary-dark);
+.primaryButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.35);
   text-decoration: none;
+  color: white;
 }
 
-.filters {
+.buttonIcon {
+  font-size: 1rem;
+}
+
+/* Estados de loading */
+.loadingState {
   display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-bottom: 20px;
-  padding: 15px;
-  background-color: var(--background-light);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--background-light);
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1.5rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loadingState h3 {
+  color: var(--text-color);
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+}
+
+.loadingState p {
+  color: var(--text-light);
+  margin: 0;
+}
+
+/* Alertas */
+.errorAlert {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background-color: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.alertIcon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.errorAlert strong {
+  color: var(--danger-color);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.errorAlert p {
+  color: var(--danger-color);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Filtros */
+.filtersCard {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.filtersHeader {
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.filtersHeader h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.filterIcon {
+  font-size: 1rem;
+}
+
+.filtersGrid {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 1.5rem;
+  align-items: end;
 }
 
 .filterGroup {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  flex: 1;
-  min-width: 200px;
+  gap: 0.5rem;
 }
 
 .filterGroup label {
-  font-weight: 500;
-  font-size: 0.9em;
-}
-
-.searchInput, .selectFilter {
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  font-size: 0.9em;
-}
-
-.resetButton {
-  align-self: flex-end;
-  padding: 8px 15px;
-  background-color: var(--background-dark);
+  font-weight: 600;
   color: var(--text-color);
-  border: none;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-size: 0.9em;
-  transition: background-color 0.3s;
+  font-size: 0.9rem;
 }
 
-.resetButton:hover {
-  background-color: #ddd;
+.searchInput,
+.selectFilter {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
 }
 
-.tableResponsive {
-  overflow-x: auto;
-  margin-bottom: 20px;
+.searchInput:focus,
+.selectFilter:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  font-size: 0.95em;
-}
-
-.table th,
-.table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.table th {
-  background-color: var(--background-dark);
-  font-weight: bold;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.table tr:hover {
-  background-color: var(--background-light);
-}
-
-.actions {
+.clearButton {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--background-dark);
+  color: var(--text-color);
+  border: 2px solid var(--border-color);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
-.editButton, .deleteButton {
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 0.9em;
-  cursor: pointer;
-  transition: background-color 0.3s;
+.clearButton:hover {
+  background: #ddd;
+  border-color: #aaa;
+}
+
+/* Sección de resultados */
+.resultsSection {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.resultsHeader {
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.resultsInfo h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.resultsCount {
+  margin: 0;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+/* Estado vacío */
+.emptyState {
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--text-light);
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.emptyState h3 {
+  color: var(--text-color);
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+}
+
+.emptyState p {
+  margin: 0 0 1.5rem 0;
+  line-height: 1.6;
+}
+
+/* Grid de personas */
+.personasGrid {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Card de persona */
+.personCard {
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.personCard:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 8px 25px rgba(52, 152, 219, 0.15);
+  transform: translateY(-2px);
+}
+
+.personHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.personAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.personInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.personName {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-color);
+  word-wrap: break-word;
+}
+
+.personDoc {
+  margin: 0;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+/* Detalles de persona */
+.personDetails {
+  margin-bottom: 1.5rem;
+}
+
+.detailRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.detailRow:last-child {
+  margin-bottom: 0;
+}
+
+.detailLabel {
+  font-size: 0.9rem;
+  min-width: 100px;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.detailValue {
+  flex: 1;
+  color: var(--text-color);
+  font-size: 0.9rem;
+}
+
+.emailLink,
+.phoneLink {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+  flex: 1;
+}
+
+.emailLink:hover,
+.phoneLink:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Acciones de persona */
+.personActions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-color);
 }
 
 .editButton {
-  background-color: var(--primary-color);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--primary-color);
   color: white;
   text-decoration: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
 }
 
 .editButton:hover {
-  background-color: var(--primary-dark);
+  background: var(--primary-dark);
   text-decoration: none;
+  color: white;
+  transform: translateY(-1px);
 }
 
 .deleteButton {
-  background-color: var(--danger-color);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--danger-color);
   color: white;
   border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .deleteButton:hover {
-  background-color: var(--danger-dark);
+  background: var(--danger-dark);
+  transform: translateY(-1px);
 }
 
-.loading, .noData {
-  text-align: center;
-  padding: 30px;
-  color: var(--text-light);
-  font-style: italic;
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .personasGrid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
 }
 
-.error {
-  background-color: rgba(231, 76, 60, 0.1);
-  color: var(--danger-color);
-  padding: 15px;
-  border-radius: var(--border-radius);
-  margin-bottom: 20px;
-  text-align: center;
-  border: 1px solid var(--danger-color);
-}
-
-.email {
-  color: var(--primary-color);
-  text-decoration: none;
-  transition: color 0.3s;
-}
-
-.email:hover {
-  text-decoration: underline;
-  color: var(--primary-dark);
-}
-
-.summary {
-  margin-top: 20px;
-  text-align: right;
-  font-weight: 500;
-  color: var(--text-light);
-}
-
-/* Estilos para dispositivos móviles */
 @media (max-width: 768px) {
-  .filters {
+  .container {
+    padding: 1rem;
+  }
+  
+  .headerSection {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .filtersGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .filterActions {
+    justify-self: start;
+  }
+  
+  .personasGrid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  
+  .personCard {
+    padding: 1.25rem;
+  }
+  
+  .personActions {
     flex-direction: column;
   }
   
-  .actions {
+  .detailRow {
     flex-direction: column;
-    gap: 10px;
+    align-items: flex-start;
+    gap: 0.25rem;
   }
   
-  .table {
-    font-size: 0.85em;
+  .detailLabel {
+    min-width: auto;
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 480px) {
+  .titleContainer h2 {
+    font-size: 1.5rem;
   }
   
-  .table td, .table th {
-    padding: 8px;
+  .personHeader {
+    gap: 0.75rem;
   }
+  
+  .personAvatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .personName {
+    font-size: 1rem;
+  }
+}
+
+/* Animaciones mejoradas */
+@media (prefers-reduced-motion: no-preference) {
+  .personCard {
+    animation: fadeInUp 0.4s ease-out;
+  }
+  
+  .personCard:nth-child(even) {
+    animation-delay: 0.1s;
+  }
+  
+  .personCard:nth-child(3n) {
+    animation-delay: 0.2s;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Focus states para accesibilidad */
+.primaryButton:focus,
+.editButton:focus,
+.deleteButton:focus,
+.clearButton:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
