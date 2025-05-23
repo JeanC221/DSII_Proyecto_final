@@ -2,13 +2,13 @@
 .container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: var(--spacing-3xl);
   min-height: calc(100vh - 200px);
 }
 
 /* Header Section */
 .headerSection {
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-3xl);
   text-align: center;
 }
 
@@ -16,27 +16,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  font-size: 2rem;
+  gap: var(--spacing-md);
+  font-size: var(--font-size-3xl);
   font-weight: 700;
   color: var(--text-color);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 var(--spacing-sm) 0;
 }
 
 .titleIcon {
-  font-size: 1.75rem;
+  width: 28px;
+  height: 28px;
+  color: var(--primary-color);
 }
 
 .subtitle {
   color: var(--text-light);
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 /* Progress Steps */
 .progressContainer {
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-3xl);
   position: relative;
 }
 
@@ -45,14 +47,14 @@
   justify-content: space-between;
   position: relative;
   z-index: 2;
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-lg);
 }
 
 .progressStep {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   flex: 1;
   position: relative;
 }
@@ -60,16 +62,16 @@
 .stepNumber {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--border-radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 0.9rem;
-  background: var(--background-light);
-  border: 2px solid var(--border-color);
+  font-size: var(--font-size-sm);
+  background: var(--background-tertiary);
+  border: var(--border-width-2) solid var(--border-color);
   color: var(--text-light);
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
 }
 
 .progressStep.active .stepNumber {
@@ -85,6 +87,11 @@
   color: white;
 }
 
+.progressStep.completed .stepNumber svg {
+  width: 16px;
+  height: 16px;
+}
+
 .progressStep.filled .stepNumber {
   background: var(--primary-color);
   border-color: var(--primary-color);
@@ -92,11 +99,11 @@
 }
 
 .stepLabel {
-  font-size: 0.8rem;
+  font-size: var(--font-size-xs);
   text-align: center;
   color: var(--text-light);
   font-weight: 500;
-  transition: color 0.3s ease;
+  transition: color var(--transition-fast);
 }
 
 .progressStep.active .stepLabel {
@@ -117,215 +124,230 @@
   height: 2px;
   background: var(--border-color);
   z-index: 1;
-  border-radius: 1px;
+  border-radius: var(--border-radius-sm);
 }
 
 .progressFill {
   height: 100%;
   background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-  border-radius: 1px;
-  transition: width 0.4s ease;
+  border-radius: var(--border-radius-sm);
+  transition: width var(--transition-slow);
 }
 
 /* Form Card */
 .formCard {
-  background: white;
-  border-radius: 1rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--background-primary);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-lg);
+  border: var(--border-width) solid var(--border-color);
   overflow: hidden;
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-3xl);
 }
 
 /* Error Alert */
 .errorAlert {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
-  background-color: rgba(231, 76, 60, 0.1);
-  border-bottom: 1px solid rgba(231, 76, 60, 0.3);
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  background-color: var(--danger-light);
+  border-bottom: var(--border-width) solid var(--danger-color);
   margin: 0;
 }
 
 .alertIcon {
-  font-size: 1.25rem;
+  width: 20px;
+  height: 20px;
+  color: var(--danger-color);
   flex-shrink: 0;
 }
 
 .errorAlert strong {
   color: var(--danger-color);
   display: block;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--spacing-xs);
 }
 
 .errorAlert p {
   color: var(--danger-color);
   margin: 0;
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
 }
 
 /* Step Header */
 .stepHeader {
-  padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: var(--spacing-2xl) var(--spacing-3xl);
+  background: var(--background-tertiary);
+  border-bottom: var(--border-width) solid var(--border-color);
 }
 
 .stepHeader h3 {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin: 0 0 0.5rem 0;
-  font-size: 1.3rem;
+  gap: var(--spacing-md);
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: var(--font-size-xl);
   font-weight: 600;
   color: var(--text-color);
 }
 
 .stepIcon {
-  font-size: 1.25rem;
+  width: 24px;
+  height: 24px;
+  color: var(--primary-color);
 }
 
 .stepDescription {
   margin: 0;
   color: var(--text-light);
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
+}
+
+.required {
+  color: var(--danger-color);
+  font-weight: 600;
 }
 
 /* Step Content */
 .stepContent {
-  padding: 2rem;
+  padding: var(--spacing-3xl);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--spacing-2xl);
 }
 
 /* Form Groups */
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .formGroup label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   font-weight: 600;
   color: var(--text-color);
-  font-size: 0.95rem;
+  font-size: var(--font-size-sm);
 }
 
 .fieldIcon {
-  font-size: 1rem;
+  width: 16px;
+  height: 16px;
+  color: var(--neutral-color);
 }
 
 .optional {
   font-weight: normal;
   font-style: italic;
   color: var(--text-light);
-  font-size: 0.85rem;
+  font-size: var(--font-size-xs);
 }
 
 /* Form Inputs */
 input, select {
-  padding: 0.875rem 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 0.75rem;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background: white;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border: var(--border-width-2) solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-base);
+  transition: all var(--transition-fast);
+  background: var(--background-primary);
   color: var(--text-color);
 }
 
 input:focus, select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 input::placeholder {
-  color: var(--text-light);
+  color: var(--text-muted);
   font-style: italic;
 }
 
 .inputError {
   border-color: var(--danger-color) !important;
-  background-color: rgba(231, 76, 60, 0.05) !important;
+  background-color: var(--danger-light) !important;
 }
 
 .inputError:focus {
-  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
 }
 
 .errorText {
   color: var(--danger-color);
-  font-size: 0.85rem;
+  font-size: var(--font-size-xs);
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.25rem;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
 }
 
 .errorText::before {
-  content: "⚠️";
-  font-size: 0.8rem;
+  content: "";
+  width: 12px;
+  height: 12px;
+  background-color: var(--danger-color);
+  border-radius: var(--border-radius-full);
+  flex-shrink: 0;
 }
 
 /* Form Actions */
 .formActions {
-  padding: 1.5rem 2rem;
-  background: var(--background-light);
+  padding: var(--spacing-2xl) var(--spacing-3xl);
+  background: var(--background-secondary);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  gap: var(--spacing-lg);
+  border-top: var(--border-width) solid var(--border-color);
 }
 
 /* Buttons */
 .primaryButton {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.875rem 1.5rem;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg) var(--spacing-2xl);
   background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: white;
   border: none;
-  border-radius: 0.75rem;
+  border-radius: var(--border-radius-md);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: var(--font-size-sm);
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.25);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-md);
   text-decoration: none;
 }
 
 .primaryButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.35);
+  box-shadow: var(--shadow-lg);
 }
 
 .primaryButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
-  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.15);
+  box-shadow: var(--shadow-sm);
 }
 
 .secondaryButton {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.875rem 1.5rem;
-  background: white;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  background: var(--background-primary);
   color: var(--text-color);
-  border: 2px solid var(--border-color);
-  border-radius: 0.75rem;
+  border: var(--border-width-2) solid var(--border-color);
+  border-radius: var(--border-radius-md);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: var(--font-size-sm);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-fast);
   text-decoration: none;
 }
 
@@ -343,26 +365,27 @@ input::placeholder {
 .cancelButton {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.875rem 1.5rem;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg) var(--spacing-2xl);
   background: transparent;
   color: var(--text-light);
-  border: 2px solid transparent;
-  border-radius: 0.75rem;
+  border: var(--border-width-2) solid transparent;
+  border-radius: var(--border-radius-md);
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: var(--font-size-sm);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-fast);
 }
 
 .cancelButton:hover:not(:disabled) {
   color: var(--danger-color);
   border-color: var(--danger-color);
-  background: rgba(231, 76, 60, 0.05);
+  background: var(--danger-light);
 }
 
 .buttonIcon {
-  font-size: 1rem;
+  width: 16px;
+  height: 16px;
 }
 
 /* Loading Spinner */
@@ -371,7 +394,7 @@ input::placeholder {
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top: 2px solid white;
-  border-radius: 50%;
+  border-radius: var(--border-radius-full);
   animation: spin 1s linear infinite;
 }
 
@@ -382,41 +405,43 @@ input::placeholder {
 
 /* Summary Card */
 .summaryCard {
-  background: white;
-  border-radius: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--background-primary);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow);
+  border: var(--border-width) solid var(--border-color);
   overflow: hidden;
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-lg);
 }
 
 .summaryCard h4 {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--spacing-md);
   margin: 0;
-  padding: 1.25rem 1.5rem;
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(39, 174, 96, 0.1));
-  border-bottom: 1px solid rgba(46, 204, 113, 0.2);
-  font-size: 1.1rem;
+  padding: var(--spacing-xl) var(--spacing-2xl);
+  background: var(--secondary-light);
+  border-bottom: var(--border-width) solid var(--secondary-color);
+  font-size: var(--font-size-lg);
   font-weight: 600;
   color: var(--text-color);
 }
 
 .summaryIcon {
-  font-size: 1rem;
+  width: 20px;
+  height: 20px;
+  color: var(--secondary-color);
 }
 
 .summaryContent {
-  padding: 1.5rem;
+  padding: var(--spacing-2xl);
 }
 
 .summaryRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border-color);
+  padding: var(--spacing-md) 0;
+  border-bottom: var(--border-width) solid var(--border-color);
 }
 
 .summaryRow:last-child {
@@ -426,7 +451,7 @@ input::placeholder {
 .summaryLabel {
   font-weight: 600;
   color: var(--text-light);
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
 }
 
 .summaryValue {
@@ -434,37 +459,37 @@ input::placeholder {
   font-weight: 500;
   text-align: right;
   flex: 1;
-  margin-left: 1rem;
+  margin-left: var(--spacing-lg);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .container {
-    padding: 1rem;
+    padding: var(--spacing-lg);
   }
   
   .progressSteps {
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: var(--spacing-lg);
   }
   
   .progressStep {
     flex: 1;
-    min-width: calc(50% - 0.5rem);
+    min-width: calc(50% - var(--spacing-sm));
   }
   
   .stepLabel {
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
   }
   
   .stepContent {
-    padding: 1.5rem;
+    padding: var(--spacing-2xl);
   }
   
   .formActions {
     flex-direction: column;
-    gap: 0.75rem;
-    padding: 1.25rem;
+    gap: var(--spacing-md);
+    padding: var(--spacing-xl);
   }
   
   .primaryButton,
@@ -477,7 +502,7 @@ input::placeholder {
   .summaryRow {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.25rem;
+    gap: var(--spacing-xs);
   }
   
   .summaryValue {
@@ -488,32 +513,32 @@ input::placeholder {
 
 @media (max-width: 480px) {
   .titleContainer h2 {
-    font-size: 1.5rem;
+    font-size: var(--font-size-2xl);
   }
   
   .stepHeader {
-    padding: 1.25rem 1.5rem;
+    padding: var(--spacing-xl) var(--spacing-2xl);
   }
   
   .stepHeader h3 {
-    font-size: 1.15rem;
+    font-size: var(--font-size-lg);
   }
   
   .stepContent {
-    padding: 1.25rem;
+    padding: var(--spacing-xl);
   }
   
   .progressSteps {
     flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--spacing-md);
   }
   
   .progressStep {
     width: 100%;
     flex-direction: row;
     justify-content: flex-start;
-    gap: 1rem;
+    gap: var(--spacing-lg);
   }
   
   .progressBar {
@@ -521,7 +546,7 @@ input::placeholder {
   }
 }
 
-/* Animations */
+/* Animaciones */
 @media (prefers-reduced-motion: no-preference) {
   .stepContent {
     animation: slideInUp 0.4s ease-out;
@@ -567,15 +592,15 @@ select:focus {
 /* Hover effects mejorados */
 @media (hover: hover) {
   .formCard {
-    transition: box-shadow 0.3s ease;
+    transition: box-shadow var(--transition-normal);
   }
   
   .formCard:hover {
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--shadow-xl);
   }
   
   .summaryCard:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--shadow-lg);
   }
 }
 
@@ -589,13 +614,13 @@ select:focus {
   color: var(--primary-color);
 }
 
-/* Mejoras en tipografía */
+/* Mejoras en tipografía para inputs de fecha */
 input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
-  border-radius: 4px;
-  margin-left: 8px;
+  border-radius: var(--border-radius-sm);
+  margin-left: var(--spacing-sm);
   opacity: 0.7;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-fast);
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator:hover {
