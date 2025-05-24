@@ -1,6 +1,7 @@
 const express = require("express");
 const axios = require("axios");
 const { db } = require("../config/firebaseConfig");
+const { mongoManager } = require("../config/mongoConfig");
 const router = express.Router();
 
 const llmServiceUrl = process.env.LLM_SERVICE_URL || "http://rag_service:8000";
@@ -8,13 +9,31 @@ const llmServiceUrl = process.env.LLM_SERVICE_URL || "http://rag_service:8000";
 router.get("/", async (req, res) => {
   try {
     const firebaseHealthy = await checkFirebaseHealth();
+    const mongoHealthy = await mongoManager.isHealthy();
+    
+    // Sistema considerado saludable si Firebase está OK (MongoDB es opcional)
+    const overallStatus = firebaseHealthy ? "ok" : "down";
+    const systemLevel = firebaseHealthy && mongoHealthy ? "optimal" : 
+                       firebaseHealthy ? "operational" : "degraded";
     
     res.json({
-      status: firebaseHealthy ? "ok" : "degraded",
+      status: overallStatus,
+      system_level: systemLevel,
       service: "backend",
       components: {
         firebase: firebaseHealthy ? "connected" : "disconnected",
+        mongodb: mongoHealthy ? "connected" : "disconnected",
         express: "running"
+      },
+      database_strategy: {
+        primary: "Firebase Firestore",
+        logs: mongoHealthy ? "MongoDB (activo)" : "Firebase (fallback)",
+        redundancy: mongoHealthy ? "Híbrido activo" : "Firebase único"
+      },
+      metrics: {
+        uptime_seconds: process.uptime(),
+        memory_usage: process.memoryUsage(),
+        node_version: process.version
       },
       timestamp: new Date().toISOString(),
       port: process.env.PORT || 5000
@@ -118,6 +137,31 @@ router.get("/rag", async (req, res) => {
   }
 });
 
+// Health check específico para MongoDB
+router.get("/mongodb", async (req, res) => {
+  try {
+    const isHealthy = await mongoManager.isHealthy();
+    const stats = isHealthy ? await getMongoStats() : null;
+    
+    res.json({
+      status: isHealthy ? "ok" : "down",
+      service: "mongodb",
+      connection: isHealthy ? "connected" : "disconnected",
+      database: "logs_db",
+      statistics: stats,
+      url: process.env.MONGODB_URL || "mongodb://mongodb:27017/logs_db",
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      service: "mongodb",
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 async function checkFirebaseHealth() {
   try {
     if (!db) {
@@ -132,9 +176,38 @@ async function checkFirebaseHealth() {
   }
 }
 
+async function getMongoStats() {
+  try {
+    if (!await mongoManager.isHealthy()) {
+      return null;
+    }
+    
+    const database = mongoManager.getDatabase();
+    const logsCollection = database.collection('logs');
+    
+    const totalLogs = await logsCollection.countDocuments();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const logsToday = await logsCollection.countDocuments({
+      timestamp: { $gte: today }
+    });
+    
+    return {
+      total_logs: totalLogs,
+      logs_today: logsToday,
+      collection: "logs",
+      indexes: await logsCollection.listIndexes().toArray()
+    };
+  } catch (error) {
+    console.error('Error getting MongoDB stats:', error);
+    return { error: "Could not retrieve statistics" };
+  }
+}
+
 router.get("/debug", async (req, res) => {
   try {
     const firebaseHealthy = await checkFirebaseHealth();
+    const mongoHealthy = await mongoManager.isHealthy();
     
     let ragConnectable = false;
     let ragError = null;
@@ -150,20 +223,33 @@ router.get("/debug", async (req, res) => {
       backend: {
         status: "running",
         port: process.env.PORT || 5000,
-        firebase_connected: firebaseHealthy
+        firebase_connected: firebaseHealthy,
+        mongodb_connected: mongoHealthy
       },
       rag_service: {
         target_url: llmServiceUrl,
         connectable: ragConnectable,
         error: ragError
       },
+      database_strategy: {
+        primary: "Firebase Firestore",
+        logs: mongoHealthy ? "MongoDB + Firebase (hybrid)" : "Firebase only (fallback)",
+        mongodb_url: process.env.MONGODB_URL || "mongodb://mongodb:27017/logs_db"
+      },
       environment: {
         node_env: process.env.NODE_ENV || "development",
         llm_service_url: process.env.LLM_SERVICE_URL,
-        firebase_project_id: process.env.FIREBASE_PROJECT_ID
+        firebase_project_id: process.env.FIREBASE_PROJECT_ID,
+        mongodb_configured: !!process.env.MONGODB_URL
       },
       network: {
-        docker_compose_service_name: "rag_service"
+        docker_compose_service_name: "rag_service",
+        mongodb_service_name: "mongodb"
+      },
+      system_metrics: {
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        cpu_usage: process.cpuUsage()
       },
       timestamp: new Date().toISOString()
     });
