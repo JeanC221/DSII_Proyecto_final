@@ -60,26 +60,36 @@ class FirebaseManager:
         self._initialize_connection()
     
     def _initialize_connection(self) -> None:
-        """Inicializa conexión a Firebase con manejo de errores"""
         try:
-            cred_path = os.environ.get('FIREBASE_CREDENTIALS_PATH', '/app/firebase-credentials.json')
             project_id = os.environ.get('FIREBASE_PROJECT_ID', 'proyecto-final-gestordatos')
-            
-            if not os.path.exists(cred_path):
-                raise FileNotFoundError(f"Archivo de credenciales no encontrado: {cred_path}")
-            
-            cred = credentials.Certificate(cred_path)
+
+            # Usar directamente variables de entorno (más seguro)
+            cred_dict = {
+                "type": "service_account",
+                "project_id": project_id,
+                "private_key_id": os.environ.get('FIREBASE_PRIVATE_KEY_ID'),
+                "private_key": os.environ.get('FIREBASE_PRIVATE_KEY', '').replace('\\n', '\n'),
+                "client_email": os.environ.get('FIREBASE_CLIENT_EMAIL'),
+                "client_id": os.environ.get('FIREBASE_CLIENT_ID'),
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "client_x509_cert_url": os.environ.get('FIREBASE_CLIENT_CERT_URL')
+            }
+
+            cred = credentials.Certificate(cred_dict)
             firebase_app = initialize_app(cred, {'projectId': project_id})
-            
+
             self.db = firestore.client()
             self.collection = self.db.collection('personas')
             self.logs_collection = self.db.collection('logs')
-            
+
+            # Test de conexión
             test_query = self.collection.limit(1).get()
-            
+
             self.status = "connected"
             logger.info("✅ Firebase: Conexión establecida y verificada")
-            
+
         except Exception as e:
             self.status = "error"
             logger.error(f"❌ Firebase: Error de conexión - {e}")

@@ -267,3 +267,19 @@
 2025-05-23 13:09:27,928 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
 2025-05-23 13:09:57,964 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
 2025-05-23 13:10:27,996 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-24 14:44:32,752 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:44:34,550 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:44:36,268 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:44:37,840 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:44:40,002 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:44:42,825 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:44:47,235 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:44:55,015 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:45:09,019 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:45:35,774 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:46:28,225 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:47:29,407 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:48:30,603 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:49:32,435 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:50:33,836 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
+2025-05-24 14:51:35,230 - rag_service - ERROR - ❌ Firebase: Error de conexión - [Errno 21] Is a directory: '/app/firebase-credentials.json'
