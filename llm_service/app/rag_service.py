@@ -206,31 +206,29 @@ class GroqLLMClient:
             response.raise_for_status()
     
     def _get_system_prompt(self) -> str:
-        """Prompt del sistema optimizado para análisis de datos académico"""
-        return """Eres un analista de datos experto especializado en consultas académicas sobre bases de datos de personas.
+        return """Eres un asistente que responde preguntas sobre datos de personas de forma DIRECTA y CONCISA.
 
-CAPACIDADES REQUERIDAS:
-1. Análisis con múltiples filtros simultáneos (género + edad + mes, etc.)
-2. Cálculos estadísticos precisos (promedios, distribuciones, rangos)
-3. Filtrado temporal (meses de nacimiento, rangos de fechas)
-4. Análisis demográfico detallado
-5. Respuestas estructuradas y académicamente apropiadas
+REGLAS OBLIGATORIAS:
+1. Responde SOLO lo que se pregunta
+2. Máximo 2-3 oraciones
+3. NO expliques metodología ni contexto académico
+4. NO uses palabras como "metodología", "análisis contextual", "académico"
+5. Da números exactos cuando sea posible
 
-METODOLOGÍA:
-1. Lee CUIDADOSAMENTE la pregunta completa
-2. Identifica TODOS los filtros y condiciones
-3. Aplica filtros paso a paso sobre los datos proporcionados
-4. Cuenta manualmente los registros que cumplan TODOS los criterios
-5. Presenta resultados con precisión numérica
-6. Incluye análisis contextual cuando sea relevante
+EJEMPLOS DE RESPUESTAS CORRECTAS:
+- Pregunta: "¿Cuántas personas mayores de 30 años hay?"
+  Respuesta: "Hay 5 personas mayores de 30 años registradas."
+
+- Pregunta: "¿Cuál es el promedio de edad?"
+  Respuesta: "El promedio de edad es 28.5 años."
+
+- Pregunta: "¿Quién es la persona mayor?"
+  Respuesta: "La persona mayor es María García con 65 años."
 
 FORMATO DE RESPUESTA:
-- Respuesta directa al inicio
-- Explicación de la metodología aplicada
-- Números exactos y porcentajes cuando corresponda
-- Contexto adicional si es relevante para comprensión académica
-
-ESTILO: Profesional, preciso, académicamente riguroso."""
+- Respuesta directa en 1-2 oraciones máximo
+- Solo números y hechos específicos
+- Sin explicaciones técnicas"""
 
 # ============================================================================
 # GESTOR DE DATOS CON CACHE INTELIGENTE
@@ -313,14 +311,32 @@ class IntelligentDataManager:
             if not self.firebase.is_healthy():
                 raise ConnectionError("Firebase no disponible")
             
-            docs = list(self.firebase.collection.stream())
+            # CORRECCIÓN: Usar get() en lugar de stream() para mejor compatibilidad
+            snapshot = self.firebase.collection.get()
             enriched_records = []
             current_date = datetime.now()
             
-            for doc in docs:
-                raw_data = doc.data()
-                
+            logger.info(f"📊 Firebase: {len(snapshot)} documentos encontrados")
+            
+            for doc in snapshot:
+                # CORRECCIÓN: Verificar que el documento existe antes de acceder a data()
+                if not doc.exists:
+                    logger.warning(f"⚠️ Documento {doc.id} no existe")
+                    continue
+                    
                 try:
+                    raw_data = doc.to_dict()  # CORRECCIÓN: Usar to_dict() en lugar de data()
+                    
+                    if not raw_data:
+                        logger.warning(f"⚠️ Documento {doc.id} está vacío")
+                        continue
+                    
+                    # Verificar campos obligatorios
+                    required_fields = ['primerNombre', 'apellidos', 'nroDocumento']
+                    if not all(field in raw_data for field in required_fields):
+                        logger.warning(f"⚠️ Documento {doc.id} falta campos obligatorios")
+                        continue
+                    
                     record = self._create_basic_record(raw_data)
                     
                     self._enrich_temporal_data(record, raw_data, current_date)
@@ -332,10 +348,11 @@ class IntelligentDataManager:
                     logger.warning(f"⚠️ Error procesando registro {doc.id}: {e}")
                     continue
             
+            logger.info(f"✅ Dataset: {len(enriched_records)} registros enriquecidos correctamente")
             return enriched_records
             
         except Exception as e:
-            logger.error(f"❌ Error obteniendo datos: {e}")
+            logger.error(f"❌ Error obteniendo datos de Firebase: {e}")
             return []
     
     def _create_basic_record(self, raw_data: Dict) -> PersonRecord:
