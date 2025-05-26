@@ -2557,3 +2557,96 @@ DATOS COMPLETOS (ordenados por fecha de registro, más reciente primero):
 2025-05-26 17:33:17,787 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
 2025-05-26 17:33:35,180 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
 2025-05-26 17:33:35,181 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 2, 'successful_queries': 2, 'failed_queries': 0, 'avg_response_time': 0.9418197870254517, 'cache_hit_rate': 0.0, 'last_updated': datetime.datetime(2025, 5, 26, 16, 46, 39, 469412)}
+2025-05-26 17:38:11,631 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 17:38:12,121 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 17:38:12,146 - rag_service - INFO - 🚀 Sistema RAG Académico iniciando...
+2025-05-26 17:38:12,149 - rag_service - INFO - ✅ Sistema RAG Académico iniciado correctamente
+2025-05-26 17:38:15,051 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:38:32,411 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:38:45,135 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:38:52,381 - rag_service - INFO - 🎓 Consulta académica recibida: Hay algun roberto registrado?
+2025-05-26 17:38:52,382 - rag_service - INFO - 🔍 INICIANDO RAG PURO: 'Hay algun roberto registrado?'
+2025-05-26 17:38:52,382 - rag_service - INFO - 🔄 Cache: Actualizando desde Firebase
+2025-05-26 17:38:52,553 - rag_service - INFO - 📊 Firebase: 7 documentos encontrados
+2025-05-26 17:38:52,554 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2024-05-21 00:00:00+00:00
+2025-05-26 17:38:52,554 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para jorge cabal: 2024-05-21 00:00:00+00:00
+2025-05-26 17:38:52,555 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 1995-02-21 00:00:00+00:00
+2025-05-26 17:38:52,555 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para maria martinez: 1995-02-21 00:00:00+00:00
+2025-05-26 17:38:52,556 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 1946-06-04 00:00:00+00:00
+2025-05-26 17:38:52,556 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para pablo picasso: 1946-06-04 00:00:00+00:00
+2025-05-26 17:38:52,557 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2000-02-01 00:00:00+00:00
+2025-05-26 17:38:52,557 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para maria camila gomez: 2000-02-01 00:00:00+00:00
+2025-05-26 17:38:52,558 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2022-02-08 00:00:00+00:00
+2025-05-26 17:38:52,558 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para juan perez pinzon: 2022-02-08 00:00:00+00:00
+2025-05-26 17:38:52,559 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 1986-07-09 00:00:00+00:00
+2025-05-26 17:38:52,559 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para Eseban Quito: 1986-07-09 00:00:00+00:00
+2025-05-26 17:38:52,559 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2021-02-02 00:00:00+00:00
+2025-05-26 17:38:52,560 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para Elvis Gomez: 2021-02-02 00:00:00+00:00
+2025-05-26 17:38:52,560 - rag_service - INFO - ✅ Dataset: 7 registros enriquecidos correctamente
+2025-05-26 17:38:52,561 - rag_service - INFO - ✅ Dataset: 7 registros enriquecidos
+2025-05-26 17:38:52,561 - rag_service - INFO - 🔍 Dataset: 7 registros
+2025-05-26 17:38:52,561 - rag_service - INFO - 🔍 Análisis: {'complexity_level': 'simple', 'detected_patterns': ['complex_combination'], 'requires_multiple_filters': True, 'is_statistical_query': False}
+2025-05-26 17:38:53,164 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:39:02,387 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:39:15,168 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:39:32,409 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:39:45,204 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:40:02,766 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:40:15,246 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:40:32,775 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:40:45,309 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:41:02,763 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:41:15,437 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:41:32,771 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:41:45,494 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:42:15,623 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:42:17,784 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:42:45,661 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:43:15,697 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:43:17,833 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:43:32,775 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:43:45,753 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:44:02,768 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:44:15,822 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:44:45,853 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:45:15,889 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:45:17,781 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:45:45,979 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:45:48,658 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
+2025-05-26 17:45:48,660 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 0, 'successful_queries': 0, 'failed_queries': 0, 'avg_response_time': 0.0, 'cache_hit_rate': 0.0, 'last_updated': None}
+2025-05-26 17:45:53,386 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 17:45:53,790 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 17:45:53,795 - rag_service - INFO - 🚀 Sistema RAG Académico iniciando...
+2025-05-26 17:45:53,797 - rag_service - INFO - ✅ Sistema RAG Académico iniciado correctamente
+2025-05-26 17:45:56,631 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:46:07,706 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:46:08,690 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:46:09,306 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:46:21,267 - rag_service - INFO - 🎓 Consulta académica recibida: Hay algun roberto registrado?
+2025-05-26 17:46:21,269 - rag_service - INFO - 🔍 INICIANDO RAG PURO: 'Hay algun roberto registrado?'
+2025-05-26 17:46:21,270 - rag_service - INFO - 🔄 Cache: Actualizando desde Firebase
+2025-05-26 17:46:21,455 - rag_service - INFO - 📊 Firebase: 7 documentos encontrados
+2025-05-26 17:46:21,457 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2024-05-21 00:00:00+00:00
+2025-05-26 17:46:21,458 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para jorge cabal: 2024-05-21 00:00:00+00:00
+2025-05-26 17:46:21,460 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 1995-02-21 00:00:00+00:00
+2025-05-26 17:46:21,462 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para maria martinez: 1995-02-21 00:00:00+00:00
+2025-05-26 17:46:21,464 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 1946-06-04 00:00:00+00:00
+2025-05-26 17:46:21,466 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para pablo picasso: 1946-06-04 00:00:00+00:00
+2025-05-26 17:46:21,468 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2000-02-01 00:00:00+00:00
+2025-05-26 17:46:21,469 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para maria camila gomez: 2000-02-01 00:00:00+00:00
+2025-05-26 17:46:21,472 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2022-02-08 00:00:00+00:00
+2025-05-26 17:46:21,474 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para juan perez pinzon: 2022-02-08 00:00:00+00:00
+2025-05-26 17:46:21,478 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 1986-07-09 00:00:00+00:00
+2025-05-26 17:46:21,479 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para Eseban Quito: 1986-07-09 00:00:00+00:00
+2025-05-26 17:46:21,482 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2021-02-02 00:00:00+00:00
+2025-05-26 17:46:21,484 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para Elvis Gomez: 2021-02-02 00:00:00+00:00
+2025-05-26 17:46:21,485 - rag_service - INFO - ✅ Dataset: 7 registros enriquecidos correctamente
+2025-05-26 17:46:21,487 - rag_service - INFO - ✅ Dataset: 7 registros enriquecidos
+2025-05-26 17:46:21,489 - rag_service - INFO - 🔍 Dataset: 7 registros
+2025-05-26 17:46:21,490 - rag_service - INFO - 🔍 Análisis: {'complexity_level': 'simple', 'detected_patterns': ['complex_combination'], 'requires_multiple_filters': True, 'is_statistical_query': False}
+2025-05-26 17:46:22,089 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:46:24,985 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 17:46:25,506 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:46:26,741 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 17:46:47,405 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
+2025-05-26 17:46:47,405 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 0, 'successful_queries': 0, 'failed_queries': 0, 'avg_response_time': 0.0, 'cache_hit_rate': 0.0, 'last_updated': None}
