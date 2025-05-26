@@ -9,6 +9,7 @@ import json
 import requests
 from dataclasses import dataclass, asdict
 from enum import Enum
+import re
 
 import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
@@ -463,6 +464,197 @@ class AcademicQueryAnalyzer:
         else:
             return "complex"
 
+class PrecomputedQueries:
+    """Gestor de consultas precomputadas para respuestas rápidas"""
+    
+    def __init__(self, data_manager: IntelligentDataManager):
+        self.data_manager = data_manager
+        self.precomputed_answers = {}
+        self._build_precomputed_queries()
+    
+    def _build_precomputed_queries(self):
+        """Define las consultas predeterminadas y sus respuestas - VERSIÓN CORREGIDA"""
+        self.query_handlers = {
+            # Exactamente como aparecen en el frontend
+            "¿Cuántas personas están registradas en total?": self._total_personas,
+            "¿Cuál es la distribución por género?": self._distribucion_genero,
+            "¿Quién es la persona más joven registrada?": self._persona_mas_joven,
+            "¿Quién es la persona mayor registrada?": self._persona_mayor,
+            "¿Cuántas personas nacieron en abril?": self._nacidos_abril,
+            "¿Cuál es el promedio de edad de las personas registradas?": self._promedio_edad,
+            "¿Cuántos hombres de más de 25 años hay?": self._hombres_mayor_25,
+            "¿Mujeres menores de 30 años nacidas en abril?": self._mujeres_menor_30_abril,
+            "¿Quién fue la última persona en registrarse?": self._ultima_persona_registrada,
+            "¿Qué porcentaje de cada género está registrado?": self._porcentaje_generos
+        }
+    
+    def is_precomputed_query(self, query: str) -> bool:
+        """Verifica si es una consulta predeterminada - MEJORADA CON DEBUG"""
+        query_clean = query.strip()
+        
+        # DEBUG: Mostrar todas las consultas disponibles
+        logger.info(f"🔍 DEBUG: Consulta recibida: '{query_clean}'")
+        logger.info(f"🔍 DEBUG: Consultas precomputadas disponibles:")
+        for i, precomputed_query in enumerate(self.query_handlers.keys()):
+            logger.info(f"  {i+1}. '{precomputed_query}'")
+        
+        # Verificación exacta primero
+        if query_clean in self.query_handlers:
+            logger.info(f"✅ Consulta precomputada encontrada (exacta): {query_clean}")
+            return True
+        
+        # Verificación sin signos de interrogación (fallback)
+        query_without_signs = query_clean.replace('¿', '').replace('?', '').strip()
+        logger.info(f"🔍 DEBUG: Consulta sin signos: '{query_without_signs}'")
+        
+        for precomputed_query in self.query_handlers.keys():
+            precomputed_clean = precomputed_query.replace('¿', '').replace('?', '').strip()
+            logger.info(f"🔍 DEBUG: Comparando con: '{precomputed_clean}'")
+            
+            if query_without_signs.lower() == precomputed_clean.lower():
+                logger.info(f"✅ Consulta precomputada encontrada (sin signos): {query_clean}")
+                return True
+        
+        logger.info(f"❌ Consulta NO es precomputada: {query_clean}")
+        return False
+    
+    def get_precomputed_answer(self, query: str) -> str:
+        """Obtiene respuesta precomputada rápida - MEJORADA"""
+        query_clean = query.strip()
+        
+        # Buscar coincidencia exacta primero
+        if query_clean in self.query_handlers:
+            handler = self.query_handlers[query_clean]
+        else:
+            # Buscar coincidencia sin signos
+            query_without_signs = query_clean.replace('¿', '').replace('?', '').strip()
+            handler = None
+            for precomputed_query, precomputed_handler in self.query_handlers.items():
+                precomputed_clean = precomputed_query.replace('¿', '').replace('?', '').strip()
+                if query_without_signs.lower() == precomputed_clean.lower():
+                    handler = precomputed_handler
+                    break
+            
+            if not handler:
+                return None
+        
+        try:
+            dataset = self.data_manager.get_enriched_dataset()
+            logger.info(f"🚀 Ejecutando consulta precomputada para: {query_clean}")
+            result = handler(dataset)
+            logger.info(f"✅ Respuesta precomputada generada: {result[:100]}...")
+            return result
+        except Exception as e:
+            logger.error(f"❌ Error en consulta precomputada: {e}")
+            return "Error al procesar la consulta predeterminada."
+
+    # Métodos de consultas precomputadas - CORREGIDOS
+    def _total_personas(self, dataset: List) -> str:
+        total = len(dataset)
+        return f"Hay {total} personas registradas en total en el sistema."
+    
+    def _distribucion_genero(self, dataset: List) -> str:
+        generos = {}
+        for record in dataset:
+            genero = record.genero.lower() if record.genero else "no especificado"
+            generos[genero] = generos.get(genero, 0) + 1
+        
+        resultado = "Distribución por género:\n"
+        for genero, cantidad in generos.items():
+            resultado += f"• {genero.capitalize()}: {cantidad} personas\n"
+        
+        return resultado.strip()
+    
+    def _persona_mas_joven(self, dataset: List) -> str:
+        personas_con_edad = [r for r in dataset if r.edad is not None]
+        if not personas_con_edad:
+            return "No hay información de edad disponible."
+        
+        mas_joven = min(personas_con_edad, key=lambda r: r.edad)
+        return f"La persona más joven registrada es {mas_joven.nombre_completo} con {mas_joven.edad} años."
+    
+    def _persona_mayor(self, dataset: List) -> str:
+        personas_con_edad = [r for r in dataset if r.edad is not None]
+        if not personas_con_edad:
+            return "No hay información de edad disponible."
+        
+        mayor = max(personas_con_edad, key=lambda r: r.edad)
+        return f"La persona mayor registrada es {mayor.nombre_completo} con {mayor.edad} años."
+    
+    def _nacidos_abril(self, dataset: List) -> str:
+        nacidos_abril = [r for r in dataset if r.mes_nacimiento == 4]
+        count = len(nacidos_abril)
+        if count == 0:
+            return "No hay personas registradas que hayan nacido en abril."
+        elif count == 1:
+            return "Hay 1 persona que nació en abril."
+        else:
+            return f"Hay {count} personas que nacieron en abril."
+    
+    def _promedio_edad(self, dataset: List) -> str:
+        personas_con_edad = [r for r in dataset if r.edad is not None]
+        if not personas_con_edad:
+            return "No hay información de edad disponible para calcular el promedio."
+        
+        promedio = sum(r.edad for r in personas_con_edad) / len(personas_con_edad)
+        return f"El promedio de edad de las personas registradas es {promedio:.1f} años."
+    
+    def _hombres_mayor_25(self, dataset: List) -> str:
+        hombres_mayor_25 = [
+            r for r in dataset 
+            if r.genero and r.genero.lower() in ["masculino", "hombre", "m"] 
+            and r.edad is not None and r.edad > 25
+        ]
+        count = len(hombres_mayor_25)
+        if count == 0:
+            return "No hay hombres de más de 25 años registrados."
+        elif count == 1:
+            return "Hay 1 hombre de más de 25 años registrado."
+        else:
+            return f"Hay {count} hombres de más de 25 años registrados."
+    
+    def _mujeres_menor_30_abril(self, dataset: List) -> str:
+        mujeres_filtradas = [
+            r for r in dataset 
+            if r.genero and r.genero.lower() in ["femenino", "mujer", "f"]
+            and r.edad is not None and r.edad < 30
+            and r.mes_nacimiento == 4
+        ]
+        count = len(mujeres_filtradas)
+        if count == 0:
+            return "No hay mujeres menores de 30 años que hayan nacido en abril."
+        elif count == 1:
+            return "Hay 1 mujer menor de 30 años que nació en abril."
+        else:
+            return f"Hay {count} mujeres menores de 30 años que nacieron en abril."
+    
+    def _ultima_persona_registrada(self, dataset: List) -> str:
+        personas_con_fecha = [r for r in dataset if r.fecha_registro is not None]
+        if not personas_con_fecha:
+            return "No hay información de fecha de registro disponible."
+        
+        ultima = max(personas_con_fecha, key=lambda r: r.fecha_registro)
+        fecha_str = ultima.fecha_registro.strftime("%d/%m/%Y")
+        return f"La última persona en registrarse fue {ultima.nombre_completo} el {fecha_str}."
+    
+    def _porcentaje_generos(self, dataset: List) -> str:
+        if not dataset:
+            return "No hay datos disponibles."
+        
+        generos = {}
+        for record in dataset:
+            genero = record.genero.lower() if record.genero else "no especificado"
+            generos[genero] = generos.get(genero, 0) + 1
+        
+        total = len(dataset)
+        resultado = "Porcentaje por género:\n"
+        
+        for genero, cantidad in generos.items():
+            porcentaje = (cantidad / total) * 100
+            resultado += f"• {genero.capitalize()}: {porcentaje:.1f}% ({cantidad} personas)\n"
+        
+        return resultado.strip()
+
 class AcademicRAGProcessor:
     
     def __init__(self, llm_client: GroqLLMClient, data_manager: IntelligentDataManager):
@@ -470,274 +662,266 @@ class AcademicRAGProcessor:
         self.data_manager = data_manager
         self.query_analyzer = AcademicQueryAnalyzer()
         self.metrics = SystemMetrics()
+        self.precomputed = PrecomputedQueries(data_manager)
     
     def process_academic_query(self, user_query: str) -> Dict[str, Any]:
         start_time = time.time()
         
         try:
+            logger.info(f"🔍 Procesando consulta: '{user_query}'")
+            
+            # PRIMERO: Verificar si es una consulta predeterminada
+            if self.precomputed.is_precomputed_query(user_query):
+                logger.info(f"🚀 Usando respuesta precomputada para: {user_query}")
+                
+                precomputed_answer = self.precomputed.get_precomputed_answer(user_query)
+                processing_time = time.time() - start_time
+                
+                self._update_metrics(processing_time, success=True)
+                
+                return {
+                    "answer": precomputed_answer,
+                    "metadata": {
+                        "query_type": "precomputed",
+                        "query_complexity": "simple",
+                        "dataset_size": len(self.data_manager.get_enriched_dataset()),
+                        "processing_time_ms": round(processing_time * 1000, 2),
+                        "patterns_detected": ["precomputed_query"],
+                        "data_enrichment": "precomputed_fast_response"
+                    }
+                }
+            
+            # SEGUNDO: Si no es predeterminada, usar el procesamiento completo con IA
+            logger.info(f"🤖 Consulta personalizada detectada, usando IA: {user_query}")
+            
             dataset = self.data_manager.get_enriched_dataset()
-            
             logger.info(f"🔍 Dataset cargado: {len(dataset)} registros")
-            
+
             if not dataset:
                 return self._create_error_response("No hay datos disponibles en la base de datos")
-            
-            # Verificar que hay datos básicos válidos
+
             valid_records = [r for r in dataset if r.nombre_completo and r.nombre_completo.strip()]
             if not valid_records:
                 return self._create_error_response("No hay registros válidos en la base de datos")
-            
-            # Análisis de consulta mejorado
+
             query_analysis = self.query_analyzer.analyze_complexity(user_query)
-            
-            # Prompt académico robusto
-            academic_prompt = self._build_academic_prompt(user_query, valid_records, query_analysis)
-            
-            # Ajustar tokens según complejidad
+
+            # Filtrar registros relevantes según la consulta
+            filtered_records = self._filter_records_by_query(user_query, valid_records, query_analysis)
+            if not filtered_records:
+                # Si el filtro no encuentra nada, usar todos los válidos
+                filtered_records = valid_records
+
+            academic_prompt = self._build_academic_prompt(user_query, filtered_records, query_analysis)
+
             max_tokens = 150 if query_analysis['complexity_level'] == 'simple' else 250
-            
+
             llm_response = self.llm._make_request_with_retry(academic_prompt, max_tokens=max_tokens)
-            
-            if not llm_response:
-                return self._create_error_response("El servicio de procesamiento no está disponible")
-            
+
+            # Fallback lógico si el LLM no responde o da respuesta genérica
+            if not llm_response or "no hay información suficiente" in llm_response.lower():
+                fallback_answer = self._fallback_answer(user_query, filtered_records, query_analysis)
+                if fallback_answer:
+                    return {
+                        "answer": fallback_answer,
+                        "metadata": {
+                            "query_type": "custom_fallback",
+                            "query_complexity": query_analysis['complexity_level'],
+                            "dataset_size": len(filtered_records),
+                            "processing_time_ms": round((time.time() - start_time) * 1000, 2),
+                            "patterns_detected": query_analysis['detected_patterns'],
+                            "data_enrichment": "fallback_logic"
+                        }
+                    }
+                return self._create_error_response("No se pudo obtener una respuesta adecuada.")
+
             processing_time = time.time() - start_time
             self._update_metrics(processing_time, success=True)
-            
+
             return {
                 "answer": llm_response.strip(),
                 "metadata": {
+                    "query_type": "custom_ai_powered",
                     "query_complexity": query_analysis['complexity_level'],
-                    "dataset_size": len(valid_records),
+                    "dataset_size": len(filtered_records),
                     "processing_time_ms": round(processing_time * 1000, 2),
                     "patterns_detected": query_analysis['detected_patterns'],
-                    "data_enrichment": "full_enrichment_applied"
+                    "data_enrichment": "full_ai_processing"
                 }
             }
-            
+
         except Exception as e:
             processing_time = time.time() - start_time
             self._update_metrics(processing_time, success=False)
             logger.error(f"❌ Error procesando consulta: {e}")
             return self._create_error_response(f"Error procesando la consulta: {str(e)}")
-    
-    def _build_academic_prompt(self, query: str, dataset: List[PersonRecord], analysis: Dict) -> str:
-        """Construye prompt académico robusto que maneja cualquier tipo de consulta"""
+
+    def _filter_records_by_query(self, query: str, records: list, analysis: dict) -> list:
+        """Filtra los registros según la consulta detectada"""
+        q = query.lower()
+        filtered = records
+
+        # Filtrar por género
+        if "hombre" in q or "masculino" in q:
+            filtered = [r for r in filtered if r.genero and r.genero.lower() in ["masculino", "hombre", "m"]]
+        if "mujer" in q or "femenino" in q:
+            filtered = [r for r in filtered if r.genero and r.genero.lower() in ["femenino", "mujer", "f"]]
+
+        # Filtrar por edad - mayor de X años
+        if "mayor de" in q or "más de" in q:
+            match = re.search(r"(mayor de|más de)\s+(\d+)", q)
+            if match:
+                edad_limite = int(match.group(2))
+                filtered = [r for r in filtered if r.edad is not None and r.edad > edad_limite]
         
-        # PASO 1: Preparar datos completos y enriquecidos
-        enriched_data = []
+        # Filtrar por edad - menor de X años
+        if "menor de" in q:
+            match = re.search(r"menor de\s+(\d+)", q)
+            if match:
+                edad_limite = int(match.group(1))
+                filtered = [r for r in filtered if r.edad is not None and r.edad < edad_limite]
+
+        # Filtrar por edad - exacta o rango
+        if "años" in q and "de" in q:
+            # Buscar patrones como "25 años", "de 25 años"
+            match = re.search(r"de\s+(\d+)\s+años", q)
+            if not match:
+                match = re.search(r"(\d+)\s+años", q)
+            if match:
+                edad_exacta = int(match.group(1))
+                # Si no hay "mayor de" o "menor de", buscar edad exacta
+                if "mayor" not in q and "menor" not in q and "más" not in q:
+                    filtered = [r for r in filtered if r.edad is not None and r.edad == edad_exacta]
+
+        return filtered
+
+    def _fallback_answer(self, query: str, records: list, analysis: dict) -> str:
+        """Responde directamente si el LLM falla, para preguntas simples"""
+        q = query.lower()
         
-        for record in dataset:
-            record_dict = asdict(record)
+        # Contar hombres
+        if "cuánt" in q and ("hombre" in q or "masculino" in q):
+            hombres = [r for r in records if r.genero and r.genero.lower() in ["masculino", "hombre", "m"]]
             
-            # Fechas en formato legible
-            if record_dict.get('fecha_registro'):
-                if hasattr(record_dict['fecha_registro'], 'strftime'):
-                    record_dict['fecha_registro_texto'] = record_dict['fecha_registro'].strftime('%Y-%m-%d')
-                    record_dict['fecha_registro_completa'] = record_dict['fecha_registro'].strftime('%Y-%m-%d %H:%M:%S')
-                else:
-                    record_dict['fecha_registro_texto'] = str(record_dict['fecha_registro'])
-                    record_dict['fecha_registro_completa'] = str(record_dict['fecha_registro'])
-            else:
-                record_dict['fecha_registro_texto'] = "2024-01-01"
-                record_dict['fecha_registro_completa'] = "2024-01-01 00:00:00"
+            # Si hay filtro de edad específico
+            if "mayor de" in q or "más de" in q:
+                match = re.search(r"(mayor de|más de)\s+(\d+)", q)
+                if match:
+                    edad_limite = int(match.group(2))
+                    hombres_filtrados = [h for h in hombres if h.edad is not None and h.edad > edad_limite]
+                    return f"Hay {len(hombres_filtrados)} hombres de más de {edad_limite} años registrados."
             
-            # Edad enriquecida
-            if record.edad is not None and record.edad > 0:
-                record_dict['edad_anos'] = record.edad
-                record_dict['edad_texto'] = f"{record.edad} años"
-                record_dict['tiene_edad'] = True
-            else:
-                record_dict['edad_anos'] = 0
-                record_dict['edad_texto'] = "edad no disponible"
-                record_dict['tiene_edad'] = False
+            if "menor de" in q:
+                match = re.search(r"menor de\s+(\d+)", q)
+                if match:
+                    edad_limite = int(match.group(2))
+                    hombres_filtrados = [h for h in hombres if h.edad is not None and h.edad < edad_limite]
+                    return f"Hay {len(hombres_filtrados)} hombres menores de {edad_limite} años registrados."
             
-            # Información demográfica enriquecida
-            record_dict['es_mayor_edad_texto'] = "mayor de edad" if record.es_mayor_edad else "menor de edad"
-            record_dict['genero_normalizado'] = record.genero.lower() if record.genero else "no especificado"
+            return f"Hay {len(hombres)} hombres registrados."
+        
+        # Contar mujeres
+        if "cuánt" in q and ("mujer" in q or "femenino" in q):
+            mujeres = [r for r in records if r.genero and r.genero.lower() in ["femenino", "mujer", "f"]]
             
-            # Información temporal enriquecida
-            if record.mes_nacimiento:
-                record_dict['mes_nacimiento_numero'] = record.mes_nacimiento
-                record_dict['mes_nacimiento_texto'] = record.mes_nacimiento_nombre or f"mes_{record.mes_nacimiento}"
+            # Si hay filtro de edad específico
+            if "mayor de" in q or "más de" in q:
+                match = re.search(r"(mayor de|más de)\s+(\d+)", q)
+                if match:
+                    edad_limite = int(match.group(2))
+                    mujeres_filtradas = [m for m in mujeres if m.edad is not None and m.edad > edad_limite]
+                    return f"Hay {len(mujeres_filtradas)} mujeres de más de {edad_limite} años registradas."
             
-            if record.año_nacimiento:
-                record_dict['año_nacimiento_numero'] = record.año_nacimiento
-                record_dict['decada_nacimiento'] = f"{(record.año_nacimiento // 10) * 10}s"
-            
-            # Información de contacto estructurada
-            if record.correo and '@' in record.correo:
-                record_dict['correo_dominio'] = record.correo.split('@')[1]
-            else:
-                record_dict['correo_dominio'] = "sin_dominio"
+            if "menor de" in q:
+                match = re.search(r"menor de\s+(\d+)", q)
+                if match:
+                    edad_limite = int(match.group(2))
+                    mujeres_filtradas = [m for m in mujeres if m.edad is not None and m.edad < edad_limite]
+                    return f"Hay {len(mujeres_filtradas)} mujeres menores de {edad_limite} años registradas."
                 
-            record_dict['celular_limpio'] = ''.join(filter(str.isdigit, record.celular)) if record.celular else ""
-            
-            enriched_data.append(record_dict)
+            return f"Hay {len(mujeres)} mujeres registradas."
         
-        # PASO 2: Crear múltiples vistas de los datos (CON VALIDACIONES)
+        # Contar total
+        if "cuánt" in q and ("persona" in q or "total" in q):
+            return f"Hay {len(records)} personas registradas en total."
         
-        # Vista por fecha de registro (más reciente primero)
-        datos_por_fecha = sorted(enriched_data, key=lambda x: x.get('fecha_registro_texto', ''), reverse=True)
+        # Buscar persona mayor
+        if "mayor" in q or "más viejo" in q:
+            if records:
+                mayor = max(records, key=lambda r: r.edad if r.edad is not None else -1)
+                if mayor.edad is not None:
+                    return f"La persona mayor registrada es {mayor.nombre_completo} con {mayor.edad} años."
         
-        # Vista por edad (menor a mayor, solo con edad válida)
-        datos_por_edad = sorted([x for x in enriched_data if x['tiene_edad'] and x['edad_anos'] > 0], key=lambda x: x['edad_anos'])
+        # Buscar persona más joven
+        if "más joven" in q or "menor" in q and "edad" in q:
+            if records:
+                menor = min(records, key=lambda r: r.edad if r.edad is not None else float('inf'))
+                if menor.edad is not None:
+                    return f"La persona más joven registrada es {menor.nombre_completo} con {menor.edad} años."
         
-        # Vista por género
-        datos_por_genero = {}
-        for item in enriched_data:
-            genero = item.get('genero') or 'No especificado'
-            if genero not in datos_por_genero:
-                datos_por_genero[genero] = []
-            datos_por_genero[genero].append(item)
-        
-        # Vista por mes de nacimiento
-        datos_por_mes = {}
-        for item in enriched_data:
-            if item.get('mes_nacimiento_texto'):
-                mes = item['mes_nacimiento_texto']
-                if mes not in datos_por_mes:
-                    datos_por_mes[mes] = []
-                datos_por_mes[mes].append(item)
-        
-        # PASO 3: Calcular estadísticas con validaciones
-        total_personas = len(enriched_data)
-        personas_con_edad = len(datos_por_edad)
-        
-        # Estadísticas por género
-        generos_stats = {}
-        for genero, personas in datos_por_genero.items():
-            edades = [p['edad_anos'] for p in personas if p['tiene_edad'] and p['edad_anos'] > 0]
-            generos_stats[genero] = {
-                'total': len(personas),
-                'porcentaje': round((len(personas) / total_personas) * 100, 1) if total_personas > 0 else 0,
-                'con_edad': len(edades),
-                'edad_promedio': round(sum(edades) / len(edades), 1) if edades else 0,
-                'edad_min': min(edades) if edades else 0,
-                'edad_max': max(edades) if edades else 0
-            }
-        
-        # Estadísticas de edad
-        todas_edades = [x['edad_anos'] for x in enriched_data if x['tiene_edad'] and x['edad_anos'] > 0]
-        edad_stats = {
-            'total_con_edad': len(todas_edades),
-            'edad_promedio': round(sum(todas_edades) / len(todas_edades), 1) if todas_edades else 0,
-            'edad_minima': min(todas_edades) if todas_edades else 0,
-            'edad_maxima': max(todas_edades) if todas_edades else 0,
-            'mayores_edad': len([x for x in enriched_data if x.get('es_mayor_edad')]),
-            'menores_edad': len([x for x in enriched_data if not x.get('es_mayor_edad')])
-        }
-        
-        # PASO 4: Construir prompt con validaciones de datos
-        
-        # Ejemplos seguros basados en datos reales
-        ejemplo_ultima_persona = datos_por_fecha[0]['nombre_completo'] + " el " + datos_por_fecha[0]['fecha_registro_texto'] if datos_por_fecha else "No hay datos de fechas"
-        ejemplo_mas_joven = datos_por_edad[0]['nombre_completo'] + " con " + str(datos_por_edad[0]['edad_anos']) + " años" if datos_por_edad else "No hay datos de edad"
-        ejemplo_mayor = datos_por_edad[-1]['nombre_completo'] + " con " + str(datos_por_edad[-1]['edad_anos']) + " años" if datos_por_edad else "No hay datos de edad"
-        ejemplo_porcentajes = ', '.join([f'{k} {v["porcentaje"]}%' for k, v in generos_stats.items()]) if generos_stats else "No hay datos de género"
-        
-        prompt = f"""Eres un asistente que responde preguntas sobre una base de datos de personas de forma DIRECTA y PRECISA.
+        return ""
 
-INSTRUCCIONES CRÍTICAS:
-1. Responde SOLO lo que se pregunta, máximo 2 oraciones
-2. Usa los datos exactos proporcionados
-3. Para fechas/tiempo: usa fecha_registro_texto o mes_nacimiento_texto
-4. Para edad: usa edad_anos (solo si tiene_edad es true)
-5. Para cálculos: usa las estadísticas pre-calculadas cuando sea posible
-6. Nombres exactos: usa nombre_completo de los datos
-
-ESTADÍSTICAS GENERALES:
-- Total personas: {total_personas}
-- Con edad válida: {personas_con_edad}
-- Edad promedio general: {edad_stats['edad_promedio']} años
-- Rango de edades: {edad_stats['edad_minima']}-{edad_stats['edad_maxima']} años
-- Mayores de edad: {edad_stats['mayores_edad']}, Menores: {edad_stats['menores_edad']}
-
-DISTRIBUCIÓN POR GÉNERO:
-{json.dumps(generos_stats, ensure_ascii=False, indent=1)}
-
-DATOS POR FECHA DE REGISTRO (más reciente primero):
-{json.dumps(datos_por_fecha[:3], default=str, ensure_ascii=False, indent=1) if datos_por_fecha else "Sin datos de fechas"}
-
-DATOS POR EDAD (menor a mayor):
-MENORES: {json.dumps(datos_por_edad[:2], default=str, ensure_ascii=False, indent=1) if datos_por_edad else "Sin datos de edad"}
-MAYORES: {json.dumps(datos_por_edad[-2:], default=str, ensure_ascii=False, indent=1) if len(datos_por_edad) >= 2 else "Sin datos suficientes"}
-
-DISTRIBUCIÓN POR MES DE NACIMIENTO:
-{json.dumps({k: len(v) for k, v in datos_por_mes.items()}, ensure_ascii=False, indent=1) if datos_por_mes else "Sin datos de meses"}
-
-TODOS LOS REGISTROS COMPLETOS:
-{json.dumps(enriched_data, default=str, ensure_ascii=False, indent=1)}
-
-PREGUNTA DEL USUARIO: {query}
-
-EJEMPLOS DE RESPUESTAS CORRECTAS:
-- "Hay {total_personas} personas registradas"
-- "La última persona registrada es {ejemplo_ultima_persona}"
-- "La persona más joven es {ejemplo_mas_joven}"
-- "La persona mayor es {ejemplo_mayor}"
-- "El porcentaje por género es: {ejemplo_porcentajes}"
-
-REGLAS ESPECÍFICAS POR TIPO DE PREGUNTA:
-- Para "última/último registrado": usar el primer elemento de datos ordenados por fecha
-- Para "más joven": usar el primer elemento de datos ordenados por edad (menor edad)
-- Para "mayor/más viejo": usar el último elemento de datos ordenados por edad (mayor edad)
-- Para "cuántos/cuántas": contar registros que cumplan condición
-- Para "porcentaje": usar porcentajes pre-calculados en generos_stats
-- Para filtros complejos: examinar TODOS los registros y aplicar condiciones
-- Si no hay datos de edad, responder: "No hay información de edad disponible"
-- Si no hay datos de fechas, responder: "No hay información de fechas disponible"
-
-RESPUESTA DIRECTA (máximo 2 líneas):"""
+    def _build_academic_prompt(self, user_query: str, filtered_records: list, analysis: dict) -> str:
+        """Construye un prompt académico específico para el contexto"""
         
+        # Limitar registros para evitar prompts muy largos
+        sample_records = filtered_records[:20] if len(filtered_records) > 20 else filtered_records
+        
+        context_data = []
+        for record in sample_records:
+            context_data.append({
+                "nombre": record.nombre_completo,
+                "edad": record.edad,
+                "genero": record.genero,
+                "documento": record.documento  # ← CORRECCIÓN: era record.numero_documento
+            })
+        
+        prompt = f"""
+Eres un asistente de análisis de datos académico. Responde de manera precisa y específica basándote ÚNICAMENTE en los datos proporcionados.
+
+CONSULTA DEL USUARIO: {user_query}
+
+DATOS DISPONIBLES ({len(context_data)} registros):
+{context_data}
+
+INSTRUCCIONES:
+1. Responde ÚNICAMENTE con información que puedas calcular de los datos proporcionados
+2. Si la pregunta es sobre conteos, proporciona el número exacto
+3. Si la pregunta es sobre estadísticas, calcula basándote en los datos
+4. Si no hay suficientes datos para responder, di "No hay suficientes datos para responder esta consulta"
+5. Sé específico y directo en tu respuesta
+6. NO inventes información que no esté en los datos
+
+RESPUESTA:"""
+
         return prompt
-    
-    def _calculate_context_statistics(self, dataset: List[PersonRecord]) -> Dict:
-        total = len(dataset)
-        
-        gender_dist = {}
-        ages = []
-        month_dist = {}
-        
-        for record in dataset:
-            if record.genero:
-                gender_dist[record.genero] = gender_dist.get(record.genero, 0) + 1
-            if record.edad is not None:
-                ages.append(record.edad)
-            
-            if record.mes_nacimiento_nombre:
-                month_dist[record.mes_nacimiento_nombre] = month_dist.get(record.mes_nacimiento_nombre, 0) + 1
-        
-        return {
-            "total_registros": total,
-            "edad_promedio": round(sum(ages) / len(ages), 1) if ages else 0,
-            "rango_edades": f"{min(ages)}-{max(ages)}" if ages else "N/A",
-            "distribucion_genero": gender_dist,
-            "distribucion_meses": dict(sorted(month_dist.items(), key=lambda x: list(self.data_manager.month_names.values()).index(x[0])))
-        }
-    
-    def _create_error_response(self, error_message: str) -> Dict[str, Any]:
-        return {
-            "answer": f"Error: {error_message}",
-            "metadata": {
-                "error": True,
-                "timestamp": datetime.now().isoformat()
-            }
-        }
-    
+
     def _update_metrics(self, processing_time: float, success: bool) -> None:
+        """Actualiza métricas del sistema"""
         self.metrics.total_queries += 1
-        
         if success:
             self.metrics.successful_queries += 1
         else:
             self.metrics.failed_queries += 1
         
-        current_avg = self.metrics.avg_response_time
-        total_queries = self.metrics.total_queries
-        self.metrics.avg_response_time = ((current_avg * (total_queries - 1)) + processing_time) / total_queries
-        
+        # Actualizar tiempo promedio
+        total_time = self.metrics.avg_response_time * (self.metrics.total_queries - 1)
+        self.metrics.avg_response_time = (total_time + processing_time) / self.metrics.total_queries
         self.metrics.last_updated = datetime.now()
+
+    def _create_error_response(self, error_message: str) -> Dict[str, Any]:
+        """Crea respuesta de error estándar"""
+        return {
+            "answer": error_message,
+            "metadata": {
+                "query_type": "error",
+                "query_complexity": "unknown",
+                "dataset_size": 0,
+                "processing_time_ms": 0,
+                "patterns_detected": [],
+                "data_enrichment": "error"
+            }
+        }
 
 # ============================================================================
 # INICIALIZACIÓN DEL SISTEMA
@@ -750,15 +934,15 @@ data_manager = IntelligentDataManager(firebase_manager)
 rag_processor = AcademicRAGProcessor(groq_client, data_manager)
 
 # ============================================================================
-# ENDPOINTS DE LA API
+# ENDPOINTS DE LA API - CORRECCIÓN PRINCIPAL
 # ============================================================================
 
-@app.post("/query", response_model=Dict[str, Any])
-async def process_natural_language_query(query: Dict = Body(...)):
+@app.post("/consulta-natural", response_model=Dict[str, Any])  # ← ENDPOINT CORRECTO
+async def process_natural_language_query(request: Dict = Body(...)):
     """
-    Endpoint principal para consultas en lenguaje natural
+    Endpoint principal para consultas en lenguaje natural desde el frontend
     """
-    query_text = query.get("query", "").strip()
+    query_text = request.get("consulta", "").strip()  # ← Campo correcto
     
     if not query_text:
         return JSONResponse(
@@ -770,6 +954,7 @@ async def process_natural_language_query(query: Dict = Body(...)):
     
     result = rag_processor.process_academic_query(query_text)
     
+    # Log to Firebase if available
     if firebase_manager.is_healthy():
         try:
             firebase_manager.logs_collection.add({
@@ -783,6 +968,17 @@ async def process_natural_language_query(query: Dict = Body(...)):
             logger.warning(f"⚠️ Error logging: {e}")
     
     return result
+
+# Mantener el endpoint original también por compatibilidad
+@app.post("/query", response_model=Dict[str, Any])
+async def process_query_legacy(query: Dict = Body(...)):
+    """Endpoint legacy - redirige al nuevo"""
+    query_text = query.get("query", "").strip()
+    return await process_natural_language_query({"consulta": query_text})
+
+# ============================================================================
+# HEALTH CHECK Y MÉTRICAS DEL SISTEMA
+# ============================================================================
 
 @app.get("/health", response_model=Dict[str, Any])
 async def system_health_check():
@@ -835,31 +1031,22 @@ async def get_system_metrics():
 @app.get("/academic-examples", response_model=Dict[str, List[str]])
 async def get_academic_query_examples():
     return {
-        "consultas_simples": [
+        "ejemplos_predeterminados": [
             "¿Cuántas personas están registradas en total?",
             "¿Cuál es la distribución por género?",
-            "¿Cuántas mujeres hay registradas?"
-        ],
-        "consultas_moderadas": [
+            "¿Quién es la persona más joven registrada?",
+            "¿Quién es la persona mayor registrada?",
             "¿Cuántas personas nacieron en abril?",
-            "¿Cuál es el promedio de edad por género?",
-            "¿Cuántos adultos jóvenes hay registrados?"
+            "¿Cuál es el promedio de edad de las personas registradas?",
+            "¿Cuántos hombres de más de 25 años hay?",
+            "¿Mujeres menores de 30 años nacidas en abril?",
+            "¿Quién fue la última persona en registrarse?",
+            "¿Qué porcentaje de cada género está registrado?"
         ],
-        "consultas_complejas": [
-            "¿Cuántos hombres de más de 20 años están registrados?",
-            "¿Mujeres menores de 30 años nacidas entre marzo y junio?",
-            "¿Cuál es la distribución de edades por género en cada rango etario?"
-        ],
-        "consultas_estadisticas": [
-            "¿Cuál es la correlación entre género y rango de edad?",
-            "¿Qué porcentaje de cada género está en edad productiva?",
-            "¿Cuál es la distribución temporal de registros por mes de nacimiento y género?"
-        ],
-        "consultas_avanzadas": [
-            "¿Cuántas personas de género no binario mayores de edad nacieron en el primer trimestre?",
-            "¿Cuál es la edad promedio de hombres vs mujeres en cada categoría etaria?",
-            "¿Qué tendencias demográficas se observan en los registros por año de nacimiento?"
-        ]
+        "info": {
+            "predeterminadas": "Estas consultas tienen respuestas precomputadas y son muy rápidas",
+            "personalizadas": "Cualquier otra consulta usará inteligencia artificial para generar respuestas"
+        }
     }
 
 @app.get("/documentation", response_model=Dict[str, Any])

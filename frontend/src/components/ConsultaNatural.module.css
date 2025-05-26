@@ -990,3 +990,29 @@
 .statusOk .statusDetails {
   background: rgba(46, 204, 113, 0.02);
 }
+
+.collapsibleSection {
+  margin: 1rem 0;
+}
+
+.collapsibleButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 1rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.collapsibleButton:hover {
+  background: #e9ecef;
+}
+
+.collapsibleArrow {
+  margin-left: auto;
+  transition: transform 0.2s;
+}

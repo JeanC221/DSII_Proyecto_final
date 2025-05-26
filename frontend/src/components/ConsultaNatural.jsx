@@ -9,6 +9,7 @@ const ConsultaNatural = () => {
   const [error, setError] = useState(null);
   const [serviceStatus, setServiceStatus] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
+  const [showExamples, setShowExamples] = useState(false);
 
   useEffect(() => {
     checkServiceStatus();
@@ -104,52 +105,18 @@ const ConsultaNatural = () => {
     }
   };
 
-  const ejemplosPorCategoria = {
-    basicas: {
-      titulo: "Consultas Básicas",
-      icon: "📊",
-      color: "info",
-      ejemplos: [
-        "¿Cuántas personas están registradas en total?",
-        "¿Cuál es la distribución por género?",
-        "¿Cuántas mujeres hay registradas?",
-        "¿Cuántos hombres hay registrados?"
-      ]
-    },
-    demograficas: {
-      titulo: "Análisis Demográfico",
-      icon: "👥",
-      color: "success",
-      ejemplos: [
-        "¿Cuál es el promedio de edad de las personas registradas?",
-        "¿Quién es la persona más joven registrada?",
-        "¿Quién es la persona mayor registrada?",
-        "¿Cuántos adultos jóvenes están registrados?"
-      ]
-    },
-    temporales: {
-      titulo: "Consultas Temporales",
-      icon: "📅",
-      color: "warning",
-      ejemplos: [
-        "¿Cuántas personas nacieron en abril?",
-        "¿Quién fue la última persona en registrarse?",
-        "¿Cuántas personas nacieron en el primer trimestre?",
-        "¿Qué personas nacieron en los años 90?"
-      ]
-    },
-    avanzadas: {
-      titulo: "Consultas Avanzadas",
-      icon: "🤖",
-      color: "purple",
-      ejemplos: [
-        "¿Cuántos hombres de más de 25 años hay?",
-        "¿Mujeres menores de 30 años nacidas en abril?",
-        "¿Cuál es la distribución de edades por género?",
-        "¿Qué porcentaje de cada género está registrado?"
-      ]
-    }
-  };
+  const ejemplosPredeterminados = [
+    "¿Cuántas personas están registradas en total?",
+    "¿Cuál es la distribución por género?",
+    "¿Quién es la persona más joven registrada?",
+    "¿Quién es la persona mayor registrada?",
+    "¿Cuántas personas nacieron en abril?",
+    "¿Cuál es el promedio de edad de las personas registradas?",
+    "¿Cuántos hombres de más de 25 años hay?",
+    "¿Mujeres menores de 30 años nacidas en abril?",
+    "¿Quién fue la última persona en registrarse?",
+    "¿Qué porcentaje de cada género está registrado?"
+  ];
 
   const usarEjemplo = (ejemplo) => {
     setConsulta(ejemplo);
@@ -276,8 +243,8 @@ const ConsultaNatural = () => {
         </div>
         <div className={styles.descriptionContent}>
           <p>
-            <strong>Sistema RAG (Retrieval-Augmented Generation):</strong> Este sistema combina la búsqueda en datos reales 
-            con inteligencia artificial para generar respuestas precisas y contextuales.
+            <strong>Sistema RAG:</strong> Este sistema combina la búsqueda en datos reales 
+            con AI para generar respuestas precisas.
           </p>
           <div className={styles.features}>
             <div className={styles.feature}>
@@ -310,29 +277,35 @@ const ConsultaNatural = () => {
           <p>Haz clic en cualquier ejemplo para usarlo directamente</p>
         </div>
         
-        <div className={styles.categoriesGrid}>
-          {Object.entries(ejemplosPorCategoria).map(([key, categoria]) => (
-            <div key={key} className={`${styles.categoryCard} ${styles[`category${categoria.color}`]}`}>
-              <div className={styles.categoryHeader}>
-                <span className={styles.categoryIcon}>{categoria.icon}</span>
-                <h4>{categoria.titulo}</h4>
-              </div>
-              
-              <div className={styles.examplesList}>
-                {categoria.ejemplos.map((ejemplo, index) => (
-                  <button
-                    key={index}
-                    onClick={() => usarEjemplo(ejemplo)}
-                    className={styles.exampleButton}
-                    disabled={loading}
-                  >
-                    <span className={styles.exampleText}>{ejemplo}</span>
-                    <span className={styles.useIcon}>→</span>
-                  </button>
-                ))}
-              </div>
+        <div className={styles.collapsibleSection}>
+          <button 
+            onClick={() => setShowExamples(!showExamples)}
+            className={styles.collapsibleButton}
+          >
+            <span className={styles.collapsibleIcon}>
+              {showExamples ? '📂' : '📁'}
+            </span>
+            <span>Ver ejemplos predeterminados</span>
+            <span className={styles.collapsibleArrow}>
+              {showExamples ? '▼' : '▶'}
+            </span>
+          </button>
+          
+          {showExamples && (
+            <div className={styles.examplesList}>
+              {ejemplosPredeterminados.map((ejemplo, index) => (
+                <button
+                  key={index}
+                  onClick={() => usarEjemplo(ejemplo)}
+                  className={styles.exampleButton}
+                  disabled={loading}
+                >
+                  <span className={styles.exampleText}>{ejemplo}</span>
+                  <span className={styles.useIcon}>→</span>
+                </button>
+              ))}
             </div>
-          ))}
+          )}
         </div>
         
         <div className={styles.examplesTip}>
