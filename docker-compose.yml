@@ -1,84 +1,5 @@
 services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile 
-    ports:
-      - "3000:80"  
-    depends_on:
-      backend:
-        condition: service_started  
-    networks:
-      - academic-network
-    restart: unless-stopped
-    environment:
-      - REACT_APP_API_URL=http://localhost:5000/api
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "5000:5000"
-    environment:
-      - NODE_ENV=production
-      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
-      - FIREBASE_PRIVATE_KEY_ID=${FIREBASE_PRIVATE_KEY_ID}
-      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
-      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
-      - FIREBASE_CLIENT_ID=${FIREBASE_CLIENT_ID}
-      - FIREBASE_CLIENT_CERT_URL=${FIREBASE_CLIENT_CERT_URL}
-      - LLM_SERVICE_URL=http://rag_service:8000
-      - MONGODB_URL=mongodb://mongodb:27017/logs_db
-    depends_on:
-      rag_service:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
-    networks:
-      - academic-network
-    restart: unless-stopped
-    volumes:
-      - ./backend/src:/app/src
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  rag_service:
-    build:
-      context: ./llm_service
-      dockerfile: Dockerfile  
-    ports:
-      - "8000:8000"
-    environment:
-      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
-      - FIREBASE_PRIVATE_KEY_ID=${FIREBASE_PRIVATE_KEY_ID}
-      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
-      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
-      - FIREBASE_CLIENT_ID=${FIREBASE_CLIENT_ID}
-      - FIREBASE_CLIENT_CERT_URL=${FIREBASE_CLIENT_CERT_URL}
-      - GROQ_API_KEY=${GROQ_API_KEY}
-      - TZ=America/Bogota
-    volumes:
-      - ./backend/src/credentials/firebase-credentials.json:/app/firebase-credentials.json:ro
-      - ./logs/rag:/app/logs
-    networks:
-      - academic-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
+  # MongoDB primero (sin dependencias)
   mongodb:
     image: mongo:7.0
     container_name: mongodb_logs
@@ -95,7 +16,93 @@ services:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 30s
       timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  # RAG Service (solo depende de MongoDB)
+  rag_service:
+    build:
+      context: ./llm_service
+      dockerfile: Dockerfile  
+    ports:
+      - "8000:8000"
+    environment:
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-proyecto-final-gestordatos}
+      - FIREBASE_PRIVATE_KEY_ID=${FIREBASE_PRIVATE_KEY_ID}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_CLIENT_ID=${FIREBASE_CLIENT_ID}
+      - FIREBASE_CLIENT_CERT_URL=${FIREBASE_CLIENT_CERT_URL}
+      - GROQ_API_KEY=${GROQ_API_KEY:-dummy_key}
+      - TZ=America/Bogota
+    volumes:
+      - ./logs/rag:/app/logs
+    networks:
+      - academic-network
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 60s
+
+  # Backend (depende de MongoDB y RAG)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-}
+      - FIREBASE_PRIVATE_KEY_ID=${FIREBASE_PRIVATE_KEY_ID:-}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY:-}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL:-}
+      - FIREBASE_CLIENT_ID=${FIREBASE_CLIENT_ID:-}
+      - FIREBASE_CLIENT_CERT_URL=${FIREBASE_CLIENT_CERT_URL:-}
+      - LLM_SERVICE_URL=http://rag_service:8000
+      - MONGODB_URL=mongodb://mongodb:27017/logs_db
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rag_service:
+        condition: service_healthy
+    networks:
+      - academic-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
+
+  # Frontend (solo depende del backend)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile 
+    ports:
+      - "3000:80"  
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - academic-network
+    restart: unless-stopped
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000/api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
       retries: 3
+      start_period: 10s
 
 networks:
   academic-network:

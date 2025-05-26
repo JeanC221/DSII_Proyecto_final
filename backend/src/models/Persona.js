@@ -1,7 +1,17 @@
-const { db } = require('../config/firebaseConfig');
+const admin = require('../config/firebaseConfig');
 const { Timestamp } = require('firebase-admin/firestore');
 
-const personasCollection = db.collection('personas');
+// Verificar que Firebase esté inicializado y obtener la instancia de Firestore
+let personasCollection;
+let db;
+
+if (!admin) {
+  console.warn('⚠️  Firebase no está configurado - Usando funcionalidad limitada');
+  // Crear funciones mock para desarrollo sin Firebase
+} else {
+  db = admin.firestore();
+  personasCollection = db.collection('personas');
+}
 
 const validaciones = {
   validarNombre: (nombre) => {
@@ -72,7 +82,122 @@ const validaciones = {
   }
 };
 
-const Persona = {
+// Funciones mock para cuando Firebase no está disponible
+const mockPersonas = [];
+let mockIdCounter = 1;
+
+const mockFunctions = {
+  crear: async (datosPersona) => {
+    console.log('🔄 Usando función mock para crear persona');
+    
+    // Validar datos igual que en la versión real
+    validaciones.validarNombre(datosPersona.primerNombre);
+    if (datosPersona.segundoNombre && datosPersona.segundoNombre.trim() !== '') {
+      validaciones.validarNombre(datosPersona.segundoNombre);
+    }
+    validaciones.validarApellidos(datosPersona.apellidos);
+    validaciones.validarDocumento(datosPersona.nroDocumento);
+    validaciones.validarGenero(datosPersona.genero);
+    validaciones.validarCorreo(datosPersona.correo);
+    validaciones.validarCelular(datosPersona.celular);
+    validaciones.validarFecha(datosPersona.fechaNacimiento);
+    
+    // Verificar documento único
+    const existeDocumento = mockPersonas.find(p => p.nroDocumento === datosPersona.nroDocumento);
+    if (existeDocumento) {
+      throw new Error(`Ya existe una persona registrada con el número de documento ${datosPersona.nroDocumento}`);
+    }
+    
+    const persona = {
+      id: `mock-${mockIdCounter++}`,
+      ...datosPersona,
+      primerNombre: datosPersona.primerNombre.trim(),
+      segundoNombre: datosPersona.segundoNombre ? datosPersona.segundoNombre.trim() : '',
+      apellidos: datosPersona.apellidos.trim(),
+      correo: datosPersona.correo.trim().toLowerCase(),
+      celular: datosPersona.celular.replace(/[\s-]/g, ''),
+      fechaNacimiento: new Date(datosPersona.fechaNacimiento),
+      createdAt: new Date()
+    };
+    
+    mockPersonas.push(persona);
+    return persona;
+  },
+  
+  obtenerTodos: async () => {
+    console.log('🔄 Usando función mock para obtener todas las personas');
+    return [...mockPersonas].reverse(); // Más recientes primero
+  },
+  
+  obtenerPorId: async (id) => {
+    console.log('🔄 Usando función mock para obtener persona por ID');
+    const persona = mockPersonas.find(p => p.id === id);
+    if (!persona) {
+      throw new Error('Persona no encontrada');
+    }
+    return persona;
+  },
+  
+  actualizar: async (id, datosActualizados) => {
+    console.log('🔄 Usando función mock para actualizar persona');
+    const index = mockPersonas.findIndex(p => p.id === id);
+    if (index === -1) {
+      throw new Error('Persona no encontrada');
+    }
+    
+    // Validaciones para datos actualizados
+    if (datosActualizados.primerNombre) {
+      validaciones.validarNombre(datosActualizados.primerNombre);
+    }
+    if (datosActualizados.apellidos) {
+      validaciones.validarApellidos(datosActualizados.apellidos);
+    }
+    // ... más validaciones según necesites
+    
+    mockPersonas[index] = {
+      ...mockPersonas[index],
+      ...datosActualizados,
+      updatedAt: new Date()
+    };
+    
+    return mockPersonas[index];
+  },
+  
+  eliminar: async (id) => {
+    console.log('🔄 Usando función mock para eliminar persona');
+    const index = mockPersonas.findIndex(p => p.id === id);
+    if (index === -1) {
+      throw new Error('Persona no encontrada');
+    }
+    
+    mockPersonas.splice(index, 1);
+    return { id, mensaje: 'Persona eliminada correctamente' };
+  },
+  
+  buscar: async (filtros) => {
+    console.log('🔄 Usando función mock para buscar personas');
+    let resultado = [...mockPersonas];
+    
+    if (filtros.nroDocumento) {
+      resultado = resultado.filter(p => p.nroDocumento === filtros.nroDocumento);
+    }
+    
+    if (filtros.genero) {
+      resultado = resultado.filter(p => p.genero === filtros.genero);
+    }
+    
+    if (filtros.apellidos) {
+      resultado = resultado.filter(p => 
+        p.apellidos.toLowerCase().includes(filtros.apellidos.toLowerCase())
+      );
+    }
+    
+    return resultado;
+  }
+};
+
+// Exportar las funciones apropiadas según si Firebase está disponible
+const Persona = !admin ? mockFunctions : {
   crear: async (datosPersona) => {
     try {
       validaciones.validarNombre(datosPersona.primerNombre);

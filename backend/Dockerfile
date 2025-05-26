@@ -1,5 +1,8 @@
 FROM node:18-slim
 
+# Instalar curl para health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 # Crear un usuario no-root para mayor seguridad
 RUN groupadd -r nodeuser && useradd -r -g nodeuser -m nodeuser
 

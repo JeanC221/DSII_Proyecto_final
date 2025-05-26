@@ -1,14 +1,26 @@
-const { db } = require('../config/firebaseConfig');
+const admin = require('../config/firebaseConfig');
 const { mongoManager } = require('../config/mongoConfig');
-const { Timestamp } = require('firebase-admin/firestore');
 
-// Colección Firebase (mantener para compatibilidad)
-const firebaseLogsCollection = db.collection('logs');
+// Configuración segura de Firebase
+let firebaseLogsCollection = null;
+let db = null;
+
+if (admin) {
+  try {
+    db = admin.firestore();
+    firebaseLogsCollection = db.collection('logs');
+    console.log('✅ Firebase Firestore configurado para logging');
+  } catch (error) {
+    console.warn('⚠️ Error configurando Firebase para logs:', error.message);
+  }
+} else {
+  console.warn('⚠️ Firebase no disponible - Solo se usará MongoDB para logs');
+}
 
 /**
- * Sistema híbrido de logging: Firebase + MongoDB
- * Firebase: Logs críticos del sistema
- * MongoDB: Logs de auditoría y consultas
+ * Sistema híbrido de logging mejorado: MongoDB + Firebase (opcional)
+ * MongoDB: Sistema principal de logs
+ * Firebase: Backup y logs críticos (si está disponible)
  */
 
 /**
@@ -24,16 +36,16 @@ const registrarLog = async (accion, detalles, categoria = 'sistema') => {
     detalles,
     categoria,
     timestamp: new Date(),
-    ip: null, // Se puede agregar más adelante
+    ip: null,
     user_agent: null
   };
 
-  // Intentar guardar en MongoDB primero (nuevos logs)
+  // Intentar guardar en MongoDB primero (sistema principal)
   let mongoSuccess = false;
   try {
     if (await mongoManager.isHealthy()) {
-      const db = mongoManager.getDatabase();
-      const logsCollection = db.collection('logs');
+      const dbMongo = mongoManager.getDatabase();
+      const logsCollection = dbMongo.collection('logs');
       
       await logsCollection.insertOne({
         ...logEntry,
@@ -45,35 +57,37 @@ const registrarLog = async (accion, detalles, categoria = 'sistema') => {
       console.log(`📝 Log MongoDB: ${accion} - ${detalles}`);
     }
   } catch (error) {
-    console.warn('⚠️ MongoDB Log falló, usando Firebase como fallback:', error.message);
+    console.warn('⚠️ MongoDB Log falló:', error.message);
   }
 
-  // Firebase como fallback o logs críticos
-  try {
-    await firebaseLogsCollection.add({
-      ...logEntry,
-      timestamp: Timestamp.now(),
-      mongo_logged: mongoSuccess
-    });
-    
-    if (!mongoSuccess) {
-      console.log(`📝 Log Firebase: ${accion} - ${detalles}`);
+  // Firebase como backup (solo si está disponible)
+  if (firebaseLogsCollection) {
+    try {
+      await firebaseLogsCollection.add({
+        ...logEntry,
+        timestamp: admin.firestore.Timestamp.now(),
+        mongo_logged: mongoSuccess
+      });
+      
+      if (!mongoSuccess) {
+        console.log(`📝 Log Firebase (fallback): ${accion} - ${detalles}`);
+      }
+    } catch (error) {
+      console.error('❌ Error en Firebase logging:', error.message);
     }
-  } catch (error) {
-    console.error('❌ Error crítico: Ambos sistemas de logging fallaron:', error);
+  }
+
+  // Si ambos fallan, log de emergencia
+  if (!mongoSuccess && !firebaseLogsCollection) {
+    console.error(`🚨 EMERGENCY LOG: ${new Date().toISOString()} - ${accion} - ${detalles}`);
     
-    // Log de emergencia a archivo (último recurso)
-    console.error(`EMERGENCY LOG: ${new Date().toISOString()} - ${accion} - ${detalles}`);
+    // Opcional: Escribir a archivo local
+    // fs.appendFileSync('./emergency.log', `${new Date().toISOString()} - ${accion} - ${detalles}\n`);
   }
 };
 
 /**
  * Obtiene logs con consulta híbrida inteligente
- * @param {string} [accion] - Filtro por acción
- * @param {string} [documento] - Filtro por documento en detalles
- * @param {Date} [fechaDesde] - Fecha inicio del rango
- * @param {Date} [fechaHasta] - Fecha fin del rango
- * @returns {Promise<Array>} Array de logs combinados
  */
 const obtenerLogs = async (accion, documento, fechaDesde, fechaHasta) => {
   const logs = [];
@@ -89,33 +103,29 @@ const obtenerLogs = async (accion, documento, fechaDesde, fechaHasta) => {
     console.warn('⚠️ Error obteniendo logs de MongoDB:', error.message);
   }
   
-  // Obtener desde Firebase (logs históricos + fallback)
-  try {
-    const firebaseLogs = await obtenerLogsFirebase(accion, documento, fechaDesde, fechaHasta);
-    
-    // Evitar duplicados si ya tenemos logs de MongoDB
-    const filteredFirebaseLogs = logs.length > 0 
-      ? firebaseLogs.filter(fbLog => !fbLog.mongo_logged)
-      : firebaseLogs;
-    
-    logs.push(...filteredFirebaseLogs);
-    console.log(`📊 Firebase: ${filteredFirebaseLogs.length} logs obtenidos`);
-  } catch (error) {
-    console.error('❌ Error obteniendo logs de Firebase:', error);
+  // Obtener desde Firebase solo si MongoDB falla Y Firebase está disponible
+  if (logs.length === 0 && firebaseLogsCollection) {
+    try {
+      const firebaseLogs = await obtenerLogsFirebase(accion, documento, fechaDesde, fechaHasta);
+      logs.push(...firebaseLogs);
+      console.log(`📊 Firebase (fallback): ${firebaseLogs.length} logs obtenidos`);
+    } catch (error) {
+      console.error('❌ Error obteniendo logs de Firebase:', error.message);
+    }
   }
   
-  // Ordenar por timestamp descendente y eliminar duplicados
+  // Ordenar por timestamp descendente
   return logs
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-    .slice(0, 1000); // Limitar resultados para rendimiento
+    .slice(0, 1000);
 };
 
 /**
  * Obtiene logs desde MongoDB con filtros avanzados
  */
 const obtenerLogsMongo = async (accion, documento, fechaDesde, fechaHasta) => {
-  const db = mongoManager.getDatabase();
-  const logsCollection = db.collection('logs');
+  const dbMongo = mongoManager.getDatabase();
+  const logsCollection = dbMongo.collection('logs');
   
   // Construir filtros dinámicamente
   const filters = {};
@@ -160,9 +170,13 @@ const obtenerLogsMongo = async (accion, documento, fechaDesde, fechaHasta) => {
 };
 
 /**
- * Obtiene logs desde Firebase (compatibilidad)
+ * Obtiene logs desde Firebase (solo como fallback)
  */
 const obtenerLogsFirebase = async (accion, documento, fechaDesde, fechaHasta) => {
+  if (!firebaseLogsCollection) {
+    return [];
+  }
+
   let query = firebaseLogsCollection.orderBy('timestamp', 'desc').limit(500);
   
   const snapshot = await query.get();
@@ -172,14 +186,14 @@ const obtenerLogsFirebase = async (accion, documento, fechaDesde, fechaHasta) =>
     const data = doc.data();
     const timestamp = data.timestamp ? data.timestamp.toDate() : new Date();
     
-    // Aplicar filtros manualmente (Firebase tiene limitaciones)
+    // Aplicar filtros manualmente
     let cumpleFiltros = true;
     
-    if (accion && !data.accion.toLowerCase().includes(accion.toLowerCase())) {
+    if (accion && !data.accion?.toLowerCase().includes(accion.toLowerCase())) {
       cumpleFiltros = false;
     }
     
-    if (documento && !data.detalles.toLowerCase().includes(documento.toLowerCase())) {
+    if (documento && !data.detalles?.toLowerCase().includes(documento.toLowerCase())) {
       cumpleFiltros = false;
     }
     
@@ -226,14 +240,14 @@ const obtenerEstadisticasLogs = async () => {
       logs_por_categoria: {},
       sistema_activo: {
         mongodb: await mongoManager.isHealthy(),
-        firebase: true // Asumimos que Firebase está siempre disponible
+        firebase: !!firebaseLogsCollection
       }
     };
     
     // Estadísticas de MongoDB si está disponible
     if (stats.sistema_activo.mongodb) {
-      const db = mongoManager.getDatabase();
-      const logsCollection = db.collection('logs');
+      const dbMongo = mongoManager.getDatabase();
+      const logsCollection = dbMongo.collection('logs');
       
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -259,7 +273,10 @@ const obtenerEstadisticasLogs = async () => {
     console.error('Error obteniendo estadísticas:', error);
     return {
       error: 'No se pudieron obtener estadísticas',
-      sistema_activo: { mongodb: false, firebase: true }
+      sistema_activo: { 
+        mongodb: false, 
+        firebase: !!firebaseLogsCollection 
+      }
     };
   }
 };

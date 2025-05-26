@@ -206,29 +206,33 @@ class GroqLLMClient:
             response.raise_for_status()
     
     def _get_system_prompt(self) -> str:
-        return """Eres un asistente que responde preguntas sobre datos de personas de forma DIRECTA y CONCISA.
+        return """Eres un asistente especializado en análisis de datos demográficos.
 
-REGLAS OBLIGATORIAS:
-1. Responde SOLO lo que se pregunta
-2. Máximo 2-3 oraciones
-3. NO expliques metodología ni contexto académico
-4. NO uses palabras como "metodología", "análisis contextual", "académico"
-5. Da números exactos cuando sea posible
+REGLAS FUNDAMENTALES:
+1. Responde SOLO lo preguntado, máximo 2 oraciones
+2. Usa los datos EXACTOS proporcionados en el prompt
+3. Para personas específicas: usa el campo 'nombre_completo'
+4. Para fechas: usa 'fecha_registro_texto' o 'mes_nacimiento_texto'
+5. Para edad: usa 'edad_anos' (solo si 'tiene_edad' es true)
+6. Para cálculos: usa las estadísticas pre-calculadas primero
 
-EJEMPLOS DE RESPUESTAS CORRECTAS:
-- Pregunta: "¿Cuántas personas mayores de 30 años hay?"
-  Respuesta: "Hay 5 personas mayores de 30 años registradas."
-
-- Pregunta: "¿Cuál es el promedio de edad?"
-  Respuesta: "El promedio de edad es 28.5 años."
-
-- Pregunta: "¿Quién es la persona mayor?"
-  Respuesta: "La persona mayor es María García con 65 años."
+TIPOS DE CONSULTA Y CÓMO RESPONDER:
+- Conteos: "Hay X personas..."
+- Última persona: "La última persona registrada es [nombre_completo] el [fecha_registro_texto]"
+- Más joven: "La persona más joven es [nombre_completo] con [edad_anos] años"
+- Mayor: "La persona mayor es [nombre_completo] con [edad_anos] años"
+- Porcentajes: "Masculino X%, Femenino Y%, etc."
+- Filtros: Examinar TODOS los registros y aplicar condiciones exactas
+- Promedios: Usar estadísticas pre-calculadas o calcular si es necesario
 
 FORMATO DE RESPUESTA:
-- Respuesta directa en 1-2 oraciones máximo
-- Solo números y hechos específicos
-- Sin explicaciones técnicas"""
+- Sin explicaciones metodológicas
+- Sin palabras como "análisis", "metodología", "académico"
+- Datos exactos de los registros
+- Nombres completos reales
+- Números precisos
+
+Si no hay datos suficientes, responde: "No hay información suficiente para responder esta pregunta"."""
 
 # ============================================================================
 # GESTOR DE DATOS CON CACHE INTELIGENTE
@@ -471,30 +475,43 @@ class AcademicRAGProcessor:
         start_time = time.time()
         
         try:
-            query_analysis = self.query_analyzer.analyze_complexity(user_query)
-            logger.info(f"🔍 Consulta analizada: {query_analysis['complexity_level']}")
-            
             dataset = self.data_manager.get_enriched_dataset()
+            
+            logger.info(f"🔍 Dataset cargado: {len(dataset)} registros")
+            
             if not dataset:
-                return self._create_error_response("No hay datos disponibles")
+                return self._create_error_response("No hay datos disponibles en la base de datos")
             
-            academic_prompt = self._build_academic_prompt(user_query, dataset, query_analysis)
+            # Verificar que hay datos básicos válidos
+            valid_records = [r for r in dataset if r.nombre_completo and r.nombre_completo.strip()]
+            if not valid_records:
+                return self._create_error_response("No hay registros válidos en la base de datos")
             
-            llm_response = self.llm._make_request_with_retry(academic_prompt, max_tokens=800)
+            # Análisis de consulta mejorado
+            query_analysis = self.query_analyzer.analyze_complexity(user_query)
+            
+            # Prompt académico robusto
+            academic_prompt = self._build_academic_prompt(user_query, valid_records, query_analysis)
+            
+            # Ajustar tokens según complejidad
+            max_tokens = 150 if query_analysis['complexity_level'] == 'simple' else 250
+            
+            llm_response = self.llm._make_request_with_retry(academic_prompt, max_tokens=max_tokens)
             
             if not llm_response:
-                return self._create_error_response("Error en procesamiento LLM")
+                return self._create_error_response("El servicio de procesamiento no está disponible")
             
             processing_time = time.time() - start_time
             self._update_metrics(processing_time, success=True)
             
             return {
-                "answer": llm_response,
+                "answer": llm_response.strip(),
                 "metadata": {
                     "query_complexity": query_analysis['complexity_level'],
-                    "dataset_size": len(dataset),
+                    "dataset_size": len(valid_records),
                     "processing_time_ms": round(processing_time * 1000, 2),
-                    "patterns_detected": query_analysis['detected_patterns']
+                    "patterns_detected": query_analysis['detected_patterns'],
+                    "data_enrichment": "full_enrichment_applied"
                 }
             }
             
@@ -502,43 +519,176 @@ class AcademicRAGProcessor:
             processing_time = time.time() - start_time
             self._update_metrics(processing_time, success=False)
             logger.error(f"❌ Error procesando consulta: {e}")
-            return self._create_error_response(f"Error interno: {str(e)}")
+            return self._create_error_response(f"Error procesando la consulta: {str(e)}")
     
     def _build_academic_prompt(self, query: str, dataset: List[PersonRecord], analysis: Dict) -> str:
-        dataset_dict = [asdict(record) for record in dataset]
+        """Construye prompt académico robusto que maneja cualquier tipo de consulta"""
         
-        context_stats = self._calculate_context_statistics(dataset)
+        # PASO 1: Preparar datos completos y enriquecidos
+        enriched_data = []
         
-        prompt = f"""SISTEMA DE ANÁLISIS ACADÉMICO DE DATOS DEMOGRÁFICOS
+        for record in dataset:
+            record_dict = asdict(record)
+            
+            # Fechas en formato legible
+            if record_dict.get('fecha_registro'):
+                if hasattr(record_dict['fecha_registro'], 'strftime'):
+                    record_dict['fecha_registro_texto'] = record_dict['fecha_registro'].strftime('%Y-%m-%d')
+                    record_dict['fecha_registro_completa'] = record_dict['fecha_registro'].strftime('%Y-%m-%d %H:%M:%S')
+                else:
+                    record_dict['fecha_registro_texto'] = str(record_dict['fecha_registro'])
+                    record_dict['fecha_registro_completa'] = str(record_dict['fecha_registro'])
+            else:
+                record_dict['fecha_registro_texto'] = "2024-01-01"
+                record_dict['fecha_registro_completa'] = "2024-01-01 00:00:00"
+            
+            # Edad enriquecida
+            if record.edad is not None and record.edad > 0:
+                record_dict['edad_anos'] = record.edad
+                record_dict['edad_texto'] = f"{record.edad} años"
+                record_dict['tiene_edad'] = True
+            else:
+                record_dict['edad_anos'] = 0
+                record_dict['edad_texto'] = "edad no disponible"
+                record_dict['tiene_edad'] = False
+            
+            # Información demográfica enriquecida
+            record_dict['es_mayor_edad_texto'] = "mayor de edad" if record.es_mayor_edad else "menor de edad"
+            record_dict['genero_normalizado'] = record.genero.lower() if record.genero else "no especificado"
+            
+            # Información temporal enriquecida
+            if record.mes_nacimiento:
+                record_dict['mes_nacimiento_numero'] = record.mes_nacimiento
+                record_dict['mes_nacimiento_texto'] = record.mes_nacimiento_nombre or f"mes_{record.mes_nacimiento}"
+            
+            if record.año_nacimiento:
+                record_dict['año_nacimiento_numero'] = record.año_nacimiento
+                record_dict['decada_nacimiento'] = f"{(record.año_nacimiento // 10) * 10}s"
+            
+            # Información de contacto estructurada
+            if record.correo and '@' in record.correo:
+                record_dict['correo_dominio'] = record.correo.split('@')[1]
+            else:
+                record_dict['correo_dominio'] = "sin_dominio"
+                
+            record_dict['celular_limpio'] = ''.join(filter(str.isdigit, record.celular)) if record.celular else ""
+            
+            enriched_data.append(record_dict)
+        
+        # PASO 2: Crear múltiples vistas de los datos (CON VALIDACIONES)
+        
+        # Vista por fecha de registro (más reciente primero)
+        datos_por_fecha = sorted(enriched_data, key=lambda x: x.get('fecha_registro_texto', ''), reverse=True)
+        
+        # Vista por edad (menor a mayor, solo con edad válida)
+        datos_por_edad = sorted([x for x in enriched_data if x['tiene_edad'] and x['edad_anos'] > 0], key=lambda x: x['edad_anos'])
+        
+        # Vista por género
+        datos_por_genero = {}
+        for item in enriched_data:
+            genero = item.get('genero') or 'No especificado'
+            if genero not in datos_por_genero:
+                datos_por_genero[genero] = []
+            datos_por_genero[genero].append(item)
+        
+        # Vista por mes de nacimiento
+        datos_por_mes = {}
+        for item in enriched_data:
+            if item.get('mes_nacimiento_texto'):
+                mes = item['mes_nacimiento_texto']
+                if mes not in datos_por_mes:
+                    datos_por_mes[mes] = []
+                datos_por_mes[mes].append(item)
+        
+        # PASO 3: Calcular estadísticas con validaciones
+        total_personas = len(enriched_data)
+        personas_con_edad = len(datos_por_edad)
+        
+        # Estadísticas por género
+        generos_stats = {}
+        for genero, personas in datos_por_genero.items():
+            edades = [p['edad_anos'] for p in personas if p['tiene_edad'] and p['edad_anos'] > 0]
+            generos_stats[genero] = {
+                'total': len(personas),
+                'porcentaje': round((len(personas) / total_personas) * 100, 1) if total_personas > 0 else 0,
+                'con_edad': len(edades),
+                'edad_promedio': round(sum(edades) / len(edades), 1) if edades else 0,
+                'edad_min': min(edades) if edades else 0,
+                'edad_max': max(edades) if edades else 0
+            }
+        
+        # Estadísticas de edad
+        todas_edades = [x['edad_anos'] for x in enriched_data if x['tiene_edad'] and x['edad_anos'] > 0]
+        edad_stats = {
+            'total_con_edad': len(todas_edades),
+            'edad_promedio': round(sum(todas_edades) / len(todas_edades), 1) if todas_edades else 0,
+            'edad_minima': min(todas_edades) if todas_edades else 0,
+            'edad_maxima': max(todas_edades) if todas_edades else 0,
+            'mayores_edad': len([x for x in enriched_data if x.get('es_mayor_edad')]),
+            'menores_edad': len([x for x in enriched_data if not x.get('es_mayor_edad')])
+        }
+        
+        # PASO 4: Construir prompt con validaciones de datos
+        
+        # Ejemplos seguros basados en datos reales
+        ejemplo_ultima_persona = datos_por_fecha[0]['nombre_completo'] + " el " + datos_por_fecha[0]['fecha_registro_texto'] if datos_por_fecha else "No hay datos de fechas"
+        ejemplo_mas_joven = datos_por_edad[0]['nombre_completo'] + " con " + str(datos_por_edad[0]['edad_anos']) + " años" if datos_por_edad else "No hay datos de edad"
+        ejemplo_mayor = datos_por_edad[-1]['nombre_completo'] + " con " + str(datos_por_edad[-1]['edad_anos']) + " años" if datos_por_edad else "No hay datos de edad"
+        ejemplo_porcentajes = ', '.join([f'{k} {v["porcentaje"]}%' for k, v in generos_stats.items()]) if generos_stats else "No hay datos de género"
+        
+        prompt = f"""Eres un asistente que responde preguntas sobre una base de datos de personas de forma DIRECTA y PRECISA.
 
-CONJUNTO DE DATOS COMPLETO:
-{json.dumps(dataset_dict, default=str, ensure_ascii=False, indent=2)}
+INSTRUCCIONES CRÍTICAS:
+1. Responde SOLO lo que se pregunta, máximo 2 oraciones
+2. Usa los datos exactos proporcionados
+3. Para fechas/tiempo: usa fecha_registro_texto o mes_nacimiento_texto
+4. Para edad: usa edad_anos (solo si tiene_edad es true)
+5. Para cálculos: usa las estadísticas pre-calculadas cuando sea posible
+6. Nombres exactos: usa nombre_completo de los datos
 
-ESTADÍSTICAS DE CONTEXTO:
-{json.dumps(context_stats, ensure_ascii=False, indent=2)}
+ESTADÍSTICAS GENERALES:
+- Total personas: {total_personas}
+- Con edad válida: {personas_con_edad}
+- Edad promedio general: {edad_stats['edad_promedio']} años
+- Rango de edades: {edad_stats['edad_minima']}-{edad_stats['edad_maxima']} años
+- Mayores de edad: {edad_stats['mayores_edad']}, Menores: {edad_stats['menores_edad']}
 
-ANÁLISIS DE LA CONSULTA:
-- Nivel de complejidad: {analysis['complexity_level']}
-- Patrones detectados: {', '.join(analysis['detected_patterns'])}
-- Requiere múltiples filtros: {'Sí' if analysis['requires_multiple_filters'] else 'No'}
+DISTRIBUCIÓN POR GÉNERO:
+{json.dumps(generos_stats, ensure_ascii=False, indent=1)}
 
-CONSULTA DEL USUARIO: {query}
+DATOS POR FECHA DE REGISTRO (más reciente primero):
+{json.dumps(datos_por_fecha[:3], default=str, ensure_ascii=False, indent=1) if datos_por_fecha else "Sin datos de fechas"}
 
-INSTRUCCIONES ACADÉMICAS:
-1. Proporciona una respuesta precisa y académicamente rigurosa
-2. Si hay múltiples filtros, aplícalos TODOS secuencialmente
-3. Muestra tu metodología de análisis paso a paso
-4. Incluye números exactos y porcentajes relevantes
-5. Proporciona contexto estadístico cuando sea apropiado
-6. Mantén un tono profesional y académico
+DATOS POR EDAD (menor a mayor):
+MENORES: {json.dumps(datos_por_edad[:2], default=str, ensure_ascii=False, indent=1) if datos_por_edad else "Sin datos de edad"}
+MAYORES: {json.dumps(datos_por_edad[-2:], default=str, ensure_ascii=False, indent=1) if len(datos_por_edad) >= 2 else "Sin datos suficientes"}
 
-FORMATO DE RESPUESTA REQUERIDO:
-- Respuesta directa al inicio
-- Metodología aplicada
-- Resultados numéricos precisos
-- Análisis contextual (si aplica)
+DISTRIBUCIÓN POR MES DE NACIMIENTO:
+{json.dumps({k: len(v) for k, v in datos_por_mes.items()}, ensure_ascii=False, indent=1) if datos_por_mes else "Sin datos de meses"}
 
-RESPUESTA ACADÉMICA:"""
+TODOS LOS REGISTROS COMPLETOS:
+{json.dumps(enriched_data, default=str, ensure_ascii=False, indent=1)}
+
+PREGUNTA DEL USUARIO: {query}
+
+EJEMPLOS DE RESPUESTAS CORRECTAS:
+- "Hay {total_personas} personas registradas"
+- "La última persona registrada es {ejemplo_ultima_persona}"
+- "La persona más joven es {ejemplo_mas_joven}"
+- "La persona mayor es {ejemplo_mayor}"
+- "El porcentaje por género es: {ejemplo_porcentajes}"
+
+REGLAS ESPECÍFICAS POR TIPO DE PREGUNTA:
+- Para "última/último registrado": usar el primer elemento de datos ordenados por fecha
+- Para "más joven": usar el primer elemento de datos ordenados por edad (menor edad)
+- Para "mayor/más viejo": usar el último elemento de datos ordenados por edad (mayor edad)
+- Para "cuántos/cuántas": contar registros que cumplan condición
+- Para "porcentaje": usar porcentajes pre-calculados en generos_stats
+- Para filtros complejos: examinar TODOS los registros y aplicar condiciones
+- Si no hay datos de edad, responder: "No hay información de edad disponible"
+- Si no hay datos de fechas, responder: "No hay información de fechas disponible"
+
+RESPUESTA DIRECTA (máximo 2 líneas):"""
         
         return prompt
     
@@ -552,7 +702,6 @@ RESPUESTA ACADÉMICA:"""
         for record in dataset:
             if record.genero:
                 gender_dist[record.genero] = gender_dist.get(record.genero, 0) + 1
-            
             if record.edad is not None:
                 ages.append(record.edad)
             
