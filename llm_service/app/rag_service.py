@@ -251,6 +251,7 @@ class PersonRecord:
     correo: str
     celular: str
     
+    # CORRECCIÓN: Inicializar todos los campos opcionales
     edad: Optional[int] = None
     mes_nacimiento: Optional[int] = None
     mes_nacimiento_nombre: Optional[str] = None
@@ -374,20 +375,52 @@ class IntelligentDataManager:
         )
     
     def _enrich_temporal_data(self, record: PersonRecord, raw_data: Dict, current_date: datetime) -> None:
-        """Enriquece con datos temporales calculados"""
+        """CORRECCIÓN: Asegurar que se asignen todos los campos temporales"""
         birth_date = raw_data.get('fechaNacimiento')
-        if hasattr(birth_date, 'todate'):
-            birth_date = birth_date.todate()
-            
-            record.edad = self._calculate_exact_age(birth_date, current_date)
-            record.mes_nacimiento = birth_date.month
-            record.mes_nacimiento_nombre = self.month_names.get(birth_date.month, f"mes_{birth_date.month}")
-            record.año_nacimiento = birth_date.year
         
+        # CORRECCIÓN: Verificar múltiples formatos de fecha
+        if birth_date:
+            try:
+                # Si es un timestamp de Firebase
+                if hasattr(birth_date, 'todate'):
+                    birth_date = birth_date.todate()
+                # Si es una cadena, intentar parsearlo
+                elif isinstance(birth_date, str):
+                    # Intentar varios formatos
+                    for date_format in ['%Y-%m-%d', '%d/%m/%Y', '%Y-%m-%dT%H:%M:%S']:
+                        try:
+                            birth_date = datetime.strptime(birth_date, date_format)
+                            break
+                        except ValueError:
+                            continue
+                else:
+                    logger.warning(f"⚠️ No se pudo parsear fecha de nacimiento: {birth_date}")
+                    birth_date = None
+            
+                if birth_date and isinstance(birth_date, datetime):
+                    record.edad = self._calculate_exact_age(birth_date, current_date)
+                    record.mes_nacimiento = birth_date.month
+                    record.mes_nacimiento_nombre = self.month_names.get(birth_date.month, f"mes_{birth_date.month}")
+                    record.año_nacimiento = birth_date.year
+                    
+                    logger.info(f"🔍 DEBUG - Persona: {record.nombre_completo}, Edad: {record.edad}, Mes: {record.mes_nacimiento}")
+                else:
+                    logger.warning(f"⚠️ Fecha de nacimiento inválida para {record.nombre_completo}: {raw_data.get('fechaNacimiento')}")
+                    
+            except Exception as e:
+                logger.warning(f"⚠️ Error procesando fecha de nacimiento para {record.nombre_completo}: {e}")
+        
+        # Fecha de registro
         created_at = raw_data.get('createdAt')
-        if hasattr(created_at, 'todate'):
-            record.fecha_registro = created_at.todate()
-    
+        if created_at:
+            try:
+                if hasattr(created_at, 'todate'):
+                    record.fecha_registro = created_at.todate()
+                elif isinstance(created_at, str):
+                    record.fecha_registro = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+            except Exception as e:
+                logger.warning(f"⚠️ Error procesando fecha de registro para {record.nombre_completo}: {e}")
+
     def _enrich_demographic_data(self, record: PersonRecord) -> None:
         """Enriquece con datos demográficos"""
         if record.edad is not None:
@@ -464,197 +497,6 @@ class AcademicQueryAnalyzer:
         else:
             return "complex"
 
-class PrecomputedQueries:
-    """Gestor de consultas precomputadas para respuestas rápidas"""
-    
-    def __init__(self, data_manager: IntelligentDataManager):
-        self.data_manager = data_manager
-        self.precomputed_answers = {}
-        self._build_precomputed_queries()
-    
-    def _build_precomputed_queries(self):
-        """Define las consultas predeterminadas y sus respuestas - VERSIÓN CORREGIDA"""
-        self.query_handlers = {
-            # Exactamente como aparecen en el frontend
-            "¿Cuántas personas están registradas en total?": self._total_personas,
-            "¿Cuál es la distribución por género?": self._distribucion_genero,
-            "¿Quién es la persona más joven registrada?": self._persona_mas_joven,
-            "¿Quién es la persona mayor registrada?": self._persona_mayor,
-            "¿Cuántas personas nacieron en abril?": self._nacidos_abril,
-            "¿Cuál es el promedio de edad de las personas registradas?": self._promedio_edad,
-            "¿Cuántos hombres de más de 25 años hay?": self._hombres_mayor_25,
-            "¿Mujeres menores de 30 años nacidas en abril?": self._mujeres_menor_30_abril,
-            "¿Quién fue la última persona en registrarse?": self._ultima_persona_registrada,
-            "¿Qué porcentaje de cada género está registrado?": self._porcentaje_generos
-        }
-    
-    def is_precomputed_query(self, query: str) -> bool:
-        """Verifica si es una consulta predeterminada - MEJORADA CON DEBUG"""
-        query_clean = query.strip()
-        
-        # DEBUG: Mostrar todas las consultas disponibles
-        logger.info(f"🔍 DEBUG: Consulta recibida: '{query_clean}'")
-        logger.info(f"🔍 DEBUG: Consultas precomputadas disponibles:")
-        for i, precomputed_query in enumerate(self.query_handlers.keys()):
-            logger.info(f"  {i+1}. '{precomputed_query}'")
-        
-        # Verificación exacta primero
-        if query_clean in self.query_handlers:
-            logger.info(f"✅ Consulta precomputada encontrada (exacta): {query_clean}")
-            return True
-        
-        # Verificación sin signos de interrogación (fallback)
-        query_without_signs = query_clean.replace('¿', '').replace('?', '').strip()
-        logger.info(f"🔍 DEBUG: Consulta sin signos: '{query_without_signs}'")
-        
-        for precomputed_query in self.query_handlers.keys():
-            precomputed_clean = precomputed_query.replace('¿', '').replace('?', '').strip()
-            logger.info(f"🔍 DEBUG: Comparando con: '{precomputed_clean}'")
-            
-            if query_without_signs.lower() == precomputed_clean.lower():
-                logger.info(f"✅ Consulta precomputada encontrada (sin signos): {query_clean}")
-                return True
-        
-        logger.info(f"❌ Consulta NO es precomputada: {query_clean}")
-        return False
-    
-    def get_precomputed_answer(self, query: str) -> str:
-        """Obtiene respuesta precomputada rápida - MEJORADA"""
-        query_clean = query.strip()
-        
-        # Buscar coincidencia exacta primero
-        if query_clean in self.query_handlers:
-            handler = self.query_handlers[query_clean]
-        else:
-            # Buscar coincidencia sin signos
-            query_without_signs = query_clean.replace('¿', '').replace('?', '').strip()
-            handler = None
-            for precomputed_query, precomputed_handler in self.query_handlers.items():
-                precomputed_clean = precomputed_query.replace('¿', '').replace('?', '').strip()
-                if query_without_signs.lower() == precomputed_clean.lower():
-                    handler = precomputed_handler
-                    break
-            
-            if not handler:
-                return None
-        
-        try:
-            dataset = self.data_manager.get_enriched_dataset()
-            logger.info(f"🚀 Ejecutando consulta precomputada para: {query_clean}")
-            result = handler(dataset)
-            logger.info(f"✅ Respuesta precomputada generada: {result[:100]}...")
-            return result
-        except Exception as e:
-            logger.error(f"❌ Error en consulta precomputada: {e}")
-            return "Error al procesar la consulta predeterminada."
-
-    # Métodos de consultas precomputadas - CORREGIDOS
-    def _total_personas(self, dataset: List) -> str:
-        total = len(dataset)
-        return f"Hay {total} personas registradas en total en el sistema."
-    
-    def _distribucion_genero(self, dataset: List) -> str:
-        generos = {}
-        for record in dataset:
-            genero = record.genero.lower() if record.genero else "no especificado"
-            generos[genero] = generos.get(genero, 0) + 1
-        
-        resultado = "Distribución por género:\n"
-        for genero, cantidad in generos.items():
-            resultado += f"• {genero.capitalize()}: {cantidad} personas\n"
-        
-        return resultado.strip()
-    
-    def _persona_mas_joven(self, dataset: List) -> str:
-        personas_con_edad = [r for r in dataset if r.edad is not None]
-        if not personas_con_edad:
-            return "No hay información de edad disponible."
-        
-        mas_joven = min(personas_con_edad, key=lambda r: r.edad)
-        return f"La persona más joven registrada es {mas_joven.nombre_completo} con {mas_joven.edad} años."
-    
-    def _persona_mayor(self, dataset: List) -> str:
-        personas_con_edad = [r for r in dataset if r.edad is not None]
-        if not personas_con_edad:
-            return "No hay información de edad disponible."
-        
-        mayor = max(personas_con_edad, key=lambda r: r.edad)
-        return f"La persona mayor registrada es {mayor.nombre_completo} con {mayor.edad} años."
-    
-    def _nacidos_abril(self, dataset: List) -> str:
-        nacidos_abril = [r for r in dataset if r.mes_nacimiento == 4]
-        count = len(nacidos_abril)
-        if count == 0:
-            return "No hay personas registradas que hayan nacido en abril."
-        elif count == 1:
-            return "Hay 1 persona que nació en abril."
-        else:
-            return f"Hay {count} personas que nacieron en abril."
-    
-    def _promedio_edad(self, dataset: List) -> str:
-        personas_con_edad = [r for r in dataset if r.edad is not None]
-        if not personas_con_edad:
-            return "No hay información de edad disponible para calcular el promedio."
-        
-        promedio = sum(r.edad for r in personas_con_edad) / len(personas_con_edad)
-        return f"El promedio de edad de las personas registradas es {promedio:.1f} años."
-    
-    def _hombres_mayor_25(self, dataset: List) -> str:
-        hombres_mayor_25 = [
-            r for r in dataset 
-            if r.genero and r.genero.lower() in ["masculino", "hombre", "m"] 
-            and r.edad is not None and r.edad > 25
-        ]
-        count = len(hombres_mayor_25)
-        if count == 0:
-            return "No hay hombres de más de 25 años registrados."
-        elif count == 1:
-            return "Hay 1 hombre de más de 25 años registrado."
-        else:
-            return f"Hay {count} hombres de más de 25 años registrados."
-    
-    def _mujeres_menor_30_abril(self, dataset: List) -> str:
-        mujeres_filtradas = [
-            r for r in dataset 
-            if r.genero and r.genero.lower() in ["femenino", "mujer", "f"]
-            and r.edad is not None and r.edad < 30
-            and r.mes_nacimiento == 4
-        ]
-        count = len(mujeres_filtradas)
-        if count == 0:
-            return "No hay mujeres menores de 30 años que hayan nacido en abril."
-        elif count == 1:
-            return "Hay 1 mujer menor de 30 años que nació en abril."
-        else:
-            return f"Hay {count} mujeres menores de 30 años que nacieron en abril."
-    
-    def _ultima_persona_registrada(self, dataset: List) -> str:
-        personas_con_fecha = [r for r in dataset if r.fecha_registro is not None]
-        if not personas_con_fecha:
-            return "No hay información de fecha de registro disponible."
-        
-        ultima = max(personas_con_fecha, key=lambda r: r.fecha_registro)
-        fecha_str = ultima.fecha_registro.strftime("%d/%m/%Y")
-        return f"La última persona en registrarse fue {ultima.nombre_completo} el {fecha_str}."
-    
-    def _porcentaje_generos(self, dataset: List) -> str:
-        if not dataset:
-            return "No hay datos disponibles."
-        
-        generos = {}
-        for record in dataset:
-            genero = record.genero.lower() if record.genero else "no especificado"
-            generos[genero] = generos.get(genero, 0) + 1
-        
-        total = len(dataset)
-        resultado = "Porcentaje por género:\n"
-        
-        for genero, cantidad in generos.items():
-            porcentaje = (cantidad / total) * 100
-            resultado += f"• {genero.capitalize()}: {porcentaje:.1f}% ({cantidad} personas)\n"
-        
-        return resultado.strip()
-
 class AcademicRAGProcessor:
     
     def __init__(self, llm_client: GroqLLMClient, data_manager: IntelligentDataManager):
@@ -662,7 +504,6 @@ class AcademicRAGProcessor:
         self.data_manager = data_manager
         self.query_analyzer = AcademicQueryAnalyzer()
         self.metrics = SystemMetrics()
-        self.precomputed = PrecomputedQueries(data_manager)
     
     def process_academic_query(self, user_query: str) -> Dict[str, Any]:
         start_time = time.time()
@@ -670,29 +511,8 @@ class AcademicRAGProcessor:
         try:
             logger.info(f"🔍 Procesando consulta: '{user_query}'")
             
-            # PRIMERO: Verificar si es una consulta predeterminada
-            if self.precomputed.is_precomputed_query(user_query):
-                logger.info(f"🚀 Usando respuesta precomputada para: {user_query}")
-                
-                precomputed_answer = self.precomputed.get_precomputed_answer(user_query)
-                processing_time = time.time() - start_time
-                
-                self._update_metrics(processing_time, success=True)
-                
-                return {
-                    "answer": precomputed_answer,
-                    "metadata": {
-                        "query_type": "precomputed",
-                        "query_complexity": "simple",
-                        "dataset_size": len(self.data_manager.get_enriched_dataset()),
-                        "processing_time_ms": round(processing_time * 1000, 2),
-                        "patterns_detected": ["precomputed_query"],
-                        "data_enrichment": "precomputed_fast_response"
-                    }
-                }
-            
-            # SEGUNDO: Si no es predeterminada, usar el procesamiento completo con IA
-            logger.info(f"🤖 Consulta personalizada detectada, usando IA: {user_query}")
+            # DIRECTAMENTE: Procesar todas las consultas con IA
+            logger.info(f"🤖 Procesando consulta con IA: {user_query}")
             
             dataset = self.data_manager.get_enriched_dataset()
             logger.info(f"🔍 Dataset cargado: {len(dataset)} registros")
@@ -991,6 +811,11 @@ async def system_health_check():
     
     return {
         "status": overall_status.value,
+        "service": "rag",
+        "firebase": "connected" if firebase_healthy else "disconnected",
+        "data_retriever": "available" if firebase_healthy else "unavailable",
+        "llm_model": "loaded" if groq_healthy else "not loaded",
+        "rag_service_url": "http://rag_service:8000",
         "components": {
             "firebase": "healthy" if firebase_healthy else "unhealthy",
             "groq_llm": "healthy" if groq_healthy else "unhealthy",
@@ -1000,7 +825,7 @@ async def system_health_check():
         "system_metrics": asdict(rag_processor.metrics),
         "capabilities": [
             "Consultas complejas con múltiples filtros",
-            "Análisis temporal y demográfico",
+            "Análisis temporal y demográfico", 
             "Cálculos estadísticos automatizados",
             "Cache inteligente para optimización",
             "Logging académico detallado"
@@ -1025,27 +850,6 @@ async def get_system_metrics():
         "dataset_info": {
             "total_records": len(data_manager.get_enriched_dataset()),
             "last_refresh": data_manager.cache_metadata.get("enriched_persons", "Never").isoformat() if isinstance(data_manager.cache_metadata.get("enriched_persons"), datetime) else "Never"
-        }
-    }
-
-@app.get("/academic-examples", response_model=Dict[str, List[str]])
-async def get_academic_query_examples():
-    return {
-        "ejemplos_predeterminados": [
-            "¿Cuántas personas están registradas en total?",
-            "¿Cuál es la distribución por género?",
-            "¿Quién es la persona más joven registrada?",
-            "¿Quién es la persona mayor registrada?",
-            "¿Cuántas personas nacieron en abril?",
-            "¿Cuál es el promedio de edad de las personas registradas?",
-            "¿Cuántos hombres de más de 25 años hay?",
-            "¿Mujeres menores de 30 años nacidas en abril?",
-            "¿Quién fue la última persona en registrarse?",
-            "¿Qué porcentaje de cada género está registrado?"
-        ],
-        "info": {
-            "predeterminadas": "Estas consultas tienen respuestas precomputadas y son muy rápidas",
-            "personalizadas": "Cualquier otra consulta usará inteligencia artificial para generar respuestas"
         }
     }
 

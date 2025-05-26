@@ -9,7 +9,6 @@ const ConsultaNatural = () => {
   const [error, setError] = useState(null);
   const [serviceStatus, setServiceStatus] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
-  const [showExamples, setShowExamples] = useState(false);
 
   useEffect(() => {
     checkServiceStatus();
@@ -103,24 +102,6 @@ const ConsultaNatural = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const ejemplosPredeterminados = [
-    "¿Cuántas personas están registradas en total?",
-    "¿Cuál es la distribución por género?",
-    "¿Quién es la persona más joven registrada?",
-    "¿Quién es la persona mayor registrada?",
-    "¿Cuántas personas nacieron en abril?",
-    "¿Cuál es el promedio de edad de las personas registradas?",
-    "¿Cuántos hombres de más de 25 años hay?",
-    "¿Mujeres menores de 30 años nacidas en abril?",
-    "¿Quién fue la última persona en registrarse?",
-    "¿Qué porcentaje de cada género está registrado?"
-  ];
-
-  const usarEjemplo = (ejemplo) => {
-    setConsulta(ejemplo);
-    setError(null);
   };
 
   const getStatusIcon = (status) => {
@@ -267,56 +248,6 @@ const ConsultaNatural = () => {
         </div>
       </div>
 
-      {/* Examples Section */}
-      <div className={styles.examplesSection}>
-        <div className={styles.examplesHeader}>
-          <h3>
-            <span className={styles.examplesIcon}>💭</span>
-            Ejemplos de Consultas
-          </h3>
-          <p>Haz clic en cualquier ejemplo para usarlo directamente</p>
-        </div>
-        
-        <div className={styles.collapsibleSection}>
-          <button 
-            onClick={() => setShowExamples(!showExamples)}
-            className={styles.collapsibleButton}
-          >
-            <span className={styles.collapsibleIcon}>
-              {showExamples ? '📂' : '📁'}
-            </span>
-            <span>Ver ejemplos predeterminados</span>
-            <span className={styles.collapsibleArrow}>
-              {showExamples ? '▼' : '▶'}
-            </span>
-          </button>
-          
-          {showExamples && (
-            <div className={styles.examplesList}>
-              {ejemplosPredeterminados.map((ejemplo, index) => (
-                <button
-                  key={index}
-                  onClick={() => usarEjemplo(ejemplo)}
-                  className={styles.exampleButton}
-                  disabled={loading}
-                >
-                  <span className={styles.exampleText}>{ejemplo}</span>
-                  <span className={styles.useIcon}>→</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        <div className={styles.examplesTip}>
-          <div className={styles.tipIcon}>💡</div>
-          <div className={styles.tipContent}>
-            <p><strong>Consejo:</strong> También puedes preguntar por información específica como números de documento o nombres.</p>
-            <p><em>Ejemplo:</em> "¿Quién tiene el documento 1234567890?" o "Buscar persona llamada María"</p>
-          </div>
-        </div>
-      </div>
-
       {/* Query Form */}
       <div className={styles.querySection}>
         <div className={styles.queryHeader}>
@@ -324,6 +255,7 @@ const ConsultaNatural = () => {
             <span className={styles.queryIcon}>❓</span>
             Tu Consulta
           </h3>
+          <p>Escribe cualquier pregunta sobre los datos registrados en lenguaje natural</p>
         </div>
         
         <form onSubmit={handleSubmit} className={styles.queryForm}>
@@ -333,7 +265,7 @@ const ConsultaNatural = () => {
                 type="text"
                 value={consulta}
                 onChange={(e) => setConsulta(e.target.value)}
-                placeholder="Escribe tu pregunta sobre las personas registradas..."
+                placeholder="Ejemplo: ¿Cuántas personas hay registradas? ¿Quién es la persona más joven?"
                 disabled={loading}
                 className={styles.queryInput}
               />
@@ -440,9 +372,9 @@ const ConsultaNatural = () => {
               <h4>Esperando tu consulta</h4>
               <p>Tu respuesta aparecerá aquí una vez que hagas una pregunta</p>
               <div className={styles.emptyHints}>
-                <p>📝 Utiliza los ejemplos de arriba para comenzar</p>
+                <p>📝 Escribe cualquier pregunta en lenguaje natural</p>
                 <p>🔍 Pregunta sobre estadísticas, nombres o documentos</p>
-                <p>📊 Solicita análisis demográficos</p>
+                <p>📊 Solicita análisis demográficos personalizados</p>
               </div>
             </div>
           )}

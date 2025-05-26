@@ -1746,3 +1746,566 @@ DATOS COMPLETOS (ordenados por fecha de registro, más reciente primero):
 2025-05-26 02:06:56,409 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
 2025-05-26 02:06:59,914 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
 2025-05-26 02:07:06,819 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:09:24,611 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 15:09:24,983 - rag_service - ERROR - Groq API Error: 401 - {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2025-05-26 15:09:24,984 - rag_service - WARNING - ⚠️ Groq: Intento 1 falló, reintentando en 1s
+2025-05-26 15:09:26,273 - rag_service - ERROR - Groq API Error: 401 - {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2025-05-26 15:09:26,278 - rag_service - WARNING - ⚠️ Groq: Intento 2 falló, reintentando en 2s
+2025-05-26 15:09:28,566 - rag_service - ERROR - Groq API Error: 401 - {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2025-05-26 15:09:28,568 - rag_service - WARNING - ⚠️ Groq: Intento 3 falló, reintentando en 4s
+2025-05-26 15:09:32,569 - rag_service - ERROR - ❌ Groq: Todos los reintentos fallaron. Último error: 401 Client Error: Unauthorized for url: https://api.groq.com/openai/v1/chat/completions
+2025-05-26 15:09:32,570 - rag_service - WARNING - ⚠️ Groq: Respuesta de prueba inesperada
+2025-05-26 15:09:32,580 - rag_service - INFO - 🚀 Sistema RAG Académico iniciando...
+2025-05-26 15:09:32,581 - rag_service - INFO - ✅ Sistema RAG Académico iniciado correctamente
+2025-05-26 15:09:37,206 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:10:07,334 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 15:10:37,417 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:10:52,598 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:10:55,091 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:10:56,116 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:10:56,272 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:11:07,493 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:11:09,539 - rag_service - INFO - 🎓 Consulta académica recibida: ¿Cuántas personas están registradas en total?
+2025-05-26 15:11:09,540 - rag_service - INFO - 🔍 Procesando consulta: '¿Cuántas personas están registradas en total?'
+2025-05-26 15:11:09,540 - rag_service - INFO - 🔍 DEBUG: Consulta recibida: '¿Cuántas personas están registradas en total?'
+2025-05-26 15:11:09,540 - rag_service - INFO - 🔍 DEBUG: Consultas precomputadas disponibles:
+2025-05-26 15:11:09,541 - rag_service - INFO -   1. '¿Cuántas personas están registradas en total?'
+2025-05-26 15:11:09,541 - rag_service - INFO -   2. '¿Cuál es la distribución por género?'
+2025-05-26 15:11:09,542 - rag_service - INFO -   3. '¿Quién es la persona más joven registrada?'
+2025-05-26 15:11:09,542 - rag_service - INFO -   4. '¿Quién es la persona mayor registrada?'
+2025-05-26 15:11:09,542 - rag_service - INFO -   5. '¿Cuántas personas nacieron en abril?'
+2025-05-26 15:11:09,543 - rag_service - INFO -   6. '¿Cuál es el promedio de edad de las personas registradas?'
+2025-05-26 15:11:09,543 - rag_service - INFO -   7. '¿Cuántos hombres de más de 25 años hay?'
+2025-05-26 15:11:09,544 - rag_service - INFO -   8. '¿Mujeres menores de 30 años nacidas en abril?'
+2025-05-26 15:11:09,544 - rag_service - INFO -   9. '¿Quién fue la última persona en registrarse?'
+2025-05-26 15:11:09,545 - rag_service - INFO -   10. '¿Qué porcentaje de cada género está registrado?'
+2025-05-26 15:11:09,545 - rag_service - INFO - ✅ Consulta precomputada encontrada (exacta): ¿Cuántas personas están registradas en total?
+2025-05-26 15:11:09,545 - rag_service - INFO - 🚀 Usando respuesta precomputada para: ¿Cuántas personas están registradas en total?
+2025-05-26 15:11:09,546 - rag_service - INFO - 🔄 Cache: Actualizando desde Firebase
+2025-05-26 15:11:10,251 - rag_service - INFO - 📊 Firebase: 7 documentos encontrados
+2025-05-26 15:11:10,251 - rag_service - INFO - ✅ Dataset: 7 registros enriquecidos correctamente
+2025-05-26 15:11:10,252 - rag_service - INFO - ✅ Dataset: 7 registros enriquecidos
+2025-05-26 15:11:10,252 - rag_service - INFO - 🚀 Ejecutando consulta precomputada para: ¿Cuántas personas están registradas en total?
+2025-05-26 15:11:10,253 - rag_service - INFO - ✅ Respuesta precomputada generada: Hay 7 personas registradas en total en el sistema....
+2025-05-26 15:11:10,253 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 15:11:10,510 - rag_service - INFO - 📊 POST /query - 200 - 0.971s
+2025-05-26 15:11:10,728 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 15:11:18,466 - rag_service - INFO - 🎓 Consulta académica recibida: Hay algun juan registrado?
+2025-05-26 15:11:18,467 - rag_service - INFO - 🔍 Procesando consulta: 'Hay algun juan registrado?'
+2025-05-26 15:11:18,467 - rag_service - INFO - 🔍 DEBUG: Consulta recibida: 'Hay algun juan registrado?'
+2025-05-26 15:11:18,468 - rag_service - INFO - 🔍 DEBUG: Consultas precomputadas disponibles:
+2025-05-26 15:11:18,468 - rag_service - INFO -   1. '¿Cuántas personas están registradas en total?'
+2025-05-26 15:11:18,469 - rag_service - INFO -   2. '¿Cuál es la distribución por género?'
+2025-05-26 15:11:18,469 - rag_service - INFO -   3. '¿Quién es la persona más joven registrada?'
+2025-05-26 15:11:18,469 - rag_service - INFO -   4. '¿Quién es la persona mayor registrada?'
+2025-05-26 15:11:18,470 - rag_service - INFO -   5. '¿Cuántas personas nacieron en abril?'
+2025-05-26 15:11:18,470 - rag_service - INFO -   6. '¿Cuál es el promedio de edad de las personas registradas?'
+2025-05-26 15:11:18,471 - rag_service - INFO -   7. '¿Cuántos hombres de más de 25 años hay?'
+2025-05-26 15:11:18,471 - rag_service - INFO -   8. '¿Mujeres menores de 30 años nacidas en abril?'
+2025-05-26 15:11:18,472 - rag_service - INFO -   9. '¿Quién fue la última persona en registrarse?'
+2025-05-26 15:11:18,472 - rag_service - INFO -   10. '¿Qué porcentaje de cada género está registrado?'
+2025-05-26 15:11:18,472 - rag_service - INFO - 🔍 DEBUG: Consulta sin signos: 'Hay algun juan registrado'
+2025-05-26 15:11:18,473 - rag_service - INFO - 🔍 DEBUG: Comparando con: 'Cuántas personas están registradas en total'
+2025-05-26 15:11:18,473 - rag_service - INFO - 🔍 DEBUG: Comparando con: 'Cuál es la distribución por género'
+2025-05-26 15:11:18,474 - rag_service - INFO - 🔍 DEBUG: Comparando con: 'Quién es la persona más joven registrada'
+2025-05-26 15:11:18,474 - rag_service - INFO - 🔍 DEBUG: Comparando con: 'Quién es la persona mayor registrada'
+2025-05-26 15:11:18,474 - rag_service - INFO - 🔍 DEBUG: Comparando con: 'Cuántas personas nacieron en abril'
+2025-05-26 15:11:18,475 - rag_service - INFO - 🔍 DEBUG: Comparando con: 'Cuál es el promedio de edad de las personas registradas'
+2025-05-26 15:11:18,475 - rag_service - INFO - 🔍 DEBUG: Comparando con: 'Cuántos hombres de más de 25 años hay'
+2025-05-26 15:11:18,476 - rag_service - INFO - 🔍 DEBUG: Comparando con: 'Mujeres menores de 30 años nacidas en abril'
+2025-05-26 15:11:18,476 - rag_service - INFO - 🔍 DEBUG: Comparando con: 'Quién fue la última persona en registrarse'
+2025-05-26 15:11:18,477 - rag_service - INFO - 🔍 DEBUG: Comparando con: 'Qué porcentaje de cada género está registrado'
+2025-05-26 15:11:18,478 - rag_service - INFO - ❌ Consulta NO es precomputada: Hay algun juan registrado?
+2025-05-26 15:11:18,479 - rag_service - INFO - 🤖 Consulta personalizada detectada, usando IA: Hay algun juan registrado?
+2025-05-26 15:11:18,479 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 15:11:18,480 - rag_service - INFO - 🔍 Dataset cargado: 7 registros
+2025-05-26 15:11:18,770 - rag_service - ERROR - Groq API Error: 401 - {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2025-05-26 15:11:18,771 - rag_service - WARNING - ⚠️ Groq: Intento 1 falló, reintentando en 1s
+2025-05-26 15:11:20,056 - rag_service - ERROR - Groq API Error: 401 - {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2025-05-26 15:11:20,058 - rag_service - WARNING - ⚠️ Groq: Intento 2 falló, reintentando en 2s
+2025-05-26 15:11:22,341 - rag_service - ERROR - Groq API Error: 401 - {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2025-05-26 15:11:22,347 - rag_service - WARNING - ⚠️ Groq: Intento 3 falló, reintentando en 4s
+2025-05-26 15:11:26,347 - rag_service - ERROR - ❌ Groq: Todos los reintentos fallaron. Último error: 401 Client Error: Unauthorized for url: https://api.groq.com/openai/v1/chat/completions
+2025-05-26 15:11:26,520 - rag_service - INFO - 📊 POST /query - 200 - 8.054s
+2025-05-26 15:11:26,522 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 15:11:26,740 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 15:11:36,860 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
+2025-05-26 15:11:36,860 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 1, 'successful_queries': 1, 'failed_queries': 0, 'avg_response_time': 0.7137711048126221, 'cache_hit_rate': 0.0, 'last_updated': datetime.datetime(2025, 5, 26, 15, 11, 10, 253810)}
+2025-05-26 15:35:50,923 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 15:35:51,362 - rag_service - ERROR - Groq API Error: 401 - {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2025-05-26 15:35:51,363 - rag_service - WARNING - ⚠️ Groq: Intento 1 falló, reintentando en 1s
+2025-05-26 15:35:52,647 - rag_service - ERROR - Groq API Error: 401 - {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2025-05-26 15:35:52,649 - rag_service - WARNING - ⚠️ Groq: Intento 2 falló, reintentando en 2s
+2025-05-26 15:35:54,903 - rag_service - ERROR - Groq API Error: 401 - {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2025-05-26 15:35:54,909 - rag_service - WARNING - ⚠️ Groq: Intento 3 falló, reintentando en 4s
+2025-05-26 15:35:58,912 - rag_service - ERROR - ❌ Groq: Todos los reintentos fallaron. Último error: 401 Client Error: Unauthorized for url: https://api.groq.com/openai/v1/chat/completions
+2025-05-26 15:35:58,912 - rag_service - WARNING - ⚠️ Groq: Respuesta de prueba inesperada
+2025-05-26 15:35:58,920 - rag_service - INFO - 🚀 Sistema RAG Académico iniciando...
+2025-05-26 15:35:58,920 - rag_service - INFO - ✅ Sistema RAG Académico iniciado correctamente
+2025-05-26 15:35:59,320 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:36:29,379 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:36:59,442 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:37:29,505 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:37:59,567 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:38:29,629 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:38:59,688 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:39:22,289 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:39:29,738 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:39:52,764 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:39:59,785 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:40:22,793 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:40:29,825 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:40:52,775 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:40:59,856 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:41:22,796 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 15:41:29,903 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:41:52,782 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:41:59,979 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:42:22,774 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:42:30,021 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:42:59,179 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
+2025-05-26 15:42:59,180 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 0, 'successful_queries': 0, 'failed_queries': 0, 'avg_response_time': 0.0, 'cache_hit_rate': 0.0, 'last_updated': None}
+2025-05-26 15:43:12,520 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 15:43:12,873 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 15:43:12,881 - rag_service - INFO - 🚀 Sistema RAG Académico iniciando...
+2025-05-26 15:43:12,882 - rag_service - INFO - ✅ Sistema RAG Académico iniciado correctamente
+2025-05-26 15:43:15,489 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:43:17,813 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:43:45,527 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:44:15,562 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:44:17,834 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:44:19,036 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:44:45,628 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:44:49,052 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:45:15,681 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:45:19,038 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:45:45,731 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:45:49,050 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:46:15,806 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:46:19,035 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:46:40,196 - rag_service - INFO - 🎓 Consulta académica recibida: ¿Cuál es la distribución por género?
+2025-05-26 15:46:40,197 - rag_service - INFO - 🔍 Procesando consulta: '¿Cuál es la distribución por género?'
+2025-05-26 15:46:40,197 - rag_service - INFO - 🔍 DEBUG: Consulta recibida: '¿Cuál es la distribución por género?'
+2025-05-26 15:46:40,197 - rag_service - INFO - 🔍 DEBUG: Consultas precomputadas disponibles:
+2025-05-26 15:46:40,198 - rag_service - INFO -   1. '¿Cuántas personas están registradas en total?'
+2025-05-26 15:46:40,198 - rag_service - INFO -   2. '¿Cuál es la distribución por género?'
+2025-05-26 15:46:40,199 - rag_service - INFO -   3. '¿Quién es la persona más joven registrada?'
+2025-05-26 15:46:40,199 - rag_service - INFO -   4. '¿Quién es la persona mayor registrada?'
+2025-05-26 15:46:40,199 - rag_service - INFO -   5. '¿Cuántas personas nacieron en abril?'
+2025-05-26 15:46:40,200 - rag_service - INFO -   6. '¿Cuál es el promedio de edad de las personas registradas?'
+2025-05-26 15:46:40,200 - rag_service - INFO -   7. '¿Cuántos hombres de más de 25 años hay?'
+2025-05-26 15:46:40,201 - rag_service - INFO -   8. '¿Mujeres menores de 30 años nacidas en abril?'
+2025-05-26 15:46:40,201 - rag_service - INFO -   9. '¿Quién fue la última persona en registrarse?'
+2025-05-26 15:46:40,202 - rag_service - INFO -   10. '¿Qué porcentaje de cada género está registrado?'
+2025-05-26 15:46:40,202 - rag_service - INFO - ✅ Consulta precomputada encontrada (exacta): ¿Cuál es la distribución por género?
+2025-05-26 15:46:40,203 - rag_service - INFO - 🚀 Usando respuesta precomputada para: ¿Cuál es la distribución por género?
+2025-05-26 15:46:40,203 - rag_service - INFO - 🔄 Cache: Actualizando desde Firebase
+2025-05-26 15:46:40,895 - rag_service - INFO - 📊 Firebase: 7 documentos encontrados
+2025-05-26 15:46:40,896 - rag_service - INFO - ✅ Dataset: 7 registros enriquecidos correctamente
+2025-05-26 15:46:40,896 - rag_service - INFO - ✅ Dataset: 7 registros enriquecidos
+2025-05-26 15:46:40,897 - rag_service - INFO - 🚀 Ejecutando consulta precomputada para: ¿Cuál es la distribución por género?
+2025-05-26 15:46:40,897 - rag_service - INFO - ✅ Respuesta precomputada generada: Distribución por género:
+• Masculino: 5 personas
+• No binario: 1 personas
+• Femenino: 1 personas...
+2025-05-26 15:46:40,897 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 15:46:41,140 - rag_service - INFO - 📊 POST /query - 200 - 0.944s
+2025-05-26 15:46:41,326 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:46:45,850 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:46:53,380 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
+2025-05-26 15:46:53,380 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 1, 'successful_queries': 1, 'failed_queries': 0, 'avg_response_time': 0.7008533477783203, 'cache_hit_rate': 0.0, 'last_updated': datetime.datetime(2025, 5, 26, 15, 46, 40, 897849)}
+2025-05-26 15:52:59,255 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 15:52:59,255 - rag_service - ERROR - ❌ Groq: Error no recuperable - 'GroqLLMClient' object has no attribute '_make_single_request'
+2025-05-26 15:52:59,256 - rag_service - ERROR - ❌ Groq: Todos los reintentos fallaron. Último error: 'GroqLLMClient' object has no attribute '_make_single_request'
+2025-05-26 15:52:59,256 - rag_service - WARNING - ⚠️ Groq: Respuesta de prueba inesperada: None
+2025-05-26 15:52:59,265 - rag_service - INFO - 🚀 Sistema RAG Académico iniciando...
+2025-05-26 15:52:59,266 - rag_service - INFO - ✅ Sistema RAG Académico iniciado correctamente
+2025-05-26 15:53:02,203 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:53:08,769 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:53:32,271 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:53:38,782 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:54:02,340 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:54:11,588 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:54:13,178 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:54:13,989 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:54:32,379 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:54:34,577 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
+2025-05-26 15:54:34,578 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 0, 'successful_queries': 0, 'failed_queries': 0, 'avg_response_time': 0.0, 'cache_hit_rate': 0.0, 'last_updated': None}
+2025-05-26 15:57:52,888 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 15:57:53,328 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 15:57:53,335 - rag_service - INFO - 🚀 Sistema RAG Académico iniciando...
+2025-05-26 15:57:53,336 - rag_service - INFO - ✅ Sistema RAG Académico iniciado correctamente
+2025-05-26 15:57:55,883 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:58:17,782 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:58:25,942 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:58:49,389 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:58:55,898 - rag_service - INFO - 🎓 Consulta académica recibida: ¿Quién es la persona más joven registrada?
+2025-05-26 15:58:55,900 - rag_service - INFO - 🔍 Procesando consulta: '¿Quién es la persona más joven registrada?'
+2025-05-26 15:58:55,901 - rag_service - INFO - 🔍 DEBUG: Consulta recibida: '¿Quién es la persona más joven registrada?'
+2025-05-26 15:58:55,904 - rag_service - INFO - 🔍 DEBUG: Consultas precomputadas disponibles:
+2025-05-26 15:58:55,909 - rag_service - INFO -   1. '¿Cuántas personas están registradas en total?'
+2025-05-26 15:58:55,911 - rag_service - INFO -   2. '¿Cuál es la distribución por género?'
+2025-05-26 15:58:55,913 - rag_service - INFO -   3. '¿Quién es la persona más joven registrada?'
+2025-05-26 15:58:55,915 - rag_service - INFO -   4. '¿Quién es la persona mayor registrada?'
+2025-05-26 15:58:55,916 - rag_service - INFO -   5. '¿Cuántas personas nacieron en abril?'
+2025-05-26 15:58:55,919 - rag_service - INFO -   6. '¿Cuál es el promedio de edad de las personas registradas?'
+2025-05-26 15:58:55,923 - rag_service - INFO -   7. '¿Cuántos hombres de más de 25 años hay?'
+2025-05-26 15:58:55,930 - rag_service - INFO -   8. '¿Mujeres menores de 30 años nacidas en abril?'
+2025-05-26 15:58:55,932 - rag_service - INFO -   9. '¿Quién fue la última persona en registrarse?'
+2025-05-26 15:58:55,934 - rag_service - INFO -   10. '¿Qué porcentaje de cada género está registrado?'
+2025-05-26 15:58:55,936 - rag_service - INFO - ✅ Consulta precomputada encontrada (exacta): ¿Quién es la persona más joven registrada?
+2025-05-26 15:58:55,937 - rag_service - INFO - 🚀 Usando respuesta precomputada para: ¿Quién es la persona más joven registrada?
+2025-05-26 15:58:55,938 - rag_service - INFO - 🔄 Cache: Actualizando desde Firebase
+2025-05-26 15:58:56,639 - rag_service - INFO - 📊 Firebase: 7 documentos encontrados
+2025-05-26 15:58:56,640 - rag_service - INFO - ✅ Dataset: 7 registros enriquecidos correctamente
+2025-05-26 15:58:56,641 - rag_service - INFO - ✅ Dataset: 7 registros enriquecidos
+2025-05-26 15:58:56,641 - rag_service - INFO - 🚀 Ejecutando consulta precomputada para: ¿Quién es la persona más joven registrada?
+2025-05-26 15:58:56,642 - rag_service - INFO - ✅ Respuesta precomputada generada: No hay información de edad disponible....
+2025-05-26 15:58:56,643 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 15:58:56,868 - rag_service - INFO - 📊 POST /query - 200 - 0.971s
+2025-05-26 15:58:56,874 - rag_service - INFO - 📊 GET /health - 200 - 0.006s
+2025-05-26 15:58:57,114 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:59:19,772 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 15:59:26,932 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 15:59:49,373 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 15:59:56,960 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:00:19,769 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:00:27,016 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:00:49,775 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:00:57,053 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:01:19,774 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:01:27,084 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:01:49,774 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:01:57,118 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:02:27,175 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:02:57,207 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:03:17,779 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:03:27,267 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:03:57,297 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:04:17,785 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:04:27,324 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:04:57,368 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:05:17,849 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:05:27,455 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:05:57,497 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:06:17,800 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:06:27,560 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:06:57,614 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:07:17,808 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:07:27,667 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:07:57,790 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:07:59,337 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
+2025-05-26 16:07:59,337 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 1, 'successful_queries': 1, 'failed_queries': 0, 'avg_response_time': 0.7427237033843994, 'cache_hit_rate': 0.0, 'last_updated': datetime.datetime(2025, 5, 26, 15, 58, 56, 642971)}
+2025-05-26 16:10:18,101 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 16:10:18,562 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 16:10:23,385 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 16:10:23,756 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 16:10:28,610 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 16:10:28,967 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 16:10:33,449 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 16:10:34,138 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 16:10:39,286 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 16:10:39,662 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 16:10:45,362 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 16:10:46,956 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 16:10:54,573 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 16:10:54,955 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 16:11:05,735 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 16:11:06,075 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 16:11:22,856 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 16:11:23,231 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 16:11:53,455 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 16:11:54,497 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 16:12:50,009 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 16:12:50,332 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 16:13:54,502 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 16:13:54,952 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 16:16:31,253 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 16:16:31,645 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 16:16:31,673 - rag_service - INFO - 🚀 Sistema RAG Académico iniciando...
+2025-05-26 16:16:31,676 - rag_service - INFO - ✅ Sistema RAG Académico iniciado correctamente
+2025-05-26 16:16:34,248 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:17:04,398 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:17:17,790 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:17:34,542 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:18:00,944 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:18:04,669 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:18:14,675 - rag_service - INFO - 🎓 Consulta académica recibida: ¿Cuántas personas están registradas en total?
+2025-05-26 16:18:14,675 - rag_service - INFO - 🔍 Procesando consulta: '¿Cuántas personas están registradas en total?'
+2025-05-26 16:18:14,676 - rag_service - INFO - 🔍 DEBUG: Consulta recibida: '¿Cuántas personas están registradas en total?'
+2025-05-26 16:18:14,677 - rag_service - INFO - 🔍 DEBUG: Consultas precomputadas disponibles:
+2025-05-26 16:18:14,678 - rag_service - INFO -   1. '¿Cuántas personas están registradas en total?'
+2025-05-26 16:18:14,680 - rag_service - INFO -   2. '¿Cuál es la distribución por género?'
+2025-05-26 16:18:14,681 - rag_service - INFO -   3. '¿Quién es la persona más joven registrada?'
+2025-05-26 16:18:14,682 - rag_service - INFO -   4. '¿Quién es la persona mayor registrada?'
+2025-05-26 16:18:14,683 - rag_service - INFO -   5. '¿Cuántas personas nacieron en abril?'
+2025-05-26 16:18:14,685 - rag_service - INFO -   6. '¿Cuál es el promedio de edad de las personas registradas?'
+2025-05-26 16:18:14,685 - rag_service - INFO -   7. '¿Cuántos hombres de más de 25 años hay?'
+2025-05-26 16:18:14,686 - rag_service - INFO -   8. '¿Mujeres menores de 30 años nacidas en abril?'
+2025-05-26 16:18:14,687 - rag_service - INFO -   9. '¿Quién fue la última persona en registrarse?'
+2025-05-26 16:18:14,689 - rag_service - INFO -   10. '¿Qué porcentaje de cada género está registrado?'
+2025-05-26 16:18:14,689 - rag_service - INFO - ✅ Consulta precomputada encontrada (exacta): ¿Cuántas personas están registradas en total?
+2025-05-26 16:18:14,690 - rag_service - INFO - 🚀 Usando respuesta precomputada para: ¿Cuántas personas están registradas en total?
+2025-05-26 16:18:14,692 - rag_service - INFO - 🔄 Cache: Actualizando desde Firebase
+2025-05-26 16:18:15,047 - rag_service - INFO - 📊 Firebase: 7 documentos encontrados
+2025-05-26 16:18:15,049 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2024-05-21 00:00:00+00:00
+2025-05-26 16:18:15,050 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para jorge cabal: 2024-05-21 00:00:00+00:00
+2025-05-26 16:18:15,054 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 1995-02-21 00:00:00+00:00
+2025-05-26 16:18:15,059 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para maria martinez: 1995-02-21 00:00:00+00:00
+2025-05-26 16:18:15,065 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 1946-06-04 00:00:00+00:00
+2025-05-26 16:18:15,066 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para pablo picasso: 1946-06-04 00:00:00+00:00
+2025-05-26 16:18:15,071 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2000-02-01 00:00:00+00:00
+2025-05-26 16:18:15,072 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para maria camila gomez: 2000-02-01 00:00:00+00:00
+2025-05-26 16:18:15,075 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2022-02-08 00:00:00+00:00
+2025-05-26 16:18:15,078 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para juan perez pinzon: 2022-02-08 00:00:00+00:00
+2025-05-26 16:18:15,082 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 1986-07-09 00:00:00+00:00
+2025-05-26 16:18:15,084 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para Eseban Quito: 1986-07-09 00:00:00+00:00
+2025-05-26 16:18:15,088 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2021-02-02 00:00:00+00:00
+2025-05-26 16:18:15,093 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para Elvis Gomez: 2021-02-02 00:00:00+00:00
+2025-05-26 16:18:15,095 - rag_service - INFO - ✅ Dataset: 7 registros enriquecidos correctamente
+2025-05-26 16:18:15,098 - rag_service - INFO - ✅ Dataset: 7 registros enriquecidos
+2025-05-26 16:18:15,099 - rag_service - INFO - 🚀 Ejecutando consulta precomputada para: ¿Cuántas personas están registradas en total?
+2025-05-26 16:18:15,100 - rag_service - INFO - ✅ Respuesta precomputada generada: Hay 7 personas registradas en total en el sistema....
+2025-05-26 16:18:15,103 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:18:15,387 - rag_service - INFO - 📊 POST /query - 200 - 0.713s
+2025-05-26 16:18:15,617 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 16:18:17,781 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:18:22,463 - rag_service - INFO - 🎓 Consulta académica recibida: ¿Cuál es la distribución por género?
+2025-05-26 16:18:22,465 - rag_service - INFO - 🔍 Procesando consulta: '¿Cuál es la distribución por género?'
+2025-05-26 16:18:22,468 - rag_service - INFO - 🔍 DEBUG: Consulta recibida: '¿Cuál es la distribución por género?'
+2025-05-26 16:18:22,470 - rag_service - INFO - 🔍 DEBUG: Consultas precomputadas disponibles:
+2025-05-26 16:18:22,474 - rag_service - INFO -   1. '¿Cuántas personas están registradas en total?'
+2025-05-26 16:18:22,481 - rag_service - INFO -   2. '¿Cuál es la distribución por género?'
+2025-05-26 16:18:22,489 - rag_service - INFO -   3. '¿Quién es la persona más joven registrada?'
+2025-05-26 16:18:22,497 - rag_service - INFO -   4. '¿Quién es la persona mayor registrada?'
+2025-05-26 16:18:22,500 - rag_service - INFO -   5. '¿Cuántas personas nacieron en abril?'
+2025-05-26 16:18:22,502 - rag_service - INFO -   6. '¿Cuál es el promedio de edad de las personas registradas?'
+2025-05-26 16:18:22,504 - rag_service - INFO -   7. '¿Cuántos hombres de más de 25 años hay?'
+2025-05-26 16:18:22,508 - rag_service - INFO -   8. '¿Mujeres menores de 30 años nacidas en abril?'
+2025-05-26 16:18:22,517 - rag_service - INFO -   9. '¿Quién fue la última persona en registrarse?'
+2025-05-26 16:18:22,519 - rag_service - INFO -   10. '¿Qué porcentaje de cada género está registrado?'
+2025-05-26 16:18:22,522 - rag_service - INFO - ✅ Consulta precomputada encontrada (exacta): ¿Cuál es la distribución por género?
+2025-05-26 16:18:22,529 - rag_service - INFO - 🚀 Usando respuesta precomputada para: ¿Cuál es la distribución por género?
+2025-05-26 16:18:22,538 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:18:22,540 - rag_service - INFO - 🚀 Ejecutando consulta precomputada para: ¿Cuál es la distribución por género?
+2025-05-26 16:18:22,546 - rag_service - INFO - ✅ Respuesta precomputada generada: Distribución por género:
+• Masculino: 5 personas
+• No binario: 1 personas
+• Femenino: 1 personas...
+2025-05-26 16:18:22,547 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:18:22,708 - rag_service - INFO - 📊 POST /query - 200 - 0.247s
+2025-05-26 16:18:22,917 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 16:18:28,045 - rag_service - INFO - 🎓 Consulta académica recibida: ¿Quién es la persona más joven registrada?
+2025-05-26 16:18:28,046 - rag_service - INFO - 🔍 Procesando consulta: '¿Quién es la persona más joven registrada?'
+2025-05-26 16:18:28,046 - rag_service - INFO - 🔍 DEBUG: Consulta recibida: '¿Quién es la persona más joven registrada?'
+2025-05-26 16:18:28,046 - rag_service - INFO - 🔍 DEBUG: Consultas precomputadas disponibles:
+2025-05-26 16:18:28,047 - rag_service - INFO -   1. '¿Cuántas personas están registradas en total?'
+2025-05-26 16:18:28,048 - rag_service - INFO -   2. '¿Cuál es la distribución por género?'
+2025-05-26 16:18:28,049 - rag_service - INFO -   3. '¿Quién es la persona más joven registrada?'
+2025-05-26 16:18:28,049 - rag_service - INFO -   4. '¿Quién es la persona mayor registrada?'
+2025-05-26 16:18:28,049 - rag_service - INFO -   5. '¿Cuántas personas nacieron en abril?'
+2025-05-26 16:18:28,050 - rag_service - INFO -   6. '¿Cuál es el promedio de edad de las personas registradas?'
+2025-05-26 16:18:28,051 - rag_service - INFO -   7. '¿Cuántos hombres de más de 25 años hay?'
+2025-05-26 16:18:28,055 - rag_service - INFO -   8. '¿Mujeres menores de 30 años nacidas en abril?'
+2025-05-26 16:18:28,055 - rag_service - INFO -   9. '¿Quién fue la última persona en registrarse?'
+2025-05-26 16:18:28,056 - rag_service - INFO -   10. '¿Qué porcentaje de cada género está registrado?'
+2025-05-26 16:18:28,056 - rag_service - INFO - ✅ Consulta precomputada encontrada (exacta): ¿Quién es la persona más joven registrada?
+2025-05-26 16:18:28,057 - rag_service - INFO - 🚀 Usando respuesta precomputada para: ¿Quién es la persona más joven registrada?
+2025-05-26 16:18:28,058 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:18:28,058 - rag_service - INFO - 🚀 Ejecutando consulta precomputada para: ¿Quién es la persona más joven registrada?
+2025-05-26 16:18:28,060 - rag_service - INFO - 🔍 DEBUG - Total registros: 7
+2025-05-26 16:18:28,060 - rag_service - INFO - 🔍 DEBUG - Campos disponibles: ['apellidos', 'año_nacimiento', 'celular', 'correo', 'documento', 'edad', 'es_mayor_edad', 'fecha_registro', 'genero', 'mes_nacimiento', 'mes_nacimiento_nombre', 'nombre_completo', 'primer_nombre', 'rango_edad', 'segundo_nombre']
+2025-05-26 16:18:28,061 - rag_service - INFO - 🔍 DEBUG - Edad del primer registro: None
+2025-05-26 16:18:28,062 - rag_service - INFO - ✅ Respuesta precomputada generada: No hay información de edad disponible en los registros....
+2025-05-26 16:18:28,063 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:18:28,249 - rag_service - INFO - 📊 POST /query - 200 - 0.204s
+2025-05-26 16:18:28,460 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 16:18:30,947 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 16:18:34,755 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:18:34,855 - rag_service - INFO - 🎓 Consulta académica recibida: ¿Quién es la persona mayor registrada?
+2025-05-26 16:18:34,857 - rag_service - INFO - 🔍 Procesando consulta: '¿Quién es la persona mayor registrada?'
+2025-05-26 16:18:34,861 - rag_service - INFO - 🔍 DEBUG: Consulta recibida: '¿Quién es la persona mayor registrada?'
+2025-05-26 16:18:34,867 - rag_service - INFO - 🔍 DEBUG: Consultas precomputadas disponibles:
+2025-05-26 16:18:34,870 - rag_service - INFO -   1. '¿Cuántas personas están registradas en total?'
+2025-05-26 16:18:34,873 - rag_service - INFO -   2. '¿Cuál es la distribución por género?'
+2025-05-26 16:18:34,880 - rag_service - INFO -   3. '¿Quién es la persona más joven registrada?'
+2025-05-26 16:18:34,882 - rag_service - INFO -   4. '¿Quién es la persona mayor registrada?'
+2025-05-26 16:18:34,883 - rag_service - INFO -   5. '¿Cuántas personas nacieron en abril?'
+2025-05-26 16:18:34,885 - rag_service - INFO -   6. '¿Cuál es el promedio de edad de las personas registradas?'
+2025-05-26 16:18:34,890 - rag_service - INFO -   7. '¿Cuántos hombres de más de 25 años hay?'
+2025-05-26 16:18:34,899 - rag_service - INFO -   8. '¿Mujeres menores de 30 años nacidas en abril?'
+2025-05-26 16:18:34,900 - rag_service - INFO -   9. '¿Quién fue la última persona en registrarse?'
+2025-05-26 16:18:34,907 - rag_service - INFO -   10. '¿Qué porcentaje de cada género está registrado?'
+2025-05-26 16:18:34,908 - rag_service - INFO - ✅ Consulta precomputada encontrada (exacta): ¿Quién es la persona mayor registrada?
+2025-05-26 16:18:34,912 - rag_service - INFO - 🚀 Usando respuesta precomputada para: ¿Quién es la persona mayor registrada?
+2025-05-26 16:18:34,924 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:18:34,931 - rag_service - INFO - 🚀 Ejecutando consulta precomputada para: ¿Quién es la persona mayor registrada?
+2025-05-26 16:18:34,931 - rag_service - INFO - 🔍 DEBUG - No se encontraron personas con edad válida
+2025-05-26 16:18:34,932 - rag_service - INFO - ✅ Respuesta precomputada generada: No hay información de edad disponible en los registros....
+2025-05-26 16:18:34,937 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:18:35,115 - rag_service - INFO - 📊 POST /query - 200 - 0.262s
+2025-05-26 16:18:35,330 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 16:18:40,565 - rag_service - INFO - 🎓 Consulta académica recibida: ¿Cuántas personas nacieron en abril?
+2025-05-26 16:18:40,566 - rag_service - INFO - 🔍 Procesando consulta: '¿Cuántas personas nacieron en abril?'
+2025-05-26 16:18:40,566 - rag_service - INFO - 🔍 DEBUG: Consulta recibida: '¿Cuántas personas nacieron en abril?'
+2025-05-26 16:18:40,566 - rag_service - INFO - 🔍 DEBUG: Consultas precomputadas disponibles:
+2025-05-26 16:18:40,567 - rag_service - INFO -   1. '¿Cuántas personas están registradas en total?'
+2025-05-26 16:18:40,568 - rag_service - INFO -   2. '¿Cuál es la distribución por género?'
+2025-05-26 16:18:40,569 - rag_service - INFO -   3. '¿Quién es la persona más joven registrada?'
+2025-05-26 16:18:40,570 - rag_service - INFO -   4. '¿Quién es la persona mayor registrada?'
+2025-05-26 16:18:40,571 - rag_service - INFO -   5. '¿Cuántas personas nacieron en abril?'
+2025-05-26 16:18:40,571 - rag_service - INFO -   6. '¿Cuál es el promedio de edad de las personas registradas?'
+2025-05-26 16:18:40,572 - rag_service - INFO -   7. '¿Cuántos hombres de más de 25 años hay?'
+2025-05-26 16:18:40,573 - rag_service - INFO -   8. '¿Mujeres menores de 30 años nacidas en abril?'
+2025-05-26 16:18:40,574 - rag_service - INFO -   9. '¿Quién fue la última persona en registrarse?'
+2025-05-26 16:18:40,575 - rag_service - INFO -   10. '¿Qué porcentaje de cada género está registrado?'
+2025-05-26 16:18:40,576 - rag_service - INFO - ✅ Consulta precomputada encontrada (exacta): ¿Cuántas personas nacieron en abril?
+2025-05-26 16:18:40,577 - rag_service - INFO - 🚀 Usando respuesta precomputada para: ¿Cuántas personas nacieron en abril?
+2025-05-26 16:18:40,578 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:18:40,580 - rag_service - INFO - 🚀 Ejecutando consulta precomputada para: ¿Cuántas personas nacieron en abril?
+2025-05-26 16:18:40,581 - rag_service - INFO - 🔍 DEBUG - Personas con mes de nacimiento: 0
+2025-05-26 16:18:40,581 - rag_service - INFO - ✅ Respuesta precomputada generada: No hay personas que hayan nacido en abril registradas....
+2025-05-26 16:18:40,582 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:18:40,753 - rag_service - INFO - 📊 POST /query - 200 - 0.188s
+2025-05-26 16:18:40,970 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:18:54,225 - rag_service - INFO - 🎓 Consulta académica recibida: ¿Cuál es el promedio de edad de las personas registradas?
+2025-05-26 16:18:54,225 - rag_service - INFO - 🔍 Procesando consulta: '¿Cuál es el promedio de edad de las personas registradas?'
+2025-05-26 16:18:54,226 - rag_service - INFO - 🔍 DEBUG: Consulta recibida: '¿Cuál es el promedio de edad de las personas registradas?'
+2025-05-26 16:18:54,228 - rag_service - INFO - 🔍 DEBUG: Consultas precomputadas disponibles:
+2025-05-26 16:18:54,228 - rag_service - INFO -   1. '¿Cuántas personas están registradas en total?'
+2025-05-26 16:18:54,229 - rag_service - INFO -   2. '¿Cuál es la distribución por género?'
+2025-05-26 16:18:54,230 - rag_service - INFO -   3. '¿Quién es la persona más joven registrada?'
+2025-05-26 16:18:54,231 - rag_service - INFO -   4. '¿Quién es la persona mayor registrada?'
+2025-05-26 16:18:54,232 - rag_service - INFO -   5. '¿Cuántas personas nacieron en abril?'
+2025-05-26 16:18:54,233 - rag_service - INFO -   6. '¿Cuál es el promedio de edad de las personas registradas?'
+2025-05-26 16:18:54,234 - rag_service - INFO -   7. '¿Cuántos hombres de más de 25 años hay?'
+2025-05-26 16:18:54,235 - rag_service - INFO -   8. '¿Mujeres menores de 30 años nacidas en abril?'
+2025-05-26 16:18:54,236 - rag_service - INFO -   9. '¿Quién fue la última persona en registrarse?'
+2025-05-26 16:18:54,237 - rag_service - INFO -   10. '¿Qué porcentaje de cada género está registrado?'
+2025-05-26 16:18:54,238 - rag_service - INFO - ✅ Consulta precomputada encontrada (exacta): ¿Cuál es el promedio de edad de las personas registradas?
+2025-05-26 16:18:54,239 - rag_service - INFO - 🚀 Usando respuesta precomputada para: ¿Cuál es el promedio de edad de las personas registradas?
+2025-05-26 16:18:54,240 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:18:54,242 - rag_service - INFO - 🚀 Ejecutando consulta precomputada para: ¿Cuál es el promedio de edad de las personas registradas?
+2025-05-26 16:18:54,243 - rag_service - INFO - ✅ Respuesta precomputada generada: No hay información de edad disponible para calcular el promedio....
+2025-05-26 16:18:54,245 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:18:54,401 - rag_service - INFO - 📊 POST /query - 200 - 0.176s
+2025-05-26 16:18:54,591 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 16:19:00,933 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:19:02,601 - rag_service - INFO - 🎓 Consulta académica recibida: ¿Cuántos hombres de más de 25 años hay?
+2025-05-26 16:19:02,603 - rag_service - INFO - 🔍 Procesando consulta: '¿Cuántos hombres de más de 25 años hay?'
+2025-05-26 16:19:02,608 - rag_service - INFO - 🔍 DEBUG: Consulta recibida: '¿Cuántos hombres de más de 25 años hay?'
+2025-05-26 16:19:02,613 - rag_service - INFO - 🔍 DEBUG: Consultas precomputadas disponibles:
+2025-05-26 16:19:02,622 - rag_service - INFO -   1. '¿Cuántas personas están registradas en total?'
+2025-05-26 16:19:02,626 - rag_service - INFO -   2. '¿Cuál es la distribución por género?'
+2025-05-26 16:19:02,634 - rag_service - INFO -   3. '¿Quién es la persona más joven registrada?'
+2025-05-26 16:19:02,638 - rag_service - INFO -   4. '¿Quién es la persona mayor registrada?'
+2025-05-26 16:19:02,642 - rag_service - INFO -   5. '¿Cuántas personas nacieron en abril?'
+2025-05-26 16:19:02,644 - rag_service - INFO -   6. '¿Cuál es el promedio de edad de las personas registradas?'
+2025-05-26 16:19:02,646 - rag_service - INFO -   7. '¿Cuántos hombres de más de 25 años hay?'
+2025-05-26 16:19:02,650 - rag_service - INFO -   8. '¿Mujeres menores de 30 años nacidas en abril?'
+2025-05-26 16:19:02,654 - rag_service - INFO -   9. '¿Quién fue la última persona en registrarse?'
+2025-05-26 16:19:02,655 - rag_service - INFO -   10. '¿Qué porcentaje de cada género está registrado?'
+2025-05-26 16:19:02,657 - rag_service - INFO - ✅ Consulta precomputada encontrada (exacta): ¿Cuántos hombres de más de 25 años hay?
+2025-05-26 16:19:02,658 - rag_service - INFO - 🚀 Usando respuesta precomputada para: ¿Cuántos hombres de más de 25 años hay?
+2025-05-26 16:19:02,659 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:19:02,660 - rag_service - INFO - 🚀 Ejecutando consulta precomputada para: ¿Cuántos hombres de más de 25 años hay?
+2025-05-26 16:19:02,661 - rag_service - INFO - 🔍 DEBUG - Hombres totales: 5
+2025-05-26 16:19:02,662 - rag_service - INFO - 🔍 DEBUG - Hombres con edad: 0
+2025-05-26 16:19:02,664 - rag_service - INFO - ✅ Respuesta precomputada generada: No hay hombres de más de 25 años registrados....
+2025-05-26 16:19:02,665 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:19:02,821 - rag_service - INFO - 📊 POST /query - 200 - 0.222s
+2025-05-26 16:19:03,006 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:19:04,812 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:19:15,883 - rag_service - INFO - 🎓 Consulta académica recibida: ¿Mujeres menores de 30 años nacidas en abril?
+2025-05-26 16:19:15,884 - rag_service - INFO - 🔍 Procesando consulta: '¿Mujeres menores de 30 años nacidas en abril?'
+2025-05-26 16:19:15,889 - rag_service - INFO - 🔍 DEBUG: Consulta recibida: '¿Mujeres menores de 30 años nacidas en abril?'
+2025-05-26 16:19:15,898 - rag_service - INFO - 🔍 DEBUG: Consultas precomputadas disponibles:
+2025-05-26 16:19:15,899 - rag_service - INFO -   1. '¿Cuántas personas están registradas en total?'
+2025-05-26 16:19:15,903 - rag_service - INFO -   2. '¿Cuál es la distribución por género?'
+2025-05-26 16:19:15,909 - rag_service - INFO -   3. '¿Quién es la persona más joven registrada?'
+2025-05-26 16:19:15,915 - rag_service - INFO -   4. '¿Quién es la persona mayor registrada?'
+2025-05-26 16:19:15,926 - rag_service - INFO -   5. '¿Cuántas personas nacieron en abril?'
+2025-05-26 16:19:15,928 - rag_service - INFO -   6. '¿Cuál es el promedio de edad de las personas registradas?'
+2025-05-26 16:19:15,931 - rag_service - INFO -   7. '¿Cuántos hombres de más de 25 años hay?'
+2025-05-26 16:19:15,944 - rag_service - INFO -   8. '¿Mujeres menores de 30 años nacidas en abril?'
+2025-05-26 16:19:15,947 - rag_service - INFO -   9. '¿Quién fue la última persona en registrarse?'
+2025-05-26 16:19:15,950 - rag_service - INFO -   10. '¿Qué porcentaje de cada género está registrado?'
+2025-05-26 16:19:15,951 - rag_service - INFO - ✅ Consulta precomputada encontrada (exacta): ¿Mujeres menores de 30 años nacidas en abril?
+2025-05-26 16:19:15,955 - rag_service - INFO - 🚀 Usando respuesta precomputada para: ¿Mujeres menores de 30 años nacidas en abril?
+2025-05-26 16:19:15,962 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:19:15,966 - rag_service - INFO - 🚀 Ejecutando consulta precomputada para: ¿Mujeres menores de 30 años nacidas en abril?
+2025-05-26 16:19:15,971 - rag_service - INFO - 🔍 DEBUG - Mujeres totales: 1
+2025-05-26 16:19:15,973 - rag_service - INFO - 🔍 DEBUG - Mujeres menores de 30: 0
+2025-05-26 16:19:15,975 - rag_service - INFO - 🔍 DEBUG - Mujeres menores 30 + abril: 0
+2025-05-26 16:19:15,976 - rag_service - INFO - ✅ Respuesta precomputada generada: No hay mujeres menores de 30 años que hayan nacido en abril....
+2025-05-26 16:19:15,978 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 16:19:16,147 - rag_service - INFO - 📊 POST /query - 200 - 0.267s
+2025-05-26 16:19:16,346 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:19:17,777 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:19:31,764 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:19:34,864 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:20:01,780 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:20:04,966 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:20:17,786 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:20:31,778 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:20:35,098 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:21:01,770 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:21:05,158 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:21:17,831 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:21:35,210 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:22:05,338 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:22:17,796 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:22:17,835 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 16:22:35,443 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:23:05,519 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:23:17,813 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:23:17,824 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:23:35,658 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:24:05,832 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:24:17,802 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:24:17,817 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:24:35,969 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:25:06,050 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:25:17,778 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:25:17,796 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:25:36,133 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:26:06,207 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:26:17,781 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:26:17,797 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:26:36,262 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:27:06,338 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:27:17,808 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:27:17,818 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:27:36,476 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:28:06,561 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:28:17,767 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:28:17,776 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:28:36,627 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:29:06,683 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:29:17,777 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:29:17,790 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:29:36,797 - rag_service - INFO - 📊 GET /health - 200 - 0.006s
+2025-05-26 16:30:06,944 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:30:17,809 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:30:17,821 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:30:31,165 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
+2025-05-26 16:30:31,166 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 8, 'successful_queries': 8, 'failed_queries': 0, 'avg_response_time': 0.09981685876846313, 'cache_hit_rate': 0.0, 'last_updated': datetime.datetime(2025, 5, 26, 16, 19, 15, 978187)}
+2025-05-26 16:30:35,836 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 16:30:37,012 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 16:30:37,019 - rag_service - INFO - 🚀 Sistema RAG Académico iniciando...
+2025-05-26 16:30:37,020 - rag_service - INFO - ✅ Sistema RAG Académico iniciado correctamente
+2025-05-26 16:30:39,080 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 16:30:43,697 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:30:47,221 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:31:09,219 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 16:31:11,370 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
+2025-05-26 16:31:11,374 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 0, 'successful_queries': 0, 'failed_queries': 0, 'avg_response_time': 0.0, 'cache_hit_rate': 0.0, 'last_updated': None}
