@@ -2650,3 +2650,121 @@ DATOS COMPLETOS (ordenados por fecha de registro, más reciente primero):
 2025-05-26 17:46:26,741 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
 2025-05-26 17:46:47,405 - rag_service - INFO - 🛑 Sistema RAG Académico cerrando...
 2025-05-26 17:46:47,405 - rag_service - INFO - 📈 Métricas finales: {'total_queries': 0, 'successful_queries': 0, 'failed_queries': 0, 'avg_response_time': 0.0, 'cache_hit_rate': 0.0, 'last_updated': None}
+2025-05-26 18:36:19,555 - rag_service - INFO - ✅ Firebase: Conexión establecida y verificada
+2025-05-26 18:36:20,016 - rag_service - INFO - ✅ Groq: Conectividad verificada
+2025-05-26 18:36:20,023 - rag_service - INFO - 🚀 Sistema RAG Académico iniciando...
+2025-05-26 18:36:20,024 - rag_service - INFO - ✅ Sistema RAG Académico iniciado correctamente
+2025-05-26 18:36:22,735 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:36:52,798 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:37:22,868 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:37:48,856 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:37:50,202 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:37:51,020 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 18:37:51,474 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:37:52,939 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:38:12,084 - rag_service - INFO - 🎓 Consulta académica recibida: Quien es la persona mas joven?
+2025-05-26 18:38:12,085 - rag_service - INFO - 🔍 INICIANDO RAG PURO: 'Quien es la persona mas joven?'
+2025-05-26 18:38:12,086 - rag_service - INFO - 🔄 Cache: Actualizando desde Firebase
+2025-05-26 18:38:12,770 - rag_service - INFO - 📊 Firebase: 7 documentos encontrados
+2025-05-26 18:38:12,770 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2024-05-21 00:00:00+00:00
+2025-05-26 18:38:12,771 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para jorge cabal: 2024-05-21 00:00:00+00:00
+2025-05-26 18:38:12,772 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 1995-02-21 00:00:00+00:00
+2025-05-26 18:38:12,772 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para maria martinez: 1995-02-21 00:00:00+00:00
+2025-05-26 18:38:12,773 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 1946-06-04 00:00:00+00:00
+2025-05-26 18:38:12,773 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para pablo picasso: 1946-06-04 00:00:00+00:00
+2025-05-26 18:38:12,774 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2000-02-01 00:00:00+00:00
+2025-05-26 18:38:12,774 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para maria camila gomez: 2000-02-01 00:00:00+00:00
+2025-05-26 18:38:12,775 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2022-02-08 00:00:00+00:00
+2025-05-26 18:38:12,775 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para juan perez pinzon: 2022-02-08 00:00:00+00:00
+2025-05-26 18:38:12,776 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 1986-07-09 00:00:00+00:00
+2025-05-26 18:38:12,776 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para Eseban Quito: 1986-07-09 00:00:00+00:00
+2025-05-26 18:38:12,776 - rag_service - WARNING - ⚠️ No se pudo parsear fecha de nacimiento: 2021-02-02 00:00:00+00:00
+2025-05-26 18:38:12,777 - rag_service - WARNING - ⚠️ Fecha de nacimiento inválida para Elvis Gomez: 2021-02-02 00:00:00+00:00
+2025-05-26 18:38:12,777 - rag_service - INFO - ✅ Dataset: 7 registros enriquecidos correctamente
+2025-05-26 18:38:12,778 - rag_service - INFO - ✅ Dataset: 7 registros enriquecidos
+2025-05-26 18:38:12,778 - rag_service - INFO - 🔍 Dataset: 7 registros
+2025-05-26 18:38:12,778 - rag_service - INFO - 🔍 Análisis: {'complexity_level': 'simple', 'detected_patterns': ['age_filter'], 'requires_multiple_filters': False, 'is_statistical_query': False}
+2025-05-26 18:38:13,386 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:38:18,958 - rag_service - INFO - 🎓 Consulta académica recibida: Quien es la persona mas mayor?
+2025-05-26 18:38:18,960 - rag_service - INFO - 🔍 INICIANDO RAG PURO: 'Quien es la persona mas mayor?'
+2025-05-26 18:38:18,961 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 18:38:18,963 - rag_service - INFO - 🔍 Dataset: 7 registros
+2025-05-26 18:38:18,965 - rag_service - INFO - 🔍 Análisis: {'complexity_level': 'moderate', 'detected_patterns': ['age_filter', 'temporal_filter', 'complex_combination'], 'requires_multiple_filters': True, 'is_statistical_query': False}
+2025-05-26 18:38:19,527 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 18:38:21,474 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:38:23,004 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:38:28,853 - rag_service - INFO - 🎓 Consulta académica recibida: cuantas mujeres hay?
+2025-05-26 18:38:28,854 - rag_service - INFO - 🔍 INICIANDO RAG PURO: 'cuantas mujeres hay?'
+2025-05-26 18:38:28,854 - rag_service - INFO - 📋 Cache: Utilizando datos en cache
+2025-05-26 18:38:28,855 - rag_service - INFO - 🔍 Dataset: 7 registros
+2025-05-26 18:38:28,855 - rag_service - INFO - 🔍 Análisis: {'complexity_level': 'moderate', 'detected_patterns': ['gender_filter', 'complex_combination'], 'requires_multiple_filters': True, 'is_statistical_query': False}
+2025-05-26 18:38:29,398 - rag_service - INFO - 📊 GET /health - 200 - 0.004s
+2025-05-26 18:38:51,775 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:38:53,070 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:39:21,770 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:39:23,182 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:39:51,781 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 18:39:53,230 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:40:21,804 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 18:40:23,271 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:40:51,757 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:40:53,341 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:41:23,491 - rag_service - INFO - 📊 GET /health - 200 - 0.003s
+2025-05-26 18:41:53,536 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:42:17,756 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:42:23,602 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:42:53,728 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:43:17,798 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:43:23,813 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:43:53,843 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:44:17,762 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:44:23,883 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:44:53,919 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:45:17,776 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:45:24,087 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:45:54,163 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:46:17,765 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:46:24,238 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:46:53,152 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:46:54,312 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:47:04,008 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:47:04,957 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:47:05,463 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:47:24,344 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:47:30,883 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:47:32,557 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:47:33,388 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:47:54,472 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:48:24,636 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:48:54,769 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:49:24,807 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:49:54,858 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:50:24,891 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:50:54,936 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:51:25,041 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:51:55,150 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:52:25,193 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:52:55,258 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:53:25,397 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:53:55,528 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:54:25,567 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:54:55,634 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:55:25,765 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:55:55,903 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:56:25,940 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:56:56,012 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:57:26,099 - rag_service - INFO - 📊 GET /health - 200 - 0.002s
+2025-05-26 18:57:56,138 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:58:26,209 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:58:56,360 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 18:59:26,450 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 18:59:56,485 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 19:00:26,554 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 19:00:56,614 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 19:01:26,686 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 19:01:56,721 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 19:02:26,779 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 19:02:56,816 - rag_service - INFO - 📊 GET /health - 200 - 0.000s
+2025-05-26 19:03:26,938 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 19:03:56,998 - rag_service - INFO - 📊 GET /health - 200 - 0.001s
+2025-05-26 19:04:27,060 - rag_service - INFO - 📊 GET /health - 200 - 0.000s

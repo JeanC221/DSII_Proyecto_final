@@ -1,0 +1,25 @@
+La aplicación debe desplegarse en contenedores.
+La aplicación debe tener la funcionalidad de un CRUD y adicionalmente registrar
+todas las transacciones en un log. Es decir, se podrán crear, eliminar, actualizar
+y consultar registros. La llave de búsquedas de los registros es el documento.
+15
+
+Consulta en lenguaje natural utilizando un LLM y aplicando RAG 15
+
+Los campos a capturar son los mostrados en la pantalla principal. 2
+
+Realizar las validaciones requeridas 4
+
+Cada opción del menú se debe desarrollar en un microservicio. 5
+
+La opción de “Consultar” debe estar en un contenedor independiente al del resto
+de la aplicación y se debe poder habilitar y deshabilitar según demanda
+4
+
+La base de datos debe estar en un contenedor independiente al del resto de la
+aplicación.
+2
+
+La opción de consulta de log debe permitir búsqueda por tipo y documento, y
+por fecha de transacción.
+3

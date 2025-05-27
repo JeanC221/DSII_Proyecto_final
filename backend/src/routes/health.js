@@ -11,7 +11,6 @@ router.get("/", async (req, res) => {
     const firebaseHealthy = await checkFirebaseHealth();
     const mongoHealthy = await mongoManager.isHealthy();
     
-    // Sistema considerado saludable si Firebase está OK (MongoDB es opcional)
     const overallStatus = firebaseHealthy ? "ok" : "down";
     const systemLevel = firebaseHealthy && mongoHealthy ? "optimal" : 
                        firebaseHealthy ? "operational" : "degraded";
@@ -137,7 +136,6 @@ router.get("/rag", async (req, res) => {
   }
 });
 
-// Health check específico para MongoDB
 router.get("/mongodb", async (req, res) => {
   try {
     const isHealthy = await mongoManager.isHealthy();

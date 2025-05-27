@@ -1,10 +1,8 @@
 FROM python:3.11-slim
 
-# Configurar zona horaria
 ENV TZ=America/Bogota
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
@@ -17,7 +15,6 @@ RUN mkdir -p /app/logs
 
 COPY ./app/requirements.txt .
 
-# Instalar dependencias
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -32,7 +29,6 @@ EXPOSE 8000
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
-# Health check para monitoreo
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 

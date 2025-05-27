@@ -70,7 +70,6 @@ export const dateToInputValue = (fecha) => {
 };
 
 /**
- * Calcula la edad 
  * @param {Object|Date|string|number} fechaNacimiento 
  * @returns {number|null} 
  */
@@ -82,7 +81,6 @@ export const calcularEdad = (fechaNacimiento) => {
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
   
-  // Si aún no ha cumplido años en este año
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
     age--;
   }

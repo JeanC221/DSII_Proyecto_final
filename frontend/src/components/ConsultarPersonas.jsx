@@ -52,7 +52,6 @@ const ConsultarPersonas = () => {
     setFiltros({ genero: '', busqueda: '' });
   };
 
-  // Filtrar personas según los criterios
   const personasFiltradas = personas.filter(persona => {
     if (filtros.genero && persona.genero !== filtros.genero) {
       return false;

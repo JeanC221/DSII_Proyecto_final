@@ -64,7 +64,6 @@ class FirebaseManager:
         try:
             project_id = os.environ.get('FIREBASE_PROJECT_ID', 'proyecto-final-gestordatos')
 
-            # Usar directamente variables de entorno (más seguro)
             cred_dict = {
                 "type": "service_account",
                 "project_id": project_id,
@@ -85,7 +84,6 @@ class FirebaseManager:
             self.collection = self.db.collection('personas')
             self.logs_collection = self.db.collection('logs')
 
-            # Test de conexión
             test_query = self.collection.limit(1).get()
 
             self.status = "connected"
@@ -249,7 +247,6 @@ class PersonRecord:
     correo: str
     celular: str
     
-    # CORRECCIÓN: Inicializar todos los campos opcionales
     edad: Optional[int] = None
     mes_nacimiento: Optional[int] = None
     mes_nacimiento_nombre: Optional[str] = None
@@ -315,7 +312,6 @@ class IntelligentDataManager:
             if not self.firebase.is_healthy():
                 raise ConnectionError("Firebase no disponible")
             
-            # CORRECCIÓN: Usar get() en lugar de stream() para mejor compatibilidad
             snapshot = self.firebase.collection.get()
             enriched_records = []
             current_date = datetime.now()
@@ -323,19 +319,16 @@ class IntelligentDataManager:
             logger.info(f"📊 Firebase: {len(snapshot)} documentos encontrados")
             
             for doc in snapshot:
-                # CORRECCIÓN: Verificar que el documento existe antes de acceder a data()
                 if not doc.exists:
                     logger.warning(f"⚠️ Documento {doc.id} no existe")
                     continue
                     
                 try:
-                    raw_data = doc.to_dict()  # CORRECCIÓN: Usar to_dict() en lugar de data()
-                    
+                    raw_data = doc.to_dict()  
                     if not raw_data:
                         logger.warning(f"⚠️ Documento {doc.id} está vacío")
                         continue
                     
-                    # Verificar campos obligatorios
                     required_fields = ['primerNombre', 'apellidos', 'nroDocumento']
                     if not all(field in raw_data for field in required_fields):
                         logger.warning(f"⚠️ Documento {doc.id} falta campos obligatorios")
@@ -376,15 +369,11 @@ class IntelligentDataManager:
         """CORRECCIÓN: Asegurar que se asignen todos los campos temporales"""
         birth_date = raw_data.get('fechaNacimiento')
         
-        # CORRECCIÓN: Verificar múltiples formatos de fecha
         if birth_date:
             try:
-                # Si es un timestamp de Firebase
                 if hasattr(birth_date, 'todate'):
                     birth_date = birth_date.todate()
-                # Si es una cadena, intentar parsearlo
                 elif isinstance(birth_date, str):
-                    # Intentar varios formatos
                     for date_format in ['%Y-%m-%d', '%d/%m/%Y', '%Y-%m-%dT%H:%M:%S']:
                         try:
                             birth_date = datetime.strptime(birth_date, date_format)
@@ -408,7 +397,6 @@ class IntelligentDataManager:
             except Exception as e:
                 logger.warning(f"⚠️ Error procesando fecha de nacimiento para {record.nombre_completo}: {e}")
         
-        # Fecha de registro
         created_at = raw_data.get('createdAt')
         if created_at:
             try:
@@ -509,11 +497,9 @@ class AcademicRAGProcessor:
         total_personas = len(records)
         personas_con_edad = [r for r in records if r.edad is not None and r.edad >= 0]
         
-        # Distribución por género
         hombres = [r for r in records if r.genero and r.genero.lower() in ["masculino", "hombre", "m"]]
         mujeres = [r for r in records if r.genero and r.genero.lower() in ["femenino", "mujer", "f"]]
         
-        # Estadísticas de edad
         stats_edad = {}
         if personas_con_edad:
             edades = [r.edad for r in personas_con_edad]
@@ -525,7 +511,6 @@ class AcademicRAGProcessor:
                 "personas_menor_edad": len([e for e in edades if e < 18])
             }
         
-        # Distribución por meses
         distribucion_meses = {}
         personas_con_mes = [r for r in records if hasattr(r, 'mes_nacimiento') and r.mes_nacimiento]
         if personas_con_mes:
@@ -541,11 +526,9 @@ class AcademicRAGProcessor:
                 mes_nombre = meses_nombres.get(mes_num, f"mes_{mes_num}")
                 distribucion_meses[mes_nombre] = cantidad
         
-        # Información de contacto
         personas_con_correo = [r for r in records if r.correo and r.correo.strip() and "@" in r.correo]
         personas_con_telefono = [r for r in records if r.celular and r.celular.strip()]
         
-        # Fechas de registro
         fecha_registro_info = {}
         personas_con_fecha_registro = [r for r in records if hasattr(r, 'fecha_registro') and r.fecha_registro]
         if personas_con_fecha_registro:
@@ -582,13 +565,10 @@ class AcademicRAGProcessor:
     def _build_academic_prompt(self, user_query: str, filtered_records: list, analysis: dict) -> str:
         """Construye prompt completo para RAG con datos + estadísticas"""
         
-        # Limitar registros para no sobrecargar el prompt
         sample_records = filtered_records[:15] if len(filtered_records) > 15 else filtered_records
         
-        # Pre-calcular estadísticas
         statistics = self._build_statistics_for_llm(sample_records, len(filtered_records))
         
-        # Construir datos detallados
         context_data = []
         for record in sample_records:
             record_data = {
@@ -607,12 +587,10 @@ class AcademicRAGProcessor:
             }
             context_data.append(record_data)
         
-        # Debug logging
         logger.info(f"🔍 RAG PROMPT - Consulta: '{user_query}'")
         logger.info(f"🔍 RAG PROMPT - Registros: {len(context_data)}")
         logger.info(f"🔍 RAG PROMPT - Con edad válida: {statistics['conteos_generales']['personas_con_edad_valida']}")
         
-        # PROMPT COMPLETO PARA RAG
         prompt = f"""
 Eres un experto en análisis de datos demográficos. Analiza los datos proporcionados y responde la pregunta del usuario de manera precisa y directa.
 
@@ -679,7 +657,6 @@ RESPUESTA:"""
         try:
             logger.info(f"🔍 INICIANDO RAG PURO: '{user_query}'")
             
-            # 1. Obtener datos reales desde Firebase
             dataset = self.data_manager.get_enriched_dataset()
             logger.info(f"🔍 Dataset: {len(dataset)} registros")
 
@@ -690,35 +667,28 @@ RESPUESTA:"""
             if not valid_records:
                 return self._create_error_response("No hay registros válidos en la base de datos")
 
-            # 2. Analizar consulta
             query_analysis = self.query_analyzer.analyze_complexity(user_query)
             logger.info(f"🔍 Análisis: {query_analysis}")
 
-            # 3. Filtrar registros (opcional para optimización)
             filtered_records = self._filter_records_by_query(user_query, valid_records, query_analysis)
             if not filtered_records:
                 filtered_records = valid_records
 
             logger.info(f"🔍 Registros filtrados: {len(filtered_records)}")
 
-            # 4. Construir prompt RAG completo
             academic_prompt = self._build_academic_prompt(user_query, filtered_records, query_analysis)
 
-            # 5. Configurar tokens
             max_tokens = 100 if query_analysis['complexity_level'] == 'simple' else 200
 
-            # 6. PROCESAR SOLO CON LLM - NO HAY FALLBACK
             logger.info("🤖 Enviando a Groq LLM (RAG puro)...")
             llm_response = self.llm._make_request_with_retry(academic_prompt, max_tokens=max_tokens)
 
-            # 7. Verificar respuesta
             if not llm_response or not llm_response.strip():
                 logger.error("❌ LLM no respondió")
                 return self._create_error_response("El sistema de IA no pudo procesar la consulta")
 
             logger.info(f"✅ RAG completado: '{llm_response[:100]}...'")
 
-            # 8. Respuesta final
             processing_time = time.time() - start_time
             self._update_metrics(processing_time, success=True)
 
@@ -743,16 +713,12 @@ RESPUESTA:"""
             logger.error(f"❌ Error RAG: {e}")
             return self._create_error_response(f"Error en el sistema RAG: {str(e)}")
 
-    # ELIMINAR COMPLETAMENTE _fallback_answer()
-    # def _fallback_answer(self, query: str, records: list, analysis: dict) -> str:
-    #     """ELIMINADO - Solo RAG puro"""
-    #     pass
+
 
 # ============================================================================
 # INICIALIZACIÓN DEL SISTEMA
 # ============================================================================
 
-# Instancias globales del sistema
 firebase_manager = FirebaseManager()
 groq_client = GroqLLMClient()
 data_manager = IntelligentDataManager(firebase_manager)
@@ -762,12 +728,12 @@ rag_processor = AcademicRAGProcessor(groq_client, data_manager)
 # ENDPOINTS DE LA API - CORRECCIÓN PRINCIPAL
 # ============================================================================
 
-@app.post("/consulta-natural", response_model=Dict[str, Any])  # ← ENDPOINT CORRECTO
+@app.post("/consulta-natural", response_model=Dict[str, Any])  
 async def process_natural_language_query(request: Dict = Body(...)):
     """
     Endpoint principal para consultas en lenguaje natural desde el frontend
     """
-    query_text = request.get("consulta", "").strip()  # ← Campo correcto
+    query_text = request.get("consulta", "").strip()  
     
     if not query_text:
         return JSONResponse(
@@ -779,7 +745,6 @@ async def process_natural_language_query(request: Dict = Body(...)):
     
     result = rag_processor.process_academic_query(query_text)
     
-    # Log to Firebase if available
     if firebase_manager.is_healthy():
         try:
             firebase_manager.logs_collection.add({
@@ -794,7 +759,6 @@ async def process_natural_language_query(request: Dict = Body(...)):
     
     return result
 
-# Mantener el endpoint original también por compatibilidad
 @app.post("/query", response_model=Dict[str, Any])
 async def process_query_legacy(query: Dict = Body(...)):
     """Endpoint legacy - redirige al nuevo"""

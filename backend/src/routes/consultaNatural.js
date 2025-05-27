@@ -63,9 +63,9 @@ router.post("/", async (req, res) => {
 });
 
 /**
- * Genera respuestas inteligentes usando datos reales de la base de datos
- * @param {string} consulta - La consulta original del usuario
- * @returns {Promise<string>} - Respuesta generada basada en datos reales
+ * 
+ * @param {string} consulta 
+ * @returns {Promise<string>} 
  */
 async function getIntelligentFallback(consulta) {
   const query = consulta.toLowerCase();

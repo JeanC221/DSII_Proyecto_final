@@ -1,20 +1,16 @@
 FROM node:18 AS build
 WORKDIR /app
 
-# Limpiar cache de npm
 RUN npm cache clean --force
 
-# Copiar y instalar dependencias
 COPY package*.json ./
 RUN npm install --silent
 
-# Copiar código y buildear
 COPY . .
 ENV NODE_ENV=production
 ENV GENERATE_SOURCEMAP=false
 RUN npm run build
 
-# Producción
 FROM nginx:alpine
 RUN apk add --no-cache curl
 COPY nginx.config /etc/nginx/conf.d/default.conf

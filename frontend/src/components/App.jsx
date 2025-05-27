@@ -4,7 +4,7 @@ import CreatePerson from './CreatePerson';
 import ConsultarPersonas from './ConsultarPersonas';
 import EditarPersona from './EditarPersonas';
 import ConsultaNatural from './ConsultaNatural';
-import ConsultarLogs from './ConsultarLogs'; // Importar el componente correctamente
+import ConsultarLogs from './ConsultarLogs'; 
 import '../styles/global.css';
 import './App.css';
 

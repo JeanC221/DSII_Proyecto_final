@@ -10,7 +10,6 @@ router.get("/", async (req, res) => {
     
     const logs = await obtenerLogs(accion, documento, fechaDesde, fechaHasta);
     
-    // Agregar metadatos útiles para el frontend
     const response = {
       logs: logs,
       metadata: {
@@ -30,7 +29,7 @@ router.get("/", async (req, res) => {
     };
     
     console.log('✅ Logs enviados:', response.metadata);
-    res.json(logs); // Mantener compatibilidad con frontend existente
+    res.json(logs); 
     
   } catch (error) {
     console.error("❌ Error en ruta de logs:", error);
@@ -42,7 +41,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Nuevo endpoint para estadísticas detalladas
 router.get("/stats", async (req, res) => {
   try {
     const estadisticas = await obtenerEstadisticasLogs();
@@ -57,7 +55,6 @@ router.get("/stats", async (req, res) => {
   }
 });
 
-// Endpoint para exportar logs (útil para auditorías)
 router.get("/export", async (req, res) => {
   try {
     const { formato = 'json', limite = 1000 } = req.query;
@@ -66,7 +63,6 @@ router.get("/export", async (req, res) => {
     const exportData = logs.slice(0, parseInt(limite));
     
     if (formato === 'csv') {
-      // Convertir a CSV simple
       const csvHeaders = 'Fecha,Accion,Detalles,Categoria,Fuente\n';
       const csvData = exportData.map(log => 
         `"${log.fecha}","${log.accion}","${log.detalles}","${log.categoria || 'sistema'}","${log.fuente || 'firebase'}"`
@@ -76,7 +72,6 @@ router.get("/export", async (req, res) => {
       res.setHeader('Content-Disposition', `attachment; filename=logs_${new Date().toISOString().split('T')[0]}.csv`);
       res.send(csvHeaders + csvData);
     } else {
-      // JSON por defecto
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Disposition', `attachment; filename=logs_${new Date().toISOString().split('T')[0]}.json`);
       res.json({

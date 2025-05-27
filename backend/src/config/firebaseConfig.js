@@ -1,6 +1,5 @@
 const admin = require('firebase-admin');
 
-// Configuración usando variables de entorno
 const serviceAccount = {
   "type": "service_account",
   "project_id": process.env.FIREBASE_PROJECT_ID,
@@ -14,7 +13,6 @@ const serviceAccount = {
   "client_x509_cert_url": process.env.FIREBASE_CLIENT_CERT_URL
 };
 
-// Verificar que las variables requeridas estén presentes
 const requiredEnvVars = [
   'FIREBASE_PROJECT_ID',
   'FIREBASE_PRIVATE_KEY_ID', 
@@ -27,7 +25,6 @@ const requiredEnvVars = [
 const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 if (missingVars.length > 0) {
   console.error('Variables de entorno de Firebase faltantes:', missingVars);
-  // En desarrollo, permitir continuar sin Firebase
   if (process.env.NODE_ENV !== 'production') {
     console.warn('Ejecutando sin Firebase en modo desarrollo');
     module.exports = null;
@@ -35,7 +32,6 @@ if (missingVars.length > 0) {
     throw new Error(`Variables de entorno requeridas: ${missingVars.join(', ')}`);
   }
 } else {
-  // Inicializar Firebase Admin
   try {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),

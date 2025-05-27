@@ -1,7 +1,6 @@
 const admin = require('../config/firebaseConfig');
 const { mongoManager } = require('../config/mongoConfig');
 
-// Configuración segura de Firebase
 let firebaseLogsCollection = null;
 let db = null;
 
@@ -17,17 +16,11 @@ if (admin) {
   console.warn('⚠️ Firebase no disponible - Solo se usará MongoDB para logs');
 }
 
-/**
- * Sistema híbrido de logging mejorado: MongoDB + Firebase (opcional)
- * MongoDB: Sistema principal de logs
- * Firebase: Backup y logs críticos (si está disponible)
- */
 
 /**
- * Registra un log en ambos sistemas con fallback inteligente
- * @param {string} accion - Tipo de acción realizada
- * @param {string} detalles - Descripción detallada del evento
- * @param {string} categoria - Categoría del log (sistema, usuario, consulta)
+ * @param {string} accion 
+ * @param {string} detalles 
+ * @param {string} categoria 
  * @returns {Promise<void>}
  */
 const registrarLog = async (accion, detalles, categoria = 'sistema') => {
@@ -40,7 +33,6 @@ const registrarLog = async (accion, detalles, categoria = 'sistema') => {
     user_agent: null
   };
 
-  // Intentar guardar en MongoDB primero (sistema principal)
   let mongoSuccess = false;
   try {
     if (await mongoManager.isHealthy()) {
@@ -60,7 +52,6 @@ const registrarLog = async (accion, detalles, categoria = 'sistema') => {
     console.warn('⚠️ MongoDB Log falló:', error.message);
   }
 
-  // Firebase como backup (solo si está disponible)
   if (firebaseLogsCollection) {
     try {
       await firebaseLogsCollection.add({
@@ -77,22 +68,16 @@ const registrarLog = async (accion, detalles, categoria = 'sistema') => {
     }
   }
 
-  // Si ambos fallan, log de emergencia
   if (!mongoSuccess && !firebaseLogsCollection) {
     console.error(`🚨 EMERGENCY LOG: ${new Date().toISOString()} - ${accion} - ${detalles}`);
     
-    // Opcional: Escribir a archivo local
-    // fs.appendFileSync('./emergency.log', `${new Date().toISOString()} - ${accion} - ${detalles}\n`);
   }
 };
 
-/**
- * Obtiene logs con consulta híbrida inteligente
- */
+
 const obtenerLogs = async (accion, documento, fechaDesde, fechaHasta) => {
   const logs = [];
   
-  // Intentar obtener desde MongoDB primero (más eficiente)
   try {
     if (await mongoManager.isHealthy()) {
       const mongoLogs = await obtenerLogsMongo(accion, documento, fechaDesde, fechaHasta);
@@ -103,7 +88,6 @@ const obtenerLogs = async (accion, documento, fechaDesde, fechaHasta) => {
     console.warn('⚠️ Error obteniendo logs de MongoDB:', error.message);
   }
   
-  // Obtener desde Firebase solo si MongoDB falla Y Firebase está disponible
   if (logs.length === 0 && firebaseLogsCollection) {
     try {
       const firebaseLogs = await obtenerLogsFirebase(accion, documento, fechaDesde, fechaHasta);
@@ -114,20 +98,16 @@ const obtenerLogs = async (accion, documento, fechaDesde, fechaHasta) => {
     }
   }
   
-  // Ordenar por timestamp descendente
   return logs
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
     .slice(0, 1000);
 };
 
-/**
- * Obtiene logs desde MongoDB con filtros avanzados
- */
+
 const obtenerLogsMongo = async (accion, documento, fechaDesde, fechaHasta) => {
   const dbMongo = mongoManager.getDatabase();
   const logsCollection = dbMongo.collection('logs');
   
-  // Construir filtros dinámicamente
   const filters = {};
   
   if (accion) {
@@ -169,9 +149,6 @@ const obtenerLogsMongo = async (accion, documento, fechaDesde, fechaHasta) => {
   }));
 };
 
-/**
- * Obtiene logs desde Firebase (solo como fallback)
- */
 const obtenerLogsFirebase = async (accion, documento, fechaDesde, fechaHasta) => {
   if (!firebaseLogsCollection) {
     return [];
@@ -186,7 +163,6 @@ const obtenerLogsFirebase = async (accion, documento, fechaDesde, fechaHasta) =>
     const data = doc.data();
     const timestamp = data.timestamp ? data.timestamp.toDate() : new Date();
     
-    // Aplicar filtros manualmente
     let cumpleFiltros = true;
     
     if (accion && !data.accion?.toLowerCase().includes(accion.toLowerCase())) {
@@ -229,9 +205,7 @@ const obtenerLogsFirebase = async (accion, documento, fechaDesde, fechaHasta) =>
   return logs;
 };
 
-/**
- * Obtiene estadísticas de logs para dashboard
- */
+
 const obtenerEstadisticasLogs = async () => {
   try {
     const stats = {
@@ -244,7 +218,6 @@ const obtenerEstadisticasLogs = async () => {
       }
     };
     
-    // Estadísticas de MongoDB si está disponible
     if (stats.sistema_activo.mongodb) {
       const dbMongo = mongoManager.getDatabase();
       const logsCollection = dbMongo.collection('logs');
@@ -257,7 +230,6 @@ const obtenerEstadisticasLogs = async () => {
         timestamp: { $gte: today }
       });
       
-      // Agregación por categoría
       const categoriasPipeline = [
         { $group: { _id: "$categoria", count: { $sum: 1 } } }
       ];

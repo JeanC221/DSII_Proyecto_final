@@ -8,7 +8,7 @@ class MongoDBManager {
     this.connectionUrl = process.env.MONGODB_URL || 'mongodb://mongodb:27017/logs_db';
     this.dbName = 'logs_db';
     this.retryAttempts = 3;
-    this.retryDelay = 5000; // 5 segundos
+    this.retryDelay = 5000; 
   }
 
   async connect() {
@@ -31,13 +31,11 @@ class MongoDBManager {
         await this.client.connect();
         this.db = this.client.db(this.dbName);
         
-        // Test de conectividad
         await this.db.admin().ping();
         
         this.isConnected = true;
         console.log('✅ MongoDB: Conexión establecida exitosamente');
         
-        // Crear índices para optimizar consultas
         await this.createIndexes();
         
         return this.db;
@@ -61,11 +59,10 @@ class MongoDBManager {
     try {
       const logsCollection = this.db.collection('logs');
       
-      // Índices para optimizar consultas de logs
-      await logsCollection.createIndex({ "timestamp": -1 }); // Orden cronológico
-      await logsCollection.createIndex({ "accion": 1 }); // Filtro por acción
-      await logsCollection.createIndex({ "detalles": "text" }); // Búsqueda de texto
-      await logsCollection.createIndex({ "timestamp": -1, "accion": 1 }); // Consultas combinadas
+      await logsCollection.createIndex({ "timestamp": -1 }); 
+      await logsCollection.createIndex({ "accion": 1 }); 
+      await logsCollection.createIndex({ "detalles": "text" }); 
+      await logsCollection.createIndex({ "timestamp": -1, "accion": 1 }); 
       
       console.log('✅ MongoDB: Índices creados correctamente');
     } catch (error) {
@@ -112,7 +109,6 @@ class MongoDBManager {
   }
 }
 
-// Instancia singleton
 const mongoManager = new MongoDBManager();
 
 module.exports = { mongoManager };

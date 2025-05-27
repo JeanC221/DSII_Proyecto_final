@@ -41,17 +41,14 @@ const ConsultarLogs = () => {
   };
 
   const logsFiltrados = logs.filter(log => {
-    // Filtro por acción
     if (filtros.accion && !log.accion.toLowerCase().includes(filtros.accion.toLowerCase())) {
       return false;
     }
     
-    // Filtro por documento
     if (filtros.documento && !log.detalles.toLowerCase().includes(filtros.documento.toLowerCase())) {
       return false;
     }
     
-    // Filtro por fecha desde
     if (filtros.fechaDesde) {
       const fechaLog = new Date(log.fecha).toISOString().split('T')[0];
       if (fechaLog < filtros.fechaDesde) {
@@ -59,7 +56,6 @@ const ConsultarLogs = () => {
       }
     }
     
-    // Filtro por fecha hasta
     if (filtros.fechaHasta) {
       const fechaLog = new Date(log.fecha).toISOString().split('T')[0];
       if (fechaLog > filtros.fechaHasta) {

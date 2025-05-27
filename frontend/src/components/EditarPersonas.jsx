@@ -5,7 +5,6 @@ import api from '../config/axiosConfig';
 import { dateToInputValue } from '../utils/dateUtils';
 import styles from './EditarPersonas.module.css';
 
-// Esquema de validación con Yup actualizado para caracteres españoles
 const schema = yup.object().shape({
   primerNombre: yup
     .string()
@@ -55,7 +54,6 @@ const schema = yup.object().shape({
       'El celular debe tener 10 dígitos. Formato: XXXXXXXXXX',
       (value) => {
         if (!value) return false;
-        // Eliminar espacios y guiones para validación
         const cleaned = value.replace(/[\s-]/g, '');
         return /^(\+\d{1,3})?(\d{10})$/.test(cleaned);
       }
@@ -87,7 +85,6 @@ const EditarPersona = () => {
         setLoading(true);
         const res = await api.get(`/personas/${id}`);
         
-        // Usar el utilitario para formatear la fecha
         let formattedData = {...res.data};
         formattedData.fechaNacimiento = dateToInputValue(formattedData.fechaNacimiento);
         
@@ -98,7 +95,6 @@ const EditarPersona = () => {
         console.error('Error al cargar datos:', error);
         setServerError('Error al cargar datos de la persona');
         setLoading(false);
-        // Redirigir después de mostrar el error brevemente
         setTimeout(() => navigate('/consultar'), 3000);
       }
     };
@@ -109,7 +105,6 @@ const EditarPersona = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     
-    // Limpiar el error del campo que se está modificando
     if (errors[name]) {
       setErrors({ ...errors, [name]: null });
     }
@@ -122,7 +117,6 @@ const EditarPersona = () => {
     setIsSubmitting(true);
     
     try {
-      // Validar solo los campos que han cambiado
       const changedFields = {};
       for (const key in formData) {
         if (formData[key] !== originalData[key]) {
@@ -130,20 +124,17 @@ const EditarPersona = () => {
         }
       }
       
-      // Si no hay cambios, mostrar mensaje y no hacer la petición
       if (Object.keys(changedFields).length === 0) {
         setServerError('No se han realizado cambios');
         setIsSubmitting(false);
         return;
       }
       
-      // Validar solo los campos que han cambiado o todos si hay cambios en campos clave
       await schema.validate(formData, { 
         abortEarly: false,
         context: { isUpdate: true }
       });
       
-      // Limpiar datos antes de enviarlos
       const datosParaEnviar = {
         ...changedFields,
         primerNombre: changedFields.primerNombre ? changedFields.primerNombre.trim() : undefined,
@@ -166,7 +157,6 @@ const EditarPersona = () => {
         });
         setErrors(newErrors);
       } else if (error.response?.data?.error) {
-        // Errores del servidor
         setServerError(error.response.data.error);
       } else {
         console.error('Error al actualizar:', error);
@@ -246,7 +236,7 @@ const EditarPersona = () => {
             value={formData.fechaNacimiento || ''}
             onChange={handleChange}
             className={errors.fechaNacimiento ? styles.inputError : ''}
-            max={new Date().toISOString().split('T')[0]} // Limita a la fecha actual
+            max={new Date().toISOString().split('T')[0]}
           />
           {errors.fechaNacimiento && <span className={styles.error}>{errors.fechaNacimiento}</span>}
         </div>
